@@ -194,8 +194,18 @@
 
         .right-div {
             width: 210px;
-			height: 100%;
-			overflow-y: auto;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .right-div-ad {
+            width: 100px;
+            height: 100%;
+            border: 1px solid #003eff; /* 1px 너비의 실선 테두리와 색상 #003eff */
+            overflow-y: auto;
+            background-repeat: no-repeat;
+            background-image: url('/images/korea-flag.jpg'); /* Add this line */
+            background-position: top center; /* Optional: Centers the background in the div */
         }
 
         .containerLine {
@@ -242,6 +252,8 @@
             </tr>
             <tbody id="waypointinfoViewTable"></tbody>
         </table>
+    </div>
+    <div class="right-div-ad">
     </div>
 </div>
 
