@@ -198,9 +198,6 @@ $(document).ready(function () {
         _map.setLevel(10);
 
         getWaypointInfo();
-
-        drawPlot();/////차트 테스트...나중에 여기서 빼야 함, 우측의 waypoint정보를 route에서 함께 가져오게 개선필요
-
     }
 
     /**
@@ -306,46 +303,43 @@ $(document).ready(function () {
         $("input[type='radio'][name='filetype'][value='tcx']").prop("checked", true);
     }
 
-    //var plot;
     function drawPlot() {
         $('#elevationImage').empty();
         let updateLegendTimeout = null;
         let latestPosition = null;
         let cursorMarker = new kakao.maps.Marker();
 
-        let lastDistance = 0;					//이동거리
-        let flag = true;						//다음값을 사용할것인지 결정
-        let minAlti = 0, maxAlti = 0, curAlti = 0;	//높이정보
-        let currentLat, currentLng, nextLat, nextLng;
+        let numbers = [];
+        for(let i = 0; i < _gpxTrkseqArray.length; i++) {
+            numbers.push(_gpxTrkseqArray[i].ele);
+        }
+        let maxAlti = Math.max(...numbers);
+        let minAlti = Math.min(...numbers);
 
         for (let i = 0; i < _gpxTrkseqArray.length; i++) {
-            let pos = _gpxTrkseqArray[i];
-            curAlti = Number(pos.ele);	//고도
-
-            if (flag) { //다음값을 비교하기 위한 플래그
-                minAlti = curAlti;
-                maxAlti = curAlti;
-                currentLat = pos.lat;
-                currentLng = pos.lng;
-                nextLat = pos.lat;
-                nextLng = pos.lng;
-            } else {
-                nextLat = pos.lat;
-                nextLng = pos.lng;
+            //chart의 x, y축을 위한 데이터
+            _eleArray.push([_gpxTrkseqArray[i].dist, Number(_gpxTrkseqArray[i].ele)]);
+        }
+        //chart에 water, summit 아이콘을 표시하기 위한 데이터
+        for(let j = 0; j < _wayPointArray.length; j++) {
+            if (_wayPointArray[j].sym === 'water' || _wayPointArray[j].sym === 'summit') {
+                //console.log('_wayPointArray['+ j +'].position:' + _wayPointArray[j].position);
+                for(let k = 0; k < _gpxTrkseqArray.length; k++) {
+                //console.log('_gpxTrkseqArray['+ k +'].position:' + _gpxTrkseqArray[k]);
+                    // 소수점 아래의 작은 차이를 허용하도록 비교 로직 수정
+                    const latDiff = Math.abs(_wayPointArray[j].position.getLat() - _gpxTrkseqArray[k].lat);
+                    const lngDiff = Math.abs(_wayPointArray[j].position.getLng() - _gpxTrkseqArray[k].lng);
+                    const tolerance = 0.0001; // 적절한 임계값 설정
+                    if (latDiff < tolerance && lngDiff < tolerance) {
+                        _markings.push({
+                            x: _eleArray[k][0],
+                            y: _eleArray[k][1],
+                            color: '#FF0000',
+                            sym: _wayPointArray[j].sym
+                        });
+                    }
+                }
             }
-
-            if (curAlti >= maxAlti) maxAlti = curAlti; //전체 경로에서 최대높이
-            if (curAlti <= minAlti) minAlti = curAlti; //전체 경로에서 최저높이
-
-            lastDistance += getDistance(new Point3D(currentLat, currentLng), new Point3D(nextLat, nextLng));
-
-            //누적거리와 고도정보
-            _eleArray.push([lastDistance, Number(pos.ele)]);
-            if (flag === false) {
-                currentLat = nextLat;
-                currentLng = nextLng;
-            }
-            flag = false;
         }
 
         //참고 http://www.flotcharts.org/flot/examples/tracking/index.html
@@ -359,37 +353,43 @@ $(document).ready(function () {
                 series: {lines: {show: true}},
                 crosshair: {mode: "x"},
                 grid: {
-                    clickable: true, hoverable: true, show: true, aboveData: true
-                    , markings: _markings/*getWaypointPositionInfo() 나중에 추가 */
+                    clickable: true,
+                    hoverable: true,
+                    show: true,
+                    aboveData: true,
+                    selection: {
+                        mode: "xy"
+                    },
+                }, hooks: {
+                    draw: [addImageIcons]
                 },
-                yaxis: {min: minAlti * 0.7, max: maxAlti * 1.2, auto: 'none'} //위/아래 여백
+                yaxis: {
+                    min: minAlti * 0.7,
+                    max: maxAlti * 1.2,
+                    auto: 'none'} //위/아래 여백
             });
 
         function updateLegend() {
             updateLegendTimeout = null;
             let pos = latestPosition;
             let dataset = plot.getData();
-            let dataIndex, seriesIndex;
-            for (dataIndex = 0; dataIndex < dataset.length; ++dataIndex) {	//차트는 N개
-                let series = dataset[dataIndex];
-                for (seriesIndex = 0; seriesIndex < series.data.length; ++seriesIndex) {
-                    if (series.data[seriesIndex][0] > pos.x) {
-                        break;
-                    }
+            let seriesIndex = 0;
+            let series = dataset[0].data;
+            for (seriesIndex = 0; seriesIndex < series.length; seriesIndex++) {
+                if (series[seriesIndex][0] >= pos.x) {
+                    break;
                 }
-                //console.info(seriesIndex);
-                //고도차트에서 마무스를 따라 움직이는 지도상의 마커
-                cursorMarker.setMap(null);	//마커를 삭제하고
-                try {
-                    //마지막 포인트는 예외로 처리한다.
-                    cursorMarker = new kakao.maps.Marker({
-                        position: new kakao.maps.LatLng(_gpxTrkseqArray[seriesIndex].lat, _gpxTrkseqArray[seriesIndex].lng)
-                    });
-                } catch (e) {
-
-                }
-                cursorMarker.setMap(_map);
             }
+            //차트 오른쪽에서 마우스가 접근하면 pos.x보다 큰 값이 없어서 seriesIndex가 증가하게 되어 가장 오른쪽 값으로 사용함
+            if(seriesIndex > series.length - 1) {
+                seriesIndex = series.length - 1;
+            }
+            //고도차트에서 마우스를 따라 움직이는 지도상의 마커
+            cursorMarker.setMap(null);	//마커를 삭제하고
+            cursorMarker = new kakao.maps.Marker({
+                position: new kakao.maps.LatLng(_gpxTrkseqArray[seriesIndex].lat, _gpxTrkseqArray[seriesIndex].lng)
+            });
+            cursorMarker.setMap(_map);
         }
 
         //고도정보
@@ -399,7 +399,8 @@ $(document).ready(function () {
             border: "1px solid #fdd",
             padding: "2px",
             "background-color": "#fee",
-            opacity: 0.80
+            opacity: 0.80,
+            "font-size": "12px"
         }).appendTo("body");
 
         //차트에서 마우스의 움직임이 있으면....
@@ -420,6 +421,50 @@ $(document).ready(function () {
                 $("#tooltip").hide();
             }
         });
+        $("#elevationImage").bind("plotselected", function (event, ranges) {
+            var plot = $.plot("#placeholder", [data], $.extend(true, {}, options, {
+                xaxis: { min: ranges.xaxis.from, max: ranges.xaxis.to },
+                yaxis: { min: ranges.yaxis.from, max: ranges.yaxis.to }
+            }));
+        });
+        //뭘 추가할지 생각중...item.dataIndex를 사용할 수 있음
+        $("#elevationImage").bind("plotclick", function (event, pos, item) {
+            if (item) {
+                //alert(_gpxTrkseqArray[item.dataIndex]);
+            }
+        });
+
+        $("#elevationImage").bind("plotunselected", function (event) {
+            $("#selection").text("");
+        });
+
+        //웨이포인트의 water, summit 아이콘
+        function addImageIcons(plot, canvascontext) {
+            for (let i = 0; i < _markings.length; i++) {
+                //console.log(_markings[i].y + ', ' + maxAlti);
+                let img = new Image();
+                img.onload = function() {
+                        let o = plot.pointOffset({x: _markings[i].x, y: maxAlti});
+                        canvascontext.drawImage(img, o.left - img.width / 2, o.top - img.height);
+                    }
+                img.src = '/images/'+ _markings[i].sym +'.png'; // 이미지 경로
+            }
+/*            //차트에서 waypoint와 동일한 ele
+            img.onload = function() {
+                var series = plot.getData();
+                for (var i = 0; i < series.length; i++) {
+                    var datapoints = series[i].datapoints.points;
+                    for (var j = 0; j < datapoints.length; j+=series[i].datapoints.pointsize) {
+                        var x = datapoints[j];
+                        var y = datapoints[j + 1];
+                        var o = plot.pointOffset({ x: x, y: y });
+                        // 이미지를 데이터 포인트 위치에 맞춰서 그립니다
+                        canvascontext.drawImage(img, o.left - img.width / 2, o.top - img.height / 2);
+                    }
+                }
+            };*/
+        }
+
         _eleArray = [];
     }
 
@@ -782,7 +827,7 @@ $(document).ready(function () {
         let speed = Number($('#averageV').val());
         for (let trkptIndex = 1; trkptIndex < _gpxTrkseqArray.length; trkptIndex++) {
             let distance = getDistance(_gpxTrkseqArray[trkptIndex - 1], _gpxTrkseqArray[trkptIndex]);
-            _gpxTrkseqArray[trkptIndex].dist = (Number(_gpxTrkseqArray[trkptIndex - 1].dist) + distance).toFixed(2);
+            _gpxTrkseqArray[trkptIndex].dist = Number((Number(_gpxTrkseqArray[trkptIndex - 1].dist) + distance).toFixed(2));
             let ptSecond = distance / speed * 3600;
             ptDateTime.setSeconds(ptDateTime.getSeconds() + ptSecond);
             _gpxTrkseqArray[trkptIndex].time = ptDateTime.toISOString();
