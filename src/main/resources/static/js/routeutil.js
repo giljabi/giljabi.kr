@@ -160,28 +160,19 @@ WayPointInfo.prototype.toString = function toString() {
  */
 function getWaypointToHtml(waypointSortByDistance) {
     //우측에 웨이포인트를 출력하고, 엑셀로 저장할때도 사용한다.
-    let waypointinfo = '';
-    waypointinfo += '<table border=\"0\" style=\"border-collapse: collapse;\">';
-    for (let i = 0; i < waypointSortByDistance.length; i++) {
-        let sym = waypointSortByDistance[i].symbol.toLowerCase();
-        waypointinfo += '<tr onclick=\"javascript:goCenter(' +
-            waypointSortByDistance[i].point.lat + ',' + waypointSortByDistance[i].point.lng +
-            ', 5);\">';
-        waypointinfo += '<td ';
-        if (sym == 'food') {
-            waypointinfo += 'bgcolor=\"#FF0000\">';
-        } else if (sym == 'water') {
-            waypointinfo += 'bgcolor=\"#00FF00\">';
-        } else
-            waypointinfo += '>';
-        waypointinfo += '<img src=\"/images/' + sym + '.png\" width=\"15\" height=\"18\"></td>';
-        waypointinfo += '<td width=\'110px\' class=\'timeClass\'>' + waypointSortByDistance[i].symbolName + '</td>';
-        waypointinfo += '<td width=\'20px\' align=\'right\' class=\'timeClass\'>' + waypointSortByDistance[i].distance + '</td>';
-        waypointinfo += '<td width=\'70px\' align=\'right\' class=\'timeClass\'>' + waypointSortByDistance[i].laptime + '</td>';
-        waypointinfo += '</tr>';
-    }
-    waypointinfo += '</table>';
-    return waypointinfo;
+    let waypointInfo = '<table "style=border:0px;border-collapse: collapse;">';
+    waypointSortByDistance.forEach(waypoint => {
+        const sym = waypoint.symbol.toLowerCase();
+        waypointInfo += `
+            <tr onclick="javascript:goCenter(${waypoint.point.lat}, ${waypoint.point.lng}, 5);">
+                <td><img src="/images/${sym}.png" width="15px" height="18px"></td>
+                <td style="width=110px;" class="timeClass">${waypoint.symbolName}</td>
+                <td style="width=20px;align=right" class="timeClass">${waypoint.distance}</td>
+                <td style="width=70px;align=right" class="timeClass">${waypoint.laptime}</td>
+            </tr>`;
+    });
+    waypointInfo += '</table>';
+    return waypointInfo;
 }
 
 /**

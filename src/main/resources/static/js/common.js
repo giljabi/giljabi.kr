@@ -261,3 +261,18 @@ function removePoi(list) {
 function numberWithCommas(x) {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
+
+/**
+ * 날짜 초가화
+ * @param baseTime
+ * @returns {*}
+ */
+function setBaseTimeToToday(baseTime) {
+	const today = new Date();
+	const year = today.getFullYear();
+	const month = today.getMonth();
+	const day = today.getDate();
+
+	baseTime.setFullYear(year, month, day);
+	return baseTime;
+}

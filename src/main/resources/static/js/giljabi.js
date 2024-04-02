@@ -48,6 +48,8 @@ let _filetype = '';	//gpx, tcx 구분
 let BASETIME = new Date('2022-01-01T00:00:00Z');
 
 $(document).ready(function () {
+    BASETIME = setBaseTimeToToday(BASETIME);
+
     $(document).tooltip();
 
     //지도초기화
@@ -357,9 +359,9 @@ $(document).ready(function () {
                     hoverable: true,
                     show: true,
                     aboveData: true,
-                    selection: {
-                        mode: "xy"
-                    },
+                    //selection: {
+                    //    mode: "xy"
+                    //},
                 }, hooks: {
                     draw: [addImageIcons]
                 },
@@ -427,15 +429,13 @@ $(document).ready(function () {
                 yaxis: { min: ranges.yaxis.from, max: ranges.yaxis.to }
             }));
         });
-        //뭘 추가할지 생각중...item.dataIndex를 사용할 수 있음
-        $("#elevationImage").bind("plotclick", function (event, pos, item) {
-            if (item) {
-                //alert(_gpxTrkseqArray[item.dataIndex]);
-            }
-        });
-
         $("#elevationImage").bind("plotunselected", function (event) {
             $("#selection").text("");
+        });
+
+        //웨이포인트 클릭과 같은 위치로 이동기능 추가, item.dataIndex를 사용할 수 있음
+        $("#elevationImage").bind("plotclick", function (event, pos, item) {
+            goCenter(_gpxTrkseqArray[item.dataIndex].lat, _gpxTrkseqArray[item.dataIndex].lng,5);
         });
 
         //웨이포인트의 water, summit 아이콘
@@ -449,39 +449,10 @@ $(document).ready(function () {
                     }
                 img.src = '/images/'+ _markings[i].sym +'.png'; // 이미지 경로
             }
-/*            //차트에서 waypoint와 동일한 ele
-            img.onload = function() {
-                var series = plot.getData();
-                for (var i = 0; i < series.length; i++) {
-                    var datapoints = series[i].datapoints.points;
-                    for (var j = 0; j < datapoints.length; j+=series[i].datapoints.pointsize) {
-                        var x = datapoints[j];
-                        var y = datapoints[j + 1];
-                        var o = plot.pointOffset({ x: x, y: y });
-                        // 이미지를 데이터 포인트 위치에 맞춰서 그립니다
-                        canvascontext.drawImage(img, o.left - img.width / 2, o.top - img.height / 2);
-                    }
-                }
-            };*/
         }
 
         _eleArray = [];
     }
-
-    /*
-        function getWaypointList() {
-            let wpt = new Array();
-            for(let i = 0; i < _wayPointArray.length; i++) {
-                wpt.push( {
-                      lat: _wayPointArray[i].position.getLat()
-                    , lng: _wayPointArray[i].position.getLng()
-                    , name: _wayPointArray[i].waypointname
-                    , sym: _wayPointArray[i].sym
-                });
-            }
-            return wpt;
-        }
-    */
 
     $('#reset').click(function () {
         if (confirm('초기화 할까요?'))

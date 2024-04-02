@@ -25,6 +25,8 @@ function getGpxTrk(lat, lon, ele) {
 
 let eleFalg = false;	//고도정보를 받아온 경우 true
 $(document).ready(function () {
+    BASETIME = setBaseTimeToToday(BASETIME);
+
     let options = {
         center: getLocation(), //Seoul city hall
         level: 8
@@ -366,17 +368,19 @@ $(document).ready(function () {
 
     $('#gpxsave').click(function () {
         if(_gpxTrkseqArray.length == 0) {
-            if(!confirm("고도(높이) 정보를 처리하지 않고 경로를 저장할까요?")) {
-                return;
-            }
-            //구글 높이를 받아오지 않은 경우에도 경로를 저장하기 위한 정보처리
-            let data = _drawingManager.getData();
-            let len = data[kakao.maps.drawing.OverlayType.POLYLINE].length;
-            for (let i = 0; i < len; i++) {
-                let line = pointsToPath(data.polyline[i].points);
-                for (let j = 0; j < line.length; j++) {
-                    _gpxTrkseqArray.push({lat: line[j].getLat(), lng: line[j].getLng(), ele: 0, dist:0, ele:0, time:''});
-                }
+            alert('경로정보가 없습니다."Track" 기능으로 경로를 그린 후 저장합니다.');
+            return;
+        }
+/*        if(!confirm("고도(높이) 정보를 처리하지 않고 경로를 저장할까요?")) {
+            return;
+        }*/
+        //구글 높이를 받아오지 않은 경우에도 경로를 저장하기 위한 정보처리
+        let data = _drawingManager.getData();
+        let len = data[kakao.maps.drawing.OverlayType.POLYLINE].length;
+        for (let i = 0; i < len; i++) {
+            let line = pointsToPath(data.polyline[i].points);
+            for (let j = 0; j < line.length; j++) {
+                _gpxTrkseqArray.push({lat: line[j].getLat(), lng: line[j].getLng(), ele: 0, dist:0, ele:0, time:''});
             }
         }
 
