@@ -327,12 +327,16 @@ $(document).ready(function () {
                     css: {border: '3px solid #a00', width: '600px'}
                 });*/
 
-        $('#blockingAds').show();
-
-        //모든 polyline
-        let trkseq = new Array();	//servlet에 요청하기 위한 배열 object를 string으로 변환
         let data = _drawingManager.getData();
         let len = data[kakao.maps.drawing.OverlayType.POLYLINE].length;
+        if(len == 0) {
+            alert('경로정보가 없습니다."Track" 기능으로 경로를 그린 후 사용하세요.');
+            return;
+        }
+
+        $('#blockingAds').show();
+        //모든 polyline
+        let trkseq = new Array();	//servlet에 요청하기 위한 배열 object를 string으로 변환
         for (let i = 0; i < len; i++) {
             let line = pointsToPath(data.polyline[i].points);
             for (let j = 0; j < line.length; j++) {
@@ -367,7 +371,10 @@ $(document).ready(function () {
     });
 
     $('#gpxsave').click(function () {
-        if(_gpxTrkseqArray.length == 0) {
+        let data = _drawingManager.getData();
+        let len = data[kakao.maps.drawing.OverlayType.POLYLINE].length;
+
+        if(len == 0) {
             alert('경로정보가 없습니다."Track" 기능으로 경로를 그린 후 저장합니다.');
             return;
         }
@@ -375,8 +382,6 @@ $(document).ready(function () {
             return;
         }*/
         //구글 높이를 받아오지 않은 경우에도 경로를 저장하기 위한 정보처리
-        let data = _drawingManager.getData();
-        let len = data[kakao.maps.drawing.OverlayType.POLYLINE].length;
         for (let i = 0; i < len; i++) {
             let line = pointsToPath(data.polyline[i].points);
             for (let j = 0; j < line.length; j++) {
