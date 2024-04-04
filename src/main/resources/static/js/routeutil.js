@@ -125,7 +125,7 @@ function Point3D(lat, lng, ele, dist, time) {
     this.lng = Number(lng.toFixed(6));
     this.ele = isNaN(ele) ? 0 : Number(ele.toFixed(2));
     this.dist = isNaN(dist) ? 0 : Number(dist.toFixed(2));
-    this.time = Number(time);
+    this.time = time;
 }
 
 Point3D.prototype.toString = function toString() {

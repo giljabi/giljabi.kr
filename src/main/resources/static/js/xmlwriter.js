@@ -59,12 +59,12 @@ function makeTcxLap(firstPoint, lastPoint) {
     xmlData += '			<TotalTimeSeconds>' + diff / 1000 + '</TotalTimeSeconds>' + NEWLINE;
     xmlData += '			<DistanceMeters>' + lastPoint.distance + '</DistanceMeters>' + NEWLINE;
     xmlData += '			<BeginPosition>' + NEWLINE;
-    xmlData += '				<LatitudeDegrees>' + firstPoint.position.lat.toFixed(6) + '</LatitudeDegrees>' + NEWLINE;
-    xmlData += '				<LongitudeDegrees>' + firstPoint.position.lng.toFixed(6) + '</LongitudeDegrees>' + NEWLINE;
+    xmlData += '				<LatitudeDegrees>' + firstPoint.lat.toFixed(6) + '</LatitudeDegrees>' + NEWLINE;
+    xmlData += '				<LongitudeDegrees>' + firstPoint.lng.toFixed(6) + '</LongitudeDegrees>' + NEWLINE;
     xmlData += '			</BeginPosition>' + NEWLINE;
     xmlData += '			<EndPosition>' + NEWLINE;
-    xmlData += '				<LatitudeDegrees>' + lastPoint.position.lat.toFixed(6) + '</LatitudeDegrees>' + NEWLINE;
-    xmlData += '				<LongitudeDegrees>' + lastPoint.position.lng.toFixed(6) + '</LongitudeDegrees>' + NEWLINE;
+    xmlData += '				<LatitudeDegrees>' + lastPoint.lat.toFixed(6) + '</LatitudeDegrees>' + NEWLINE;
+    xmlData += '				<LongitudeDegrees>' + lastPoint.lng.toFixed(6) + '</LongitudeDegrees>' + NEWLINE;
     xmlData += '			</EndPosition>' + NEWLINE;
     xmlData += '			<Intensity>Active</Intensity>' + NEWLINE;
     xmlData += '		</Lap>' + NEWLINE;
@@ -86,24 +86,18 @@ function gpxWaypoint(waypoint) {
                 '" lon="' + wpt.point.lng.toFixed(6) + '">' + NEWLINE;
             xmlData += '		<name>' + wpt.symbolName + '</name>' + NEWLINE;
             xmlData += '		<sym>' + wpt.symbol + '</sym>' + NEWLINE;
-            //xmlData += '		<time>' + wpt.time + '</time>' + NEWLINE;
             xmlData += '	</wpt>' + NEWLINE;
         }
     } else {
         for (let i = 0; i < waypoint.length; i++) {
             let wpt = waypoint[i];
 
-            if (i == 0 || i == waypoint.length - 1) //Remove at first and last
-                continue;
-
-            //milisecond 제거
-            let time = wpt.time.substr(0, wpt.time.length - 5) + 'Z';
             xmlData += '		<CoursePoint>' + NEWLINE;
             xmlData += '			<Name>' + wpt.symbolName + '</Name>' + NEWLINE;
-            xmlData += '			<Time>' + time + '</Time>' + NEWLINE;
-            xmlData += '			<Position>' + NEWLINE;
-            xmlData += '				<LatitudeDegrees>' + wpt.point.lat.toFixed(6) + '</LatitudeDegrees>' + NEWLINE;
-            xmlData += '				<LongitudeDegrees>' + wpt.point.lng.toFixed(6) + '</LongitudeDegrees>' + NEWLINE;
+            xmlData += '			<Time>' + wpt.time + '</Time>' + NEWLINE;
+            xmlData += '			<Position>';
+            xmlData += '				<LatitudeDegrees>' + wpt.point.lat.toFixed(6) + '</LatitudeDegrees>';
+            xmlData += '				<LongitudeDegrees>' + wpt.point.lng.toFixed(6) + '</LongitudeDegrees>';
             xmlData += '			</Position>' + NEWLINE;
             xmlData += '			<PointType>' + wpt.symbol.charAt(0).toUpperCase() + wpt.symbol.slice(1) + '</PointType>' + NEWLINE;
             xmlData += '		</CoursePoint>' + NEWLINE;
@@ -113,37 +107,37 @@ function gpxWaypoint(waypoint) {
 
 function gpxTrack(trackArray) {
     if (_filetype === 'gpx') {
-        xmlData += '	<trk>' + NEWLINE;
-        xmlData += '		<trkseg>' + NEWLINE;
-        for (let i = 0; i < trackArray.length; i++) {
-            let track = trackArray[i];
-            xmlData += '		<trkpt lat="' + track.lat.toFixed(6) +
-                '" lon="' + track.lng.toFixed(6) + '">' + NEWLINE;
-            xmlData += '			<ele>' + Math.round(track.ele) + '</ele>' + NEWLINE;
-            xmlData += '			<time>' + track.time + '</time>' + NEWLINE;
-            xmlData += '			<desc>' + track.dist + '</desc>' + NEWLINE;
-            xmlData += '		</trkpt>' + NEWLINE;
-        }
-        xmlData += '		</trkseg>' + NEWLINE;
-        xmlData += '	</trk>' + NEWLINE;
-        xmlData += '</gpx>' + NEWLINE;
+        let xmlDataParts = [];
+        xmlDataParts.push('<trk>');
+        xmlDataParts.push(' <trkseg>');
+        trackArray.forEach(track => {
+            xmlDataParts.push(` <trkpt lat="${track.lat.toFixed(6)}" lon="${track.lng.toFixed(6)}">`);
+            xmlDataParts.push(` <ele>${Math.round(track.ele)}</ele>`);
+            xmlDataParts.push(` <time>${track.time}</time>`);
+            xmlDataParts.push(` <dist>${track.dist}</dist>`);
+            xmlDataParts.push(` <desc>${track.dist}</desc>`);
+            xmlDataParts.push('	</trkpt>');
+        });
+        xmlDataParts.push(' </trkseg>');
+        xmlDataParts.push('</trk>');
+        xmlDataParts.push('</gpx>');
+        xmlData += xmlDataParts.join(NEWLINE);
     } else {
-        xmlData += '		<Track>' + NEWLINE;
-        for (let i = 0; i < trackArray.length; i++) {
-            let track = trackArray[i];
-            let time = track.time.substr(0, track.time.length - 5) + 'Z';
-
-            xmlData += '			<Trackpoint>' + NEWLINE;
-            xmlData += '				<Time>' + time + '</Time>' + NEWLINE;
-            xmlData += '				<Position>' + NEWLINE;
-            xmlData += '					<LatitudeDegrees>' + track.position.lat.toFixed(6) + '</LatitudeDegrees>' + NEWLINE;
-            xmlData += '					<LongitudeDegrees>' + track.position.lng.toFixed(6) + '</LongitudeDegrees>' + NEWLINE;
-            xmlData += '				</Position>' + NEWLINE;
-            xmlData += '				<AltitudeMeters>' + Math.round(track.position.ele) + '</AltitudeMeters>' + NEWLINE;
-            xmlData += '				<DistanceMeters>' + track.distance + '</DistanceMeters>' + NEWLINE;
-            xmlData += '			</Trackpoint>' + NEWLINE;
-        }
-        xmlData += '		</Track>' + NEWLINE;
+        let xmlDataParts = [];
+        xmlDataParts.push('<Track>');
+        trackArray.forEach(track => {
+            xmlDataParts.push('<Trackpoint>');
+            xmlDataParts.push('	<Time>' + track.time + '</Time>');
+            xmlDataParts.push('	<Position>');
+            xmlDataParts.push('	<LatitudeDegrees>' + track.lat.toFixed(6) + '</LatitudeDegrees>');
+            xmlDataParts.push('	<LongitudeDegrees>' + track.lng.toFixed(6) + '</LongitudeDegrees>');
+            xmlDataParts.push('	</Position>');
+            xmlDataParts.push('	<AltitudeMeters>' + Math.round(track.ele) + '</AltitudeMeters>');
+            xmlDataParts.push('	<DistanceMeters>' + track.dist + '</DistanceMeters>');
+            xmlDataParts.push('</Trackpoint>');
+        });
+        xmlDataParts.push('	</Track>');
+        xmlData += xmlDataParts.join(NEWLINE);
     }
 }
 

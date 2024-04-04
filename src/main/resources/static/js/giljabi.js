@@ -298,7 +298,7 @@ $(document).ready(function () {
             let item = new GpxWaypoint(
                 $(this).find('LatitudeDegrees').text(),
                 $(this).find('LongitudeDegrees').text(),
-                '',
+                0,
                 $(this).find('Name').text(),		//웨이포인트 이름
                 '',			//웨이포인트 설명
                 '',			//sym 설명
@@ -311,11 +311,11 @@ $(document).ready(function () {
         //$.each(loadFile.find('gpx').find('trk').find('trkseg').find('trkpt'), function () {
         $.each(loadFile.find('Trackpoint'), function () {
             let trackPoint = new Point3D(
-                $(this).find('LatitudeDegrees').text(),
-                $(this).find('LongitudeDegrees').text(),
-                $(this).find('AltitudeMeters').text(),
-                $(this).find('DistanceMeters').text(),
-                "0"
+                Number($(this).find('LatitudeDegrees').text()),
+                Number($(this).find('LongitudeDegrees').text()),
+                Number($(this).find('AltitudeMeters').text()),
+                Number($(this).find('DistanceMeters').text()),
+                ''
             );
 
             _gpxTrkseqArray.push(trackPoint);
@@ -545,7 +545,7 @@ $(document).ready(function () {
             let trkSeqArray = _xmlData.find('trkpt');
             for (let i = 0; i < trkSeqArray.length; i++) {
                 currDistance = getDistance(new Point3D(endPosition.lat, endPosition.lng),
-                    new Point3D($(trkSeqArray[i]).attr('lat'), $(trkSeqArray[i]).attr('lon')));
+                    new Point3D($(trkSeqArray[i]).attr('lat'), $(trkSeqArray[i]).attr('lon'), 0, 0, ''));
 
                 /*                console.info(
                                     endPosition,
@@ -565,7 +565,7 @@ $(document).ready(function () {
                 let trackPoint = new Point3D(
                     $(this).attr('lat'),
                     $(this).attr('lon'),
-                    $(this).find('ele').text());
+                    $(this).find('ele').text(), 0, '');
 
                 _gpxTrkseqArray.push(trackPoint);
                 polyline.push(new kakao.maps.LatLng(trackPoint.lat, trackPoint.lng));
@@ -918,9 +918,9 @@ $(document).ready(function () {
             gpxWaypoint(waypointSortByDistance);
             gpxTrack(_gpxTrkseqArray);
         } else {
-            let tcxTrackPoint = makeTcxTrackPoint();
-            makeTcxLap(tcxTrackPoint[0], tcxTrackPoint[tcxTrackPoint.length - 1]);
-            gpxTrack(tcxTrackPoint);
+            //let tcxTrackPoint = makeTcxTrackPoint();
+            makeTcxLap(_gpxTrkseqArray[0], _gpxTrkseqArray[_gpxTrkseqArray.length - 1]);
+            gpxTrack(_gpxTrkseqArray);
             gpxWaypoint(waypointSortByDistance);
             tcxClose();
         }
