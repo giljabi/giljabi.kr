@@ -2,7 +2,7 @@ package kr.giljabi.api.controller;
 
 import io.swagger.annotations.ApiOperation;
 import kr.giljabi.api.geo.Geometry3DPoint;
-import kr.giljabi.api.request.RouteData;
+import kr.giljabi.api.request.RequestRouteData;
 import kr.giljabi.api.response.Response;
 import kr.giljabi.api.service.RouteService;
 import kr.giljabi.api.utils.ErrorCode;
@@ -28,20 +28,24 @@ public class RouterController {
 
     private final RouteService geometryService;
 
-    @GetMapping("/api/1.0/route")
+    /**
+     * json에 특수문자가 있어 post로 받음
+     * @param routeRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/api/1.0/route")
     @ApiOperation(value="경로정보", notes = "openrouterservice에서 경로정보를 받아오는 api")
-    public Response getRoute(
-            @RequestParam(name = "start") Double[] start,
-            @RequestParam(name = "target") Double[] target,
-            @RequestParam(name = "direction") String direction,
-            HttpServletRequest request) {
+    public Response getRoute(@RequestBody RequestRouteData routeRequest,
+                             HttpServletRequest request) {
         ArrayList<Geometry3DPoint> list;
         Response response;
         try {
-            RouteData routeData = new RouteData(start, target, direction, request.getRemoteAddr());
-
             //list = getOpenRouteServiceTest();
-            list = geometryService.getOpenRouteService(routeData);
+            routeRequest.setRemoteAddr(request.getRemoteAddr());
+            list = geometryService.getOpenRouteService(routeRequest);
+            log.info(routeRequest.toString());
+
             return new Response(list);
         } catch(Exception e) {
             response = new Response(ErrorCode.STATUS_EXCEPTION.getStatus(), e.getMessage());

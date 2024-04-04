@@ -2,19 +2,12 @@ package kr.giljabi.api.service;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import kr.giljabi.api.entity.ApiCallInfo;
-import kr.giljabi.api.entity.ApiCode;
-import kr.giljabi.api.entity.ClientInfo;
-import kr.giljabi.api.entity.ProfileCode;
 import kr.giljabi.api.geo.Geometry3DPoint;
 import kr.giljabi.api.geo.OSRDirectionV2Data;
-import kr.giljabi.api.repository.ApiCallInfoRepository;
-import kr.giljabi.api.repository.ClientInfoRepository;
-import kr.giljabi.api.request.RouteData;
+import kr.giljabi.api.request.RequestRouteData;
 import kr.giljabi.api.exception.GiljabiException;
 import kr.giljabi.api.utils.GeometryDecoder;
 import kr.giljabi.api.utils.MyHttpUtils;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -24,7 +17,6 @@ import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 //import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
@@ -32,7 +24,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Optional;
 
 /**
  * 경로 탐색 클래스
@@ -68,17 +59,18 @@ public class RouteService {
     /**
      * openrouteservice를 사용하지만, google direction를 사용하는 것도 고려할 필요 있음
      */
-    public ArrayList<Geometry3DPoint> getOpenRouteService(RouteData request)
+    public ArrayList<Geometry3DPoint> getOpenRouteService(RequestRouteData routeRequest)
             throws Exception {
         //경로 요청 파라메터 정보를 만들고...
-        Double[][] coordinates = {request.getStart(), request.getTarget()};
+        Double[][] coordinates = {routeRequest.getStart().toDoubleArray(),
+                routeRequest.getEnd().toDoubleArray()};
 
         JSONObject json = new JSONObject();
         json.put("coordinates", coordinates);   //좌표 배열로 입력 가능....
         json.put("elevation", "true");
         //log.info(json.toString());
 
-        directionUrl = String.format(directionUrl, request.getProfile());
+        directionUrl = String.format(directionUrl, routeRequest.getDirection());
 
         String body = MyHttpUtils.httpPostMethod(directionUrl, json, apikey);
 

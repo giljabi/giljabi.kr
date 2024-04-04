@@ -1,11 +1,8 @@
 package kr.giljabi.api.request;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
 import java.text.DecimalFormat;

@@ -117,7 +117,7 @@ public class MyHttpUtils {
             if (response != null) response.close();
             if (httpClient != null) httpClient.close();
         }
-        log.info(result);
+        //log.info(result);
         return result;
     }
 }

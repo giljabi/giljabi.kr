@@ -653,16 +653,25 @@ $(document).ready(function () {
     function getRoute(route) {
         $('#blockingAds').show();
         let polyline = new Array();	//추가된 선을 그린다.
+
+        let param = {
+            start: {
+                lat: route[0].getLat(),
+                lng: route[0].getLng()
+            },
+            end: {
+                lat: route[1].getLat(),
+                lng: route[1].getLng()
+            },
+            direction: $('#direction option:selected').val()
+        };
+
         $.ajax({
-            type: 'get',
+            type: 'post',
             url: '/api/1.0/route',
             dataType: 'json',
             contentType: 'application/json; charset=UTF-8;',
-            data: {
-                start: route[0].getLng() + ',' + route[0].getLat()
-                , target: route[1].getLng() + ',' + route[1].getLat()
-                , direction: $('#direction option:selected').val()
-            },
+            data: JSON.stringify(param),
             async: true,
             complete: function () {
 
