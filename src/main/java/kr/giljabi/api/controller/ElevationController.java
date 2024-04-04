@@ -68,7 +68,6 @@ public class ElevationController {
 
             list = googleService.getElevation(request);
             return new Response(list);
-            //return getMountainData();
         } catch (Exception e) {
             return new Response(ErrorCode.STATUS_EXCEPTION.getStatus(), e.getMessage());
         }

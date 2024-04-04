@@ -41,9 +41,10 @@ public class RouterController {
         ArrayList<Geometry3DPoint> list;
         Response response;
         try {
-            //list = getOpenRouteServiceTest();
             routeRequest.setRemoteAddr(request.getRemoteAddr());
-            list = geometryService.getOpenRouteService(routeRequest);
+
+            list = getOpenRouteServiceTest();
+            //list = geometryService.getOpenRouteService(routeRequest);
             log.info(routeRequest.toString());
 
             return new Response(list);

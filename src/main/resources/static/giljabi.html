@@ -213,15 +213,32 @@
 			margin-bottom: 0;
             vertical-align: top;
             height: 35px;
-            display: flex; /* This will arrange the child divs in a row */
+            display: flex;
         }
 
         .containerPlot {
+            width: 1150px;
 			margin-bottom: 0;
             vertical-align: top;
             height: 120px;
-            display: flex; /* This will arrange the child divs in a row */
+            display: flex;
 			border: 1px solid #ddd;
+            /*background-image: url('/images/charter-ad.png');*/
+        }
+        .blockingAds {
+            z-index: 1011;
+            position: absolute;
+            padding: 0px;
+            margin: 0px;
+            height: 120px;
+            width: 920px;
+            top: 30%;
+            left: 150px;
+            text-align: center;
+            color: rgb(0, 0, 0);
+            border: 3px solid rgb(170, 0, 0);
+            background-color: rgb(255, 255, 255);
+            cursor: wait;
         }
     </style>
 
@@ -254,8 +271,9 @@
             <tbody id="waypointinfoViewTable"></tbody>
         </table>
     </div>
-    <div class="right-div-ad">
-    </div>
+    <!--
+    <div class="right-div-ad"></div>
+    -->
 </div>
 
 <div class="containerLine">
@@ -269,8 +287,7 @@
         <input type="button" id="saveas" value="저장"/>
         <input type="button" id="reverse" value="반대방향"/>
         <input type="button" id="waypointinfo" value="이정표 정보"/>
-        <input type="button" id="waypointexcelsave" style="width: 120px;" value="이정표 엑셀저장"/>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <input type="button" id="waypointexcelsave" value="이정표 엑셀저장"/>
         파일병합: <input type="file" id="mergeInput" accept=".gpx,.tcx" size="0" disabled>
     </p>
 </div>
@@ -308,14 +325,7 @@
 
 <!-- 서버에 정보 요청 후 기다리는 UI-->
 <div id="blockingAds" class="blockUI" style="display:none">
-	<div class="blockUI blockOverlay" style="z-index: 1000; border: none;
-margin: 0px; padding: 0px; width: 100%; height: 100%; top: 0px; left: 0px;
-background-color: rgb(0, 0, 0); opacity: 0.6; cursor: wait; position: absolute;">
-	</div>
-	<div class="blockUI blockMsg blockElement" style="z-index: 1011;
-position: absolute; padding: 0px; margin: 0px; height:120px; width: 920px; top: 30%; left: 150px;
-text-align: center; color: rgb(0, 0, 0); border: 3px solid rgb(170, 0, 0);
-background-color: rgb(255, 255, 255); cursor: wait;">
+	<div class="blockUI blockMsg blockElement blockingAds">
 		<div>
 			<br><br>
 			<img src="/images/ajax-loader.gif" width="200px" height="20px">

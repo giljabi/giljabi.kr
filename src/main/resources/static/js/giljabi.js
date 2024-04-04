@@ -48,6 +48,16 @@ let _filetype = '';	//gpx, tcx 구분
 let BASETIME = new Date('2022-01-01T00:00:00Z');
 let steepPoints = [];
 
+
+function chartPlotAdView(view) {
+/*
+    if(view)    //true
+        $('.containerPlot').css('background-image', 'url(\'/images/charter-ad.png\')');
+    else
+        $('.containerPlot').css('background-image', 'none');
+*/
+}
+
 $(document).ready(function () {
     BASETIME = setBaseTimeToToday(BASETIME);
 
@@ -117,6 +127,7 @@ $(document).ready(function () {
                 route.length = 0;
                 route[0] = _lastPoint;	//마지막 포인트는 저장
             }
+            //getWaypointInfo();
         } else {
             //giljai는 소숫점 6자리만 사용
             let lat = Number(mouseEvent.latLng.getLat().toFixed(6));
@@ -180,6 +191,9 @@ $(document).ready(function () {
             };
             $('#fileInput').prop('disabled', true);
         }
+
+        //파일로드 후 광고 삭제
+        chartPlotAdView(false);
     });
 
     //javascript를 사용하면 서버의 부하를 줄일수 있고, 필요한 정보만 servlet에 요청 후 받아오게 한다.
@@ -311,6 +325,13 @@ $(document).ready(function () {
         $("input[type='radio'][name='filetype'][value='tcx']").prop("checked", true);
     }
 
+    //참고 http://www.flotcharts.org/flot/examples/tracking/index.html
+    //위치정보 http://www.flotcharts.org/flot/examples/interacting/index.html
+    //zoom http://www.flotcharts.org/flot/examples/selection/index.html
+    //http://www.flotcharts.org/flot/examples/annotating/index.html
+    //http://www.flotcharts.org/flot/examples/basic-options/index.html
+    //plot = $.plot("#elevationImage", [{ data: _eleArray}, { data: horiArray}]
+
     let plot;
     function drawPlot() {
         $('#elevationImage').empty();
@@ -325,20 +346,15 @@ $(document).ready(function () {
         let maxAlti = Math.max(...numbers);
         let minAlti = Math.min(...numbers);
 
-        //참고 http://www.flotcharts.org/flot/examples/tracking/index.html
-        //위치정보 http://www.flotcharts.org/flot/examples/interacting/index.html
-        //zoom http://www.flotcharts.org/flot/examples/selection/index.html
-        //http://www.flotcharts.org/flot/examples/annotating/index.html
-        //http://www.flotcharts.org/flot/examples/basic-options/index.html
-        //plot = $.plot("#elevationImage", [{ data: _eleArray}, { data: horiArray}]
         plot = $.plot("#elevationImage",
             [{
                 data: _eleArray,
                 color: 'green',
-                lines: {show: true},
-                points: {show: false},
+                //lines: {show: true},
+                //points: {show: false},
             }], {
-                series: {lines: {show: true}}, crosshair: {mode: "xy"},
+                series: {lines: {show: true, shadowSize: 0, lineWidth: 2}},
+                crosshair: {mode: "xy"},
                 grid: {
                     clickable: true,
                     hoverable: true,
@@ -371,8 +387,14 @@ $(document).ready(function () {
             if(seriesIndex > series.length - 1) {
                 seriesIndex = series.length - 1;
             }
-            //고도차트에서 마우스를 따라 움직이는 지도상의 마커
+            if(seriesIndex < 0)
+                seriesIndex = 0;
+
             cursorMarker.setMap(null);	//마커를 삭제하고
+
+            //고도차트에서 마우스를 따라 움직이는 지도상의 마커
+            if(_gpxTrkseqArray.length == 0)
+                return;
             cursorMarker = new kakao.maps.Marker({
                 position: new kakao.maps.LatLng(_gpxTrkseqArray[seriesIndex].lat, _gpxTrkseqArray[seriesIndex].lng)
             });
@@ -412,9 +434,7 @@ $(document).ready(function () {
                     let elevationChange = rightElevation - leftElevation;
 
                     let slope = calculateSlope(distance, elevationChange);
-                    console.log('slope:' + slope + ', elevation:' + elevationChange + ', distance:' + distance);
-                    //let averageSlopes = calculateAverageSlopes(data);
-                    //console.log(averageSlopes);
+                    //console.log('slope:' + slope + ', elevation:' + elevationChange + ', distance:' + distance);
 
                     let x = item.datapoint[0].toFixed(1),
                         y = item.datapoint[1].toFixed(0);
@@ -679,25 +699,26 @@ $(document).ready(function () {
             success: function (response, status) {
                 //status : success
                 if (response.status === 0) {	//정상
+                    chartPlotAdView(false);
+
                     //_gpxTrkseqArray = []; //chkRoute의 체크 유무에 따라 초기화를 결정해야 한다.
                     //eleFalg = true;
                     ///////var jsonList = JSON.parse(response.data);
                     $.each(response.data, function () {
                         let trackPoint = new Point3D(
                             $(this).attr('lat'),
-                            $(this).attr('lng'),	//api에서 받은 데이터
-                            $(this).attr('ele'));
+                            $(this).attr('lng'),
+                            $(this).attr('ele'),
+                            0, '');
                         _gpxTrkseqArray.push(trackPoint);
                         polyline.push(new kakao.maps.LatLng(trackPoint.lat, trackPoint.lng));
                     });
+                    makeMarkerRoute(_lastPoint, 'daumend.png');
                     //makeMarkerRoute(_gpxTrkseqArray[0]);
                     //makeMarkerRoute(_gpxTrkseqArray[_gpxTrkseqArray.length - 1]);
+                    getWaypointInfo();
                     drawPolyline(polyline);
-                    drawPlot();/////차트 테스트...나중에 여기서 빼야 함, 우측의 waypoint정보를 route에서 함께 가져오게 개선필요
-                    /////getWaypointInfo();
-                    makeMarkerRoute(_lastPoint, 'daumend.png');
                 } else {
-                    //eleFalg = false;
                     alert(response.status + ',' + response.message);
                 }
                 $('#blockingAds').hide();
@@ -707,12 +728,8 @@ $(document).ready(function () {
 
     //경로탐색의 마크를 사용
     function makeMarkerRoute(latlon, image) {
-        //console.info('makeMarkerRoute:' + latlon + ', image:' + image);
-
         let currentMarkerPosition = _routeMarkerArray.length;
-
         let markerObject = {};
-
         markerObject.currPosition = _gpxTrkseqArray.length;
         markerObject.prevPosition = _routeMarkerArray.length > 0 ? _routeMarkerArray[_routeMarkerArray.length - 1].currPosition : 0;
 
@@ -741,14 +758,13 @@ $(document).ready(function () {
             }
 
             markerObject.marker.setMap(null);	//Marker 삭제
-            //var temp = _gpxTrkseqArray[markerObject.prevPosition];
-            //_lastPoint = new daum.maps.LatLng(temp.lat, temp.lon);
             _routeMarkerArray.splice(_routeMarkerArray.length - 1);
-            //removeArray(_gpxTrkseqArray, markerObject.prevPosition, markerObject.currPosition);
-            _gpxTrkseqArray.splice(markerObject.currPosition, markerObject.currPosition - markerObject.currPosition)
+            _gpxTrkseqArray.splice(markerObject.prevPosition, markerObject.currPosition)
 
             _polyline[_polyline.length - 1].setMap(null);
             if (_polyline.length == 1) {
+                chartPlotAdView(true);
+
                 route = [];//[0] = route[1];
                 _polyline = [];	//전체 삭제
                 for (let i = 0; i < _routeMarkerArray.length; i++)
@@ -756,16 +772,14 @@ $(document).ready(function () {
 
                 _routeMarkerArray = [];
                 _gpxTrkseqArray = [];//모든 경로 삭제
-                drawPlot();
-
+                _eleArray = [];
+                drawPlot(); //차트 초기화
             } else {
                 _polyline.splice(_polyline.length - 1, 1);
                 let temp = _gpxTrkseqArray[_gpxTrkseqArray.length - 1];
                 route[0] = new kakao.maps.LatLng(temp.lat, temp.lng);
-                drawPlot();
                 getWaypointInfo();
             }
-            //만약 polyline object가 1개만 있으면 출발 아이콘까지 삭제???
         });
     }
 
@@ -793,7 +807,9 @@ $(document).ready(function () {
 
 //Waypoint info, 화면 우측에 보이는 정보
     function getWaypointInfo() {
-        //서버에 요청할 웨이포인트 정보를 조립, _wayPointArray에서 필요한 정보만 사용
+        if(_gpxTrkseqArray.length == 0)
+            return;
+
         let wpt = [];
         for (let i = 0; i < _wayPointArray.length; i++) {
             wpt.push({
@@ -807,7 +823,6 @@ $(document).ready(function () {
 
         _gpxTrkseqArray[0].time = (new Date(BASETIME)).toISOString();
         _gpxTrkseqArray[0].dist = 0;
-
         let ptDateTime = new Date(BASETIME);
         //시간 = 거리 / 속도
         let speed = Number($('#averageV').val());
@@ -836,47 +851,8 @@ $(document).ready(function () {
         let waypointinfo = getWaypointToHtml(waypointSortByDistance);
         $('#waypointinfoViewTable').html(waypointinfo);
 
-        for (let i = 0; i < _gpxTrkseqArray.length; i++) {
-            //좌우 2개값을 기준으로 기울기
-            if(i > 2 && i < _gpxTrkseqArray.length - 2) {
-                let leftDistance = (_gpxTrkseqArray[i - 2].dist - _gpxTrkseqArray[i - 1].dist) / 2;
-                let rightDistance = (_gpxTrkseqArray[i + 1].dist - _gpxTrkseqArray[i + 2].dist) / 2;
-                //왼쪽 2개의 중앙에서 오른쪽 중앙의 거리
-                let distance = (Math.abs(leftDistance) + Math.abs(rightDistance) +
-                    Math.abs(_gpxTrkseqArray[i + 1].dist - _gpxTrkseqArray[i - 1].dist)) * 1000;
-
-                let leftElevation = (_gpxTrkseqArray[i - 2].ele + _gpxTrkseqArray[i - 1].ele) / 2;
-                let rightElevation = (_gpxTrkseqArray[i + 1].ele + _gpxTrkseqArray[i + 2].ele) / 2;
-                let elevationChange = rightElevation - leftElevation;
-
-                let slope = calculateSlope(distance, elevationChange);
-                //console.log('slope:' + slope + ', elevation:' + elevationChange + ', distance:' + distance);
-                steepPoints.push({x: _gpxTrkseqArray[i].dist, y: _gpxTrkseqArray[i].ele, slope: slope});
-
-                //chart의 x, y축을 위한 데이터
-                _eleArray.push([_gpxTrkseqArray[i].dist, Number(_gpxTrkseqArray[i].ele), slope]);
-            }
-        }
-
-        //chart에 water, summit 아이콘을 표시하기 위한 데이터
-        _markings = [];
-        for (let j = 0; j < waypointSortByDistance.length; j++) {
-            if (waypointSortByDistance[j].symbol === 'water' || waypointSortByDistance[j].symbol === 'summit') {
-                for (let k = 0; k < _gpxTrkseqArray.length; k++) {
-                    // 소수점 아래의 작은 차이를 허용하도록 비교 로직 수정
-                    if ((waypointSortByDistance[j].point.lat == _gpxTrkseqArray[k].lat) &&
-                        (waypointSortByDistance[j].point.lng == _gpxTrkseqArray[k].lng)) {
-                        _markings.push({
-                            x: _eleArray[k][0],
-                            y: _eleArray[k][1],
-                            color: '#FF0000',
-                            sym: waypointSortByDistance[j].symbol,
-                            name: waypointSortByDistance[j].symbolName
-                        });
-                    }
-                }
-            }
-        }
+        makeSlope();
+        makeChartIcon();
 
         drawPlot();
         let gridMarkings = plot.getOptions().grid.markings;
@@ -892,12 +868,14 @@ $(document).ready(function () {
                 backgroundColor = "#FF0000";
             else if(Math.abs(mark[2]) >= 20 && Math.abs(mark[2]) < 30)
                 backgroundColor = "#21ECFF";
-            else
-                backgroundColor = "#ffffff";
+            else {
+                mark[1] = 0;
+                //backgroundColor = "#ffffff";
+            }
 
-            gridMarkings.push({color: backgroundColor, lineWidth: 1.5,
+            gridMarkings.push({color: backgroundColor, lineWidth: 1,
                     xaxis: {from: mark[0], to: mark[0]},
-                    yaxis: {from: 0, to: mark[1] - 10}});
+                    yaxis: {from: 0, to: mark[1]}});
         });
 
         plot.setupGrid(); // 그리드 업데이트
@@ -992,3 +970,50 @@ $(document).ready(function () {
 
 });
 
+function makeSlope() {
+    for (let i = 0; i < _gpxTrkseqArray.length; i++) {
+        //좌우 2개값을 기준으로 기울기
+        if (i > 2 && i < _gpxTrkseqArray.length - 2) {
+            let leftDistance = (_gpxTrkseqArray[i - 2].dist - _gpxTrkseqArray[i - 1].dist) / 2;
+            let rightDistance = (_gpxTrkseqArray[i + 1].dist - _gpxTrkseqArray[i + 2].dist) / 2;
+            //왼쪽 2개의 중앙에서 오른쪽 중앙의 거리
+            let distance = (Math.abs(leftDistance) + Math.abs(rightDistance) +
+                Math.abs(_gpxTrkseqArray[i + 1].dist - _gpxTrkseqArray[i - 1].dist)) * 1000;
+
+            let leftElevation = (_gpxTrkseqArray[i - 2].ele + _gpxTrkseqArray[i - 1].ele) / 2;
+            let rightElevation = (_gpxTrkseqArray[i + 1].ele + _gpxTrkseqArray[i + 2].ele) / 2;
+            let elevationChange = rightElevation - leftElevation;
+
+            let slope = calculateSlope(distance, elevationChange);
+            //console.log('slope:' + slope + ', elevation:' + elevationChange + ', distance:' + distance);
+            //steepPoints.push({x: _gpxTrkseqArray[i].dist, y: _gpxTrkseqArray[i].ele, slope: slope});
+
+            //chart의 x, y축을 위한 데이터
+            _eleArray.push([_gpxTrkseqArray[i].dist, Number(_gpxTrkseqArray[i].ele), slope]);
+        } else {
+            //양쪽 끝점 2개는 기울기를 0으로 처리
+            _eleArray.push([_gpxTrkseqArray[i].dist, Number(_gpxTrkseqArray[i].ele), 0]);
+        }
+    }
+}
+
+function makeChartIcon() {
+    //chart에 water, summit 아이콘을 표시하기 위한 데이터
+    _markings = [];
+    for (let j = 0; j < waypointSortByDistance.length; j++) {
+        if (waypointSortByDistance[j].symbol === 'water' || waypointSortByDistance[j].symbol === 'summit') {
+            for (let k = 0; k < _gpxTrkseqArray.length; k++) {
+                if ((waypointSortByDistance[j].point.lat == _gpxTrkseqArray[k].lat) &&
+                    (waypointSortByDistance[j].point.lng == _gpxTrkseqArray[k].lng)) {
+                    _markings.push({
+                        x: _eleArray[k][0],
+                        y: _eleArray[k][1],
+                        color: '#FF0000',
+                        sym: waypointSortByDistance[j].symbol,
+                        name: waypointSortByDistance[j].symbolName
+                    });
+                }
+            }
+        }
+    }
+}

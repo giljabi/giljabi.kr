@@ -6,16 +6,13 @@
 
     <!-- Local -->
     <springProfile name="local">
-
-        <logger name="kr.giljabi.api.controller.ElevationController" level="OFF"/>
+        <logger name="kr.giljabi.api" level="info"/>
         <logger name="org.springframework.web" level="OFF"/>
         <logger name="org.springframework.security" level="INFO"/>
         <logger name="com.zaxxer.hikari" level="INFO"/>
         <logger name="org.hibernate.SQL" level="INFO"/>
         <logger name="org.hibernate.type" level="INFO"/>
         <logger name="org.hibernate" level="INFO"/>
-        <logger name="org.apache.zookeeper" level="INFO"/>
-        <logger name="org.apache.http" level="INFO"/>
 
         <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
             <encoder>
@@ -47,14 +44,12 @@
     </springProfile>
 
     <springProfile name="real">
-
+        <logger name="kr.giljabi.api" level="info"/>
         <logger name="org.springframework.web" level="INFO"/>
         <logger name="org.springframework.security" level="INFO"/>
         <logger name="com.zaxxer.hikari" level="INFO"/>
         <logger name="org.hibernate.SQL" level="INFO"/>
         <logger name="org.hibernate" level="INFO"/>
-        <logger name="org.apache.zookeeper" level="INFO"/>
-        <logger name="org.apache.http" level="INFO"/>
         <logger name="org.thymeleaf.TemplateEngine" level="INFO"/>
 
         <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">

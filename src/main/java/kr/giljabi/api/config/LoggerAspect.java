@@ -55,13 +55,15 @@ public class LoggerAspect {
 
         long endAt = System.currentTimeMillis();
 
+        /*
+        if((endAt - startAt) < 3000)
+            Thread.sleep(3000 - (endAt - startAt));
+        */
         log.info("===== RESPONSE Start Request URL : {}", request.getRequestURI());
-
-        if (methodName.indexOf("getMountain") == 0)  //gpx파일 로그는 남기지 않음
-            log.info("Response : {}", "GPX 파일 내용은 로그 남기지 않음");
-        else
-            log.info("Response : {}", resultJson);
-
+/*
+        //응답데이터 로그는 controller에서 처리
+        log.info("Response : {}", resultJson);
+*/
         log.info("Time Required : {}ms", endAt - startAt);
         log.info("===== RESPONSE End Request URL : {}", request.getRequestURI());
 
