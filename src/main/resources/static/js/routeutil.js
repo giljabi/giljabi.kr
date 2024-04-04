@@ -97,10 +97,10 @@ function xmlToString(xmlData) {
  * @returns {{}}
  * getGpxWpt
  */
-function GpxWaypoint(lat, lon, ele, name, desc, type, sym) {
+function GpxWaypoint(lat, lng, ele, name, desc, type, sym) {
     this.uid = _microTime++;
-    this.position = new kakao.maps.LatLng(lat, lon);
-    this.ele = ele;
+    this.position = new kakao.maps.LatLng(Number(lat.toFixed(6)), Number(lng.toFixed(6)));
+    this.ele = isNaN(ele) ? 0 : Number(ele.toFixed(2));
     this.name = name;		//웨이포인트 이름
     this.desc = desc;		//웨이포인트 설명
     this.type = type;		//sym 설명
@@ -118,12 +118,13 @@ GpxWaypoint.prototype.toString = function toString() {
  * @param ele
  * @returns {*
  * getGpxTrk
+ * 좌표정보는 소수점 이하 6자리만 사용
  */
 function Point3D(lat, lng, ele, dist, time) {
-    this.lat = Number(lat);
-    this.lng = Number(lng);
-    this.ele = Number(ele);
-    this.dist = Number(dist);
+    this.lat = Number(lat.toFixed(6));
+    this.lng = Number(lng.toFixed(6));
+    this.ele = isNaN(ele) ? 0 : Number(ele.toFixed(2));
+    this.dist = isNaN(dist) ? 0 : Number(dist.toFixed(2));
     this.time = Number(time);
 }
 
@@ -287,3 +288,34 @@ TrackPoint.prototype.toString = function toString() {
 }
 
 
+function calculateSlope(distance, elevationChange) {
+    // 경사 = (고도 변화 / 거리) * 100 (퍼센트로 변환)
+    return Number(((elevationChange / distance) * 100).toFixed(0));
+}
+
+// 주어진 GPX 데이터 배열 (_gpxTrkseqArray)에서 10% 이상의 경사를 가진 포인트 찾기
+function findSteepSlopes(gpxTrkseqArray) {
+    let steepPoints = [];
+
+    for (let i = 2; i < gpxTrkseqArray.length - 2; i++) {
+        // 이전과 다음 포인트로부터 평균 거리와 고도 계산
+        let avgDistanceBefore = (gpxTrkseqArray[i].dist - gpxTrkseqArray[i - 2].dist) / 2;
+        let avgDistanceAfter = (gpxTrkseqArray[i + 2].dist - gpxTrkseqArray[i].dist) / 2;
+        let avgElevationBefore = (gpxTrkseqArray[i].ele - gpxTrkseqArray[i - 2].ele) / 2;
+        let avgElevationAfter = (gpxTrkseqArray[i + 2].ele - gpxTrkseqArray[i].ele) / 2;
+
+        // 양쪽 포인트를 기준으로 평균 경사 계산
+        let slopeBefore = calculateSlope(avgDistanceBefore, avgElevationBefore);
+        let slopeAfter = calculateSlope(avgDistanceAfter, avgElevationAfter);
+
+        // 앞뒤 경사의 평균 계산
+        let avgSlope = (slopeBefore + slopeAfter) / 2;
+
+        // 평균 경사가 10% 이상이면 결과 배열에 추가
+        if (Math.abs(avgSlope) >= 10) {
+            steepPoints.push(gpxTrkseqArray[i]);
+        }
+    }
+
+    return steepPoints;
+}

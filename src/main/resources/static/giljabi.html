@@ -212,7 +212,7 @@
         .containerLine {
 			margin-bottom: 0;
             vertical-align: top;
-            height: 27px;
+            height: 35px;
             display: flex; /* This will arrange the child divs in a row */
         }
 
@@ -260,34 +260,20 @@
 
 <div class="containerLine">
     <p>
-        경로파일: <input type="file" id="fileInput" accept=".gpx,.tcx">
-        평속(Km/H) : <input type="text" id="averageV" value="2" style="width:30px;">
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        파일병합: <input type="file" id="mergeInput" accept=".gpx,.tcx" size="0" disabled>
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-		<input type="button" id="waypointinfo" value="이정표 정보"/>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         <input type="button" id="reset" value="초기화"/>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <input type="button" id="reverse" value="반대방향"/>
-    </p>
-</div>
-<div class="containerLine">
-    <p>
-		경로/파일명 : <input type="text" id="gpx_metadata_name" size="20" placeholder="파일명">
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        저장형식:
+        <input type="file" id="fileInput" accept=".gpx,.tcx">
+        <input type="text" id="gpx_metadata_name" size="20" placeholder="경로명">
+        평속(Km/H) : <input type="text" id="averageV" value="2" style="width:15px;">
         <input type="radio" name="filetype" value="gpx" checked="checked">gpx
         <input type="radio" name="filetype" value="tcx">tcx
         <input type="button" id="saveas" value="저장"/>
+        <input type="button" id="reverse" value="반대방향"/>
+        <input type="button" id="waypointinfo" value="이정표 정보"/>
+        <input type="button" id="waypointexcelsave" style="width: 120px;" value="이정표 엑셀저장"/>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-
-        <input type="button" id="waypointexcelsave" value="이정표 엑셀저장"/>
-
+        파일병합: <input type="file" id="mergeInput" accept=".gpx,.tcx" size="0" disabled>
     </p>
 </div>
-<br>
-
 <div class="containerPlot">
 	<p>
     <div id="elevationImage" class="elevation"></div>

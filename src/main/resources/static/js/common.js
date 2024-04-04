@@ -276,3 +276,12 @@ function setBaseTimeToToday(baseTime) {
 	baseTime.setFullYear(year, month, day);
 	return baseTime;
 }
+
+//날짜는 계산하지 않고 시간만 사용
+function convertSecondsToDaysHoursMinutes(seconds) {
+	const hours = Math.floor(seconds / 3600);
+	seconds -= hours * 3600;
+	let minutes = Math.floor(seconds / 60);
+
+	return String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0');
+}
