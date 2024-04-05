@@ -48,7 +48,7 @@ function saveTcx(filename, velocity, waypoint, trackArray) {
     xmlDataParts.push('<TrainingCenterDatabase xmlns="http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2"');
     xmlDataParts.push(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"');
     xmlDataParts.push(' xsi:schemaLocation="http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2 ' +
-        'http://www.garmin.com/xmlschemas/TrainingCenterDatabasev2.xsd"');
+        'http://www.garmin.com/xmlschemas/TrainingCenterDatabasev2.xsd">');
 
     xmlDataParts.push(`<Folders>`);
     xmlDataParts.push(` <Courses>`);
