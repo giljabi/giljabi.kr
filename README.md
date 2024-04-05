@@ -1,8 +1,18 @@
 
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fparknamjun%2Fgiljabi&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 
+## 2024.04.05
+### 경사도 정보 추가
+* 완만하게 보이지만 경사도가 매우 높은 경우가 있어서 경사도 정보를 툴팁과 차트에 붉은색으로 추가
+* 지형정보, POI정보(편의점, 숙박, 카페, 식당) 조회 정보 추가
+* package 빌드시 application-local.yml 제외 
+  * mvn clean package -f pom.xml -DskipTests
+
+
+---
+
 ## 2024.03.25
-#### h2 db 사용삭제
+### h2 db 사용삭제
 #### giljabi.html 웨이포인트 편집/경로 검색
 * trkseg가 2개 이상이 있는 경우, 이어서 그려주고 저장시 1개로 저장
 #### editor.html 경로그리기
@@ -11,7 +21,6 @@
   * forest100.zip 압축파일 내용을 forest100 폴더에 넣어줌
 * 개인적인 경로를 배경을 두고 원하는 경로를 그릴 수 있게 개선
 
-action test 1
 ---
 
 ### [http://giljabi.kr](http://giljabi.kr/) 초기버전은 AWS Light sail를 사용하고 있으며 아래에 설명이 있습니다.
