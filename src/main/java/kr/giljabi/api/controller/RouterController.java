@@ -43,8 +43,8 @@ public class RouterController {
         try {
             routeRequest.setRemoteAddr(request.getRemoteAddr());
 
-            list = getOpenRouteServiceTest();
-            //list = geometryService.getOpenRouteService(routeRequest);
+            //list = getOpenRouteServiceTest();
+            list = geometryService.getOpenRouteService(routeRequest);
             log.info(routeRequest.toString());
 
             return new Response(list);
