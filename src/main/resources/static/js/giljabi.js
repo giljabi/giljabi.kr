@@ -48,14 +48,88 @@ let _filetype = '';	//gpx, tcx 구분
 let BASETIME = new Date('2022-01-01T00:00:00Z');
 let steepPoints = [];
 
+let _place;
+let poiCategory = '';
+let poiCategoryMarkers = [];
+let placeOverlay = new kakao.maps.CustomOverlay({zIndex:1});
+let contentNode = document.createElement('div'); // 커스텀 오버레이의 컨텐츠 엘리먼트 입니다
 
-function chartPlotAdView(view) {
-/*
-    if(view)    //true
-        $('.containerPlot').css('background-image', 'url(\'/images/charter-ad.png\')');
-    else
-        $('.containerPlot').css('background-image', 'none');
-*/
+
+//POI마커를 모두 제거
+function removeCategryMarker() {
+    poiCategoryMarkers.forEach(function (marker) {
+        marker.setMap(null);
+    });
+    poiCategoryMarkers = [];
+}
+
+function displayPlaceInfo (place) {
+    let address = place.road_address_name ? `
+        <span title="${place.road_address_name}">${place.road_address_name}</span>
+        <span class="jibun" title="${place.address_name}">(지번: ${place.address_name})</span>
+    ` : `
+        <span title="${place.address_name}">${place.address_name}</span>
+    `;
+
+    let content = `
+        <div class="placeinfo">
+            <a class="title" href="${place.place_url}" target="_blank" title="${place.place_name}">${place.place_name}</a>
+            ${address}
+            <span class="tel">${place.phone}</span>
+        </div>
+        <div class="after"></div>
+    `;
+
+    contentNode.innerHTML = content;
+    placeOverlay.setPosition(new kakao.maps.LatLng(place.y, place.x));
+    placeOverlay.setMap(_map);
+}
+
+//var imageSrc = 'http://t1.daumcdn.net/localimg/localimages/07/mapapidoc/places_category.png'; // 마커 이미지 url, 스프라이트 이미지를 씁니다
+function addCategoryMarker(position) {
+    let imageSrc = '/images/' + poiCategory + '.gif';
+    let imageSize = new kakao.maps.Size(22, 24);  // 마커 이미지의 크기
+    let markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize);
+    let marker = new kakao.maps.Marker({
+        position: position, // 마커의 위치
+        image: markerImage
+    });
+
+    marker.setMap(_map); // 지도 위에 마커를 표출합니다
+    poiCategoryMarkers.push(marker);  // 배열에 생성된 마커를 추가합니다
+
+    return marker;
+}
+
+// 카테고리 검색을 요청하는 함수입니다
+function searchPlaces() {
+    if(poiCategory != '') {
+        // 커스텀 오버레이를 숨깁니다
+        placeOverlay.setMap(null);
+
+        removeCategryMarker();
+        _place.categorySearch(poiCategory, placesSearchCallback, {useMapBounds:true});
+    }
+}
+
+// 장소검색이 완료됐을 때 호출되는 콜백함수 입니다
+function placesSearchCallback(data, status, pagination) {
+    if (status === kakao.maps.services.Status.OK) {
+        console.log('success')
+        displayPlaces(data);
+    } else if (status === kakao.maps.services.Status.ZERO_RESULT) {
+        // 검색결과가 없는경우 해야할 처리가 있다면 이곳에 작성해 주세요
+    } else if (status === kakao.maps.services.Status.ERROR) {
+        // 에러로 인해 검색결과가 나오지 않은 경우 해야할 처리가 있다면 이곳에 작성해 주세요
+    }
+}
+
+// 지도에 마커를 표출하는 함수입니다
+function displayPlaces(places) {
+    places.forEach(place => {
+        const marker = addCategoryMarker(new kakao.maps.LatLng(place.y, place.x));
+        kakao.maps.event.addListener(marker, 'click', () => displayPlaceInfo(place));
+    });
 }
 
 $(document).ready(function () {
@@ -71,10 +145,10 @@ $(document).ready(function () {
     };
 
     _map = new kakao.maps.Map(container, options);
+    _place = new kakao.maps.services.Places(_map);
 
     // 일반 지도와 스카이뷰로 지도 타입을 전환할 수 있는 지도타입 컨트롤을 생성합니다
-    let mapTypeControl = new kakao.maps.MapTypeControl();
-    _map.addControl(mapTypeControl, kakao.maps.ControlPosition.TOPRIGHT);
+    _map.addControl(new kakao.maps.MapTypeControl(), kakao.maps.ControlPosition.TOPRIGHT);
 
     $(".mapType").change(function () {
         for (var type in _mapTypes) {
@@ -85,45 +159,29 @@ $(document).ready(function () {
         }
     });
 
+    //편의점. 숙박 POI
+    $("input[name=daumpoi]").change(function() {
+        poiCategory = $(this).val();
+        removeCategryMarker();
+        searchPlaces();
+    });
 
-    /**
-     *     지도가 확대 또는 축소되면 마지막 파라미터로 넘어온 함수를 호출하도록 이벤트를 등록합니다
-     *     나중에 추가...
+    contentNode.className = 'placeinfo_wrap';
+
+    // 커스텀 오버레이 컨텐츠를 설정합니다
+    placeOverlay.setContent(contentNode);
+
      kakao.maps.event.addListener(_map, 'dragend', function() {
-		console.log(_certiFlag);
-		removePoi(_markerList);
-		let bounds = _map.getBounds();
-		getPoi(_map, bounds, _map.getLevel());
-		
-		////searchPlaces();
+         removeCategryMarker()
+         searchPlaces();
 	});
 
      kakao.maps.event.addListener(_map, 'zoom_changed', function() {
-	    // 지도의 현재 레벨을 얻어옵니다
 	    let level = _map.getLevel();
 	    console.log('현재 지도 레벨은 ' + level + '입니다');
-
-	    ////let bounds = _map.getBounds();
-		////getPoi(_map, bounds, _map.getLevel());
-		
-		////searchPlaces();
+         searchPlaces();
 	});
-     */
 
-    function makeWaypointObject(latlng) {
-        _microTime++;
-        let info = {};
-        info.position = latlng;
-        info.name = '웨이포인트';
-        info.sym = 'Generic';
-        info.ele = '0';
-        info.uid = _microTime;
-        info.desc = '';
-        return info;
-    }
-
-    //마우스 click event
-    //var markersId = 0;
     let route = [];	//route api에서 사용하는 시작과 끝 위치정보
     kakao.maps.event.addListener(_map, 'click', function (mouseEvent) {
         if (_chkRoute) {	//waypoint ?, cycling/hiking ?
@@ -137,7 +195,6 @@ $(document).ready(function () {
                 route.length = 0;
                 route[0] = _lastPoint;	//마지막 포인트는 저장
             }
-            //getWaypointInfo();
         } else {
             //giljai는 소숫점 6자리만 사용
             let lat = Number(mouseEvent.latLng.getLat().toFixed(6));
@@ -486,15 +543,16 @@ $(document).ready(function () {
 
         //웨이포인트의 water, summit 아이콘
         function addImageIcons(plot, canvascontext) {
-            for (let i = 0; i < _markings.length; i++) {
+            _markings.forEach(function (marking) {
+            //for (let i = 0; i < _markings.length; i++) {
                 //console.log(_markings[i].y + ', ' + maxAlti);
                 let img = new Image();
                 img.onload = function() {
-                        let o = plot.pointOffset({x: _markings[i].x, y: maxAlti});
+                        let o = plot.pointOffset({x: marking.x, y: maxAlti});
                         canvascontext.drawImage(img, o.left - img.width / 2, o.top - img.height);
                     }
-                img.src = '/images/'+ _markings[i].sym +'.png'; // 이미지 경로
-            }
+                img.src = '/images/'+ marking.sym +'.png'; // 이미지 경로
+            });
         }
 
     }
@@ -613,7 +671,7 @@ $(document).ready(function () {
                     , $(this).find('LongitudeDegrees').text()
                     , $(this).find('AltitudeMeters').text());
                 _gpxTrkseqArray.push(trkpt);
-                polyline.push(new daum.maps.LatLng($(this).find('LatitudeDegrees').text()
+                polyline.push(new kakao.maps.LatLng($(this).find('LatitudeDegrees').text()
                     , $(this).find('LongitudeDegrees').text()));
             });
 
@@ -979,4 +1037,13 @@ function makeChartIcon() {
             }
         }
     }
+}
+
+function chartPlotAdView(view) {
+    /*
+        if(view)    //true
+            $('.containerPlot').css('background-image', 'url(\'/images/charter-ad.png\')');
+        else
+            $('.containerPlot').css('background-image', 'none');
+    */
 }

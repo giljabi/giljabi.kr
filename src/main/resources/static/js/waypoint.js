@@ -199,7 +199,16 @@ function Waypoint(mymap, wayPosition, waypointName, uniqueId, waypointIcon) {
 	        target.detachEvent('on' + type, callback);
 	    }
 	}
-
-
 };
 
+function makeWaypointObject(latlng) {
+	_microTime++;
+	let info = {};
+	info.position = latlng;
+	info.name = '웨이포인트';
+	info.sym = 'Generic';
+	info.ele = '0';
+	info.uid = _microTime;
+	info.desc = '';
+	return info;
+}

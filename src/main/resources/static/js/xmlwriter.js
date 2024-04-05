@@ -32,7 +32,7 @@ function saveGpx(filename, velocity, waypoint, trackArray) {
         xmlDataParts.push(` <trkpt lat="${track.lat.toFixed(6)}" lon="${track.lng.toFixed(6)}">`);
         xmlDataParts.push(` <ele>${Math.round(track.ele)}</ele>`);
         xmlDataParts.push(` <time>${track.time}</time>`);
-        xmlDataParts.push(` <dist>${track.dist}</dist>`);
+        xmlDataParts.push(` <dist>${track.dist}</dist>`);   //속성이 없음, garmin 기기에서 사용해도 되는지 확인해야 함
         xmlDataParts.push(` <desc>${track.dist}</desc>`);
         xmlDataParts.push(` </trkpt>`);
     });
