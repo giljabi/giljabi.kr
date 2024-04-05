@@ -189,8 +189,20 @@ function checkPattern(type, checkValue) {
 
 //첫 화면에서 서울 위치, 우리집으로 할까나.., https는 현재 geoLocation을 사용할 수 있음
 function getLocation() {
-    return new kakao.maps.LatLng(37.56683546665817, 126.9786607449023);
+	let location = new kakao.maps.LatLng(37.56683546665817, 126.9786607449023);
+	if ("geolocation" in navigator) {
+		navigator.geolocation.getCurrentPosition(function(position) {
+			location = new kakao.maps.LatLng(position.coords.latitude, position.coords.longitude);
+		}, function(error) {
+			//console.error("Error Code = " + error.code + " - " + error.message);
+		});
+	} else {
+		//console.log("Geolocation is not supported by this browser.");
+	}
+	return location;
 }
+
+
 
 //첫문자를 대문자로 변경
 function capitalizeFirstLetter(string) {
