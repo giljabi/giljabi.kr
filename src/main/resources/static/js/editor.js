@@ -154,7 +154,7 @@ $(document).ready(function () {
                 }
             },
         });
-        console.log(mountainList);
+        //console.log(mountainList);
         $.each(mountainList, function (index, ele) {
             $.ajax({
                 type: 'get',
@@ -218,7 +218,7 @@ $(document).ready(function () {
                 }
             },
         });
-        console.log(mountainList);
+        //console.log(mountainList);
 
         $.each(mountainList, function (index, ele) {
             $.ajax({
@@ -383,18 +383,13 @@ $(document).ready(function () {
         }*/
         //구글 높이를 받아오지 않은 경우에도 경로를 저장하기 위한 정보처리
         if(eleFalg == false) {
+            _gpxTrkseqArray = [];
             for (let i = 0; i < len; i++) {
                 let line = pointsToPath(data.polyline[i].points);
-                for (let j = 0; j < line.length; j++) {
-                    _gpxTrkseqArray.push({
-                        lat: line[j].getLat(),
-                        lng: line[j].getLng(),
-                        ele: 0,
-                        dist: 0,
-                        ele: 0,
-                        time: ''
-                    });
-                }
+                let tempArray = line.map(point => ({
+                    lat: point.getLat(), lng: point.getLng(), ele: 0,dist: 0, time: ''
+                }));
+                _gpxTrkseqArray.push(...tempArray); // 스프레드 연산자를 사용하여 배열에 추가
             }
         }
 
@@ -529,17 +524,8 @@ function drawPolyline(lines) {
     _drawingManager.put(kakao.maps.drawing.OverlayType.POLYLINE, path);
 }
 
-//Drawing Manager에서 가져온 데이터 중
 function pointsToPath(points) {
-    var len = points.length, path = [], i = 0;
-
-    for (; i < len; i++) {
-        var latlng = new kakao.maps.LatLng(points[i].y, points[i].x);
-        path.push(latlng);
-        //console.log(latlng);
-    }
-
-    return path;
+    return points.map(point => new kakao.maps.LatLng(point.y, point.x));
 }
 
 
