@@ -76,6 +76,16 @@ $(document).ready(function () {
     let mapTypeControl = new kakao.maps.MapTypeControl();
     _map.addControl(mapTypeControl, kakao.maps.ControlPosition.TOPRIGHT);
 
+    $(".mapType").change(function () {
+        for (var type in _mapTypes) {
+            _map.removeOverlayMapTypeId(_mapTypes[type]);
+        }
+        if ($("#chkTerrain").is(":checked")) {
+            _map.addOverlayMapTypeId(_mapTypes.terrain);
+        }
+    });
+
+
     /**
      *     지도가 확대 또는 축소되면 마지막 파라미터로 넘어온 함수를 호출하도록 이벤트를 등록합니다
      *     나중에 추가...
