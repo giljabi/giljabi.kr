@@ -24,6 +24,7 @@ function getGpxTrk(lat, lon, ele) {
 }
 
 let eleFalg = false;	//고도정보를 받아온 경우 true
+
 $(document).ready(function () {
     BASETIME = setBaseTimeToToday(BASETIME);
 

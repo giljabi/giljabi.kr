@@ -356,7 +356,9 @@
 </div>
 <script type="text/javascript">
     includeHTML();
+    if (!/Chrome/.test(navigator.userAgent)) {
+        alert('이 웹사이트는 Chrome 브라우저에서 최적으로 작동됩니다. Chrome 브라우저를 사용해 주세요.');
+    }
 </script>
-
 </body>
 </html>
