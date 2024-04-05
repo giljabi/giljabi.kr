@@ -171,7 +171,7 @@ $(document).ready(function () {
     });
 
     //=======================================================================
-    //gpx file loading....
+    //file loading....
     $('#fileInput').change(function () {
         if (_firstFileOpenFlag) {
             alert('이미 기본 파일이 열려 있습니다.');
@@ -196,8 +196,6 @@ $(document).ready(function () {
         chartPlotAdView(false);
     });
 
-    //javascript를 사용하면 서버의 부하를 줄일수 있고, 필요한 정보만 servlet에 요청 후 받아오게 한다.
-    //makeObject
     function fileLoadAndDraw(xml) {
         let readXmlfile = $($.parseXML(xml.replace(/&/g, "&amp;")));
         //console.log('fileLoadAndDraw:' + readXmlfile);
@@ -270,7 +268,7 @@ $(document).ready(function () {
         });
         $("input[type='radio'][name='filetype'][value='gpx']").prop("checked", true);
 
-        steepPoints = findSteepSlopes(_gpxTrkseqArray);
+        //steepPoints = findSteepSlopes(_gpxTrkseqArray);
     }
 
     /**
@@ -459,7 +457,7 @@ $(document).ready(function () {
             }
         });
 
-        /*
+        /* zoom을 사용하려는데...잘 안되네..
         $("#elevationImage").bind("plotselected", function (event, ranges) {
             var plot = $.plot("#placeholder", [data], $.extend(true, {}, options, {
                 xaxis: { min: ranges.xaxis.from, max: ranges.xaxis.to },
@@ -546,7 +544,6 @@ $(document).ready(function () {
             for (let i = 0; i < trkSeqArray.length; i++) {
                 currDistance = getDistance(new Point3D(endPosition.lat, endPosition.lng),
                     new Point3D($(trkSeqArray[i]).attr('lat'), $(trkSeqArray[i]).attr('lon'), 0, 0, ''));
-
                 /*                console.info(
                                     endPosition,
                                     $(trkSeqArray[i]).attr('lat'), $(trkSeqArray[i]).attr('lon'),
@@ -857,7 +854,7 @@ $(document).ready(function () {
         drawPlot();
         let gridMarkings = plot.getOptions().grid.markings;
 /*        _markings.forEach(function (mark) {
-            //아이콘의 세로선
+            //아이콘의 세로선은 필요하지 않을 듯....
             gridMarkings.push({color: '#f00', lineWidth: 1, xaxis: {from: mark.x, to: mark.x}, yaxis: {from: 0, to: mark.y}});
         });*/
 
@@ -894,16 +891,8 @@ $(document).ready(function () {
             return;
         }
 
-        //저장할때 포인트를 생성한다.
-        getWaypointInfo();
-
-        $('#blockingAds').show();
-
         _filetype = $(':radio[name="filetype"]:checked').val();
-
-        gpxHeader();
-
-        //파일명이 없으면 새로 만들어진 경로를 파일명으로 처
+        //파일명이 없으면
         if (_uploadFilename === '')
             _uploadFilename = $('#gpx_metadata_name').val();
 
@@ -911,63 +900,27 @@ $(document).ready(function () {
             alert('경로명으로 파일을 저장합니다. 경로명을 입력하세요');
             return;
         }
-        //파일명을 경로명으로 한다.
-        gpxMetadata($('#gpx_metadata_name').val(), Number($('#averageV').val()), (new Date(BASETIME).toISOString()));
 
+        $('#blockingAds').show();
+
+        //저장할때 포인트를 생성한다.
+        getWaypointInfo();
+
+        let saveData;
         if (_filetype === 'gpx') {
-            gpxWaypoint(waypointSortByDistance);
-            gpxTrack(_gpxTrkseqArray);
+            saveData = saveGpx(_uploadFilename, Number($('#averageV').val()),
+                 waypointSortByDistance, _gpxTrkseqArray);
         } else {
-            //let tcxTrackPoint = makeTcxTrackPoint();
-            makeTcxLap(_gpxTrkseqArray[0], _gpxTrkseqArray[_gpxTrkseqArray.length - 1]);
-            gpxTrack(_gpxTrkseqArray);
-            gpxWaypoint(waypointSortByDistance);
-            tcxClose();
+            saveData = saveTcx(_uploadFilename, Number($('#averageV').val()),
+                waypointSortByDistance, _gpxTrkseqArray);
         }
 
-        saveAs(new Blob([xmlData], {
+        saveAs(new Blob([saveData], {
             type: "application/vnd.garmin.tcx+xml"
         }), $('#gpx_metadata_name').val() + '.' + _filetype);
 
         $('#blockingAds').hide();
-
     });
-
-    /**
-     * 이동경로를 저장하기 위해 시간, 거리정보를 추가한다.
-     */
-    function makeTcxTrackPoint() {
-        let tcxTrackPoint = [];
-        let cumDistance = 0; //누적거리
-
-        //console.info('_gpxTrkseqArray length :' + _gpxTrkseqArray.length);
-        let trackDistance = 0;
-        let v = Number($('#averageV').val());
-        let currentTime = new Date(BASETIME);
-
-        tcxTrackPoint.push(new TrackPoint(_gpxTrkseqArray[0], currentTime.toISOString(), 0));
-
-        //누적거리, 시간 계산
-        for (let index = 0; index < _gpxTrkseqArray.length - 1; index++) {
-            let fromPoint = _gpxTrkseqArray[index];
-            let toPoint = _gpxTrkseqArray[index + 1];
-            trackDistance = getDistance(fromPoint, toPoint) * 1000;//meter
-            cumDistance += trackDistance;//누적거리 --> 누적시간 계산에 사용
-
-            let second = trackDistance * 3.6 / v;
-            currentTime.setSeconds(currentTime.getSeconds() + second);
-            tcxTrackPoint.push(new TrackPoint(_gpxTrkseqArray[index + 1],
-                currentTime.toISOString(), cumDistance));
-
-            //console.info(index + ' :' + trackDistance + ', ' + cumDistance + ', ' + currentTime.toISOString());
-        }
-        let diff = currentTime - new Date(BASETIME);
-        //console.info('diff:' + diff / 1000);
-
-        //console.info(tcxTrackPoint.toString());
-        return tcxTrackPoint;
-    }
-
 });
 
 function makeSlope() {

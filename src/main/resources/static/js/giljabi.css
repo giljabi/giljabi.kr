@@ -214,7 +214,7 @@ h2 {
     text-decoration: none; /* a 태그의 꾸밈 효과 제거 */
     display: block; /* a 태그의 클릭 범위를 넓힘 */
     width: 150px; /* 기본 넓이를 150px로 설정 */
-    font-size: 14px; /* 폰트 사이즈를 12px로 설정 */
+    font-size: 12px; /* 폰트 사이즈를 12px로 설정 */
     font-weight: bold; /* 폰트를 굵게 설정 */
     font-family: "Trebuchet MS", Dotum; /* 기본 폰트를 영어/한글 순서대로 설정 */
 }

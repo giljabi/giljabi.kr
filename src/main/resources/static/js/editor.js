@@ -407,14 +407,18 @@ $(document).ready(function () {
             _gpxTrkseqArray[trkptIndex].desc = _gpxTrkseqArray[trkptIndex].dist; //누적거리 km
 
         }
+        let saveData = saveGpx(_fileName, Number($('#averageV').val()),
+            [], _gpxTrkseqArray);
 
+/*
         gpxHeader();
         gpxMetadata(_fileName, Number($('#averageV').val()), (new Date(BASETIME)).toISOString());
-        gpxTrack(_gpxTrkseqArray);
+        gpxTrack(_gpxTrkseqArray);*/
 
-        saveAs(new Blob([xmlData], {
+        saveAs(new Blob([saveData], {
             type: "application/vnd.garmin.gpx+xml"
         }), _fileName + '.' + _filetype);
+
     });
 
     $('#reset').click(function () {
