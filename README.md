@@ -7,7 +7,7 @@
 * 지형정보, POI정보(편의점, 숙박, 카페, 식당) 조회 정보 추가
 * package 빌드시 application-local.yml 제외 
   * mvn clean package -f pom.xml -DskipTests
-
+  * java -jar -Djava.net.preferIPv4Stack=true -Dspring.profiles.active=real giljabi-1.0.0.jar
 
 ---
 

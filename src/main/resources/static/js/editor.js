@@ -382,10 +382,19 @@ $(document).ready(function () {
             return;
         }*/
         //구글 높이를 받아오지 않은 경우에도 경로를 저장하기 위한 정보처리
-        for (let i = 0; i < len; i++) {
-            let line = pointsToPath(data.polyline[i].points);
-            for (let j = 0; j < line.length; j++) {
-                _gpxTrkseqArray.push({lat: line[j].getLat(), lng: line[j].getLng(), ele: 0, dist:0, ele:0, time:''});
+        if(eleFalg == false) {
+            for (let i = 0; i < len; i++) {
+                let line = pointsToPath(data.polyline[i].points);
+                for (let j = 0; j < line.length; j++) {
+                    _gpxTrkseqArray.push({
+                        lat: line[j].getLat(),
+                        lng: line[j].getLng(),
+                        ele: 0,
+                        dist: 0,
+                        ele: 0,
+                        time: ''
+                    });
+                }
             }
         }
 
@@ -409,12 +418,6 @@ $(document).ready(function () {
         }
         let saveData = saveGpx(_fileName, Number($('#averageV').val()),
             [], _gpxTrkseqArray);
-
-/*
-        gpxHeader();
-        gpxMetadata(_fileName, Number($('#averageV').val()), (new Date(BASETIME)).toISOString());
-        gpxTrack(_gpxTrkseqArray);*/
-
         saveAs(new Blob([saveData], {
             type: "application/vnd.garmin.gpx+xml"
         }), _fileName + '.' + _filetype);

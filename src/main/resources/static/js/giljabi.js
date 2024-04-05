@@ -115,7 +115,7 @@ function searchPlaces() {
 // 장소검색이 완료됐을 때 호출되는 콜백함수 입니다
 function placesSearchCallback(data, status, pagination) {
     if (status === kakao.maps.services.Status.OK) {
-        console.log('success')
+        //console.log('success')
         displayPlaces(data);
     } else if (status === kakao.maps.services.Status.ZERO_RESULT) {
         // 검색결과가 없는경우 해야할 처리가 있다면 이곳에 작성해 주세요
@@ -178,8 +178,8 @@ $(document).ready(function () {
 
      kakao.maps.event.addListener(_map, 'zoom_changed', function() {
 	    let level = _map.getLevel();
-	    console.log('현재 지도 레벨은 ' + level + '입니다');
-         searchPlaces();
+	    //console.log('현재 지도 레벨은 ' + level + '입니다');
+        searchPlaces();
 	});
 
     let route = [];	//route api에서 사용하는 시작과 끝 위치정보
@@ -835,10 +835,10 @@ $(document).ready(function () {
                 for (let i = 0; i < _routeMarkerArray.length; i++)
                     _routeMarkerArray[i].marker.setMap(null);
 
+                drawPlot(); //차트 초기화
                 _routeMarkerArray = [];
                 _gpxTrkseqArray = [];//모든 경로 삭제
                 _eleArray = [];
-                drawPlot(); //차트 초기화
             } else {
                 _polyline.splice(_polyline.length - 1, 1);
                 let temp = _gpxTrkseqArray[_gpxTrkseqArray.length - 1];
