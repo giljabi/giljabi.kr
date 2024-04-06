@@ -87,8 +87,8 @@ function displayPlaceInfo (place) {
 
 //var imageSrc = 'http://t1.daumcdn.net/localimg/localimages/07/mapapidoc/places_category.png'; // 마커 이미지 url, 스프라이트 이미지를 씁니다
 function addCategoryMarker(position) {
-    let imageSrc = '/images/' + poiCategory + '.gif';
-    let imageSize = new kakao.maps.Size(22, 24);  // 마커 이미지의 크기
+    let imageSrc = '/images/' + poiCategory + '.png';
+    let imageSize = new kakao.maps.Size(22, 22);  // 마커 이미지의 크기
     let markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize);
     let marker = new kakao.maps.Marker({
         position: position, // 마커의 위치
@@ -303,7 +303,7 @@ $(document).ready(function () {
         _gpxMetadata.desc = loadFile.find('gpx').find('metadata').find('desc').text();
         _gpxMetadata.speed = loadFile.find('gpx').find('metadata').find('speed').text();
         if (_gpxMetadata.speed == "")
-            $('#averageV').val('15');
+            $('#averageV').val('2');
         else
             $('#averageV').val(_gpxMetadata.speed);
 
@@ -328,7 +328,7 @@ $(document).ready(function () {
                 Number($(this).attr('lon')),
                 Number($(this).find('ele').text()),
                 Number($(this).find('dist').text()),
-                Number($(this).find('time').text())
+                $(this).find('time').text()
             );
             _gpxTrkseqArray.push(trackPoint);
             _trkPoly.push(new kakao.maps.LatLng(trackPoint.lat, trackPoint.lng));
@@ -894,7 +894,7 @@ $(document).ready(function () {
         for (let trkptIndex = 1; trkptIndex < _gpxTrkseqArray.length; trkptIndex++) {
             let distance = getDistance(_gpxTrkseqArray[trkptIndex - 1], _gpxTrkseqArray[trkptIndex]);
             _gpxTrkseqArray[trkptIndex].dist = Number((Number(_gpxTrkseqArray[trkptIndex - 1].dist) + distance).toFixed(2));
-            let ptSecond = distance / speed * 3600;
+            let ptSecond = (distance / (speed * 1000)) * 3600;
             ptDateTime.setSeconds(ptDateTime.getSeconds() + ptSecond);
             _gpxTrkseqArray[trkptIndex].time = ptDateTime.toISOString();
             //console.log(_gpxTrkseqArray[trkptIndex]);
@@ -995,11 +995,11 @@ function makeSlope() {
     for (let i = 0; i < _gpxTrkseqArray.length; i++) {
         //좌우 2개값을 기준으로 기울기
         if (i > 2 && i < _gpxTrkseqArray.length - 2) {
-            let leftDistance = (_gpxTrkseqArray[i - 2].dist - _gpxTrkseqArray[i - 1].dist) / 2;
-            let rightDistance = (_gpxTrkseqArray[i + 1].dist - _gpxTrkseqArray[i + 2].dist) / 2;
+            let leftDistance = Math.abs(_gpxTrkseqArray[i - 2].dist - _gpxTrkseqArray[i - 1].dist) / 2;
+            let rightDistance = Math.abs(_gpxTrkseqArray[i + 1].dist - _gpxTrkseqArray[i + 2].dist) / 2;
             //왼쪽 2개의 중앙에서 오른쪽 중앙의 거리
             let distance = (Math.abs(leftDistance) + Math.abs(rightDistance) +
-                Math.abs(_gpxTrkseqArray[i + 1].dist - _gpxTrkseqArray[i - 1].dist)) * 1000;
+                Math.abs(_gpxTrkseqArray[i + 1].dist - _gpxTrkseqArray[i - 1].dist));
 
             let leftElevation = (_gpxTrkseqArray[i - 2].ele + _gpxTrkseqArray[i - 1].ele) / 2;
             let rightElevation = (_gpxTrkseqArray[i + 1].ele + _gpxTrkseqArray[i + 2].ele) / 2;
@@ -1010,10 +1010,10 @@ function makeSlope() {
             //steepPoints.push({x: _gpxTrkseqArray[i].dist, y: _gpxTrkseqArray[i].ele, slope: slope});
 
             //chart의 x, y축을 위한 데이터
-            _eleArray.push([_gpxTrkseqArray[i].dist, Number(_gpxTrkseqArray[i].ele), slope]);
+            _eleArray.push([_gpxTrkseqArray[i].dist / 1000, Number(_gpxTrkseqArray[i].ele), slope]);
         } else {
             //양쪽 끝점 2개는 기울기를 0으로 처리
-            _eleArray.push([_gpxTrkseqArray[i].dist, Number(_gpxTrkseqArray[i].ele), 0]);
+            _eleArray.push([_gpxTrkseqArray[i].dist / 1000, Number(_gpxTrkseqArray[i].ele), 0]);
         }
     }
 }
