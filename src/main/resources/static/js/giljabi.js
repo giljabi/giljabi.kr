@@ -354,15 +354,15 @@ $(document).ready(function () {
         //_gpxMetadata.desc = loadFile.find('gpx').find('metadata').find('desc').text();
         _gpxMetadata.speed = loadFile.find('TrainingCenterDatabase').find('Courses').find('Course').find('Speed').text();
         if (_gpxMetadata.speed == "")
-            $('#averageV').val('15');
+            $('#averageV').val('2');
         else
             $('#averageV').val(_gpxMetadata.speed);
 
         //waypoint가 있는경우
         $.each(loadFile.find('CoursePoint'), function () {
             let item = new GpxWaypoint(
-                $(this).find('LatitudeDegrees').text(),
-                $(this).find('LongitudeDegrees').text(),
+                Number($(this).find('LatitudeDegrees').text()),
+                Number($(this).find('LongitudeDegrees').text()),
                 0,
                 $(this).find('Name').text(),		//웨이포인트 이름
                 '',			//웨이포인트 설명
@@ -380,15 +380,73 @@ $(document).ready(function () {
                 Number($(this).find('LongitudeDegrees').text()),
                 Number($(this).find('AltitudeMeters').text()),
                 Number($(this).find('DistanceMeters').text()),
-                ''
+                $(this).find('Time').text()
             );
+
+            //tcx파일은 lat, lng가 null인 경우가 있음, 1초 간격으로 저장하는 경우 gpx에서 없는 시간에 tcx는 position이 없음
+            if(trackPoint.lat == 0 || trackPoint.lng == 0)
+                return true;    //continue
 
             _gpxTrkseqArray.push(trackPoint);
             _trkPoly.push(new kakao.maps.LatLng(trackPoint.lat, trackPoint.lng));
         });
-
         $("input[type='radio'][name='filetype'][value='tcx']").prop("checked", true);
     }
+    /*
+    GPX
+          <trkpt lat="37.54941201768815517425537109375" lon="127.57178801111876964569091796875">
+        <ele>287</ele>
+        <time>2024-04-05T23:06:17.000Z</time>
+        <extensions>
+          <ns3:TrackPointExtension>
+            <ns3:atemp>15.0</ns3:atemp>
+            <ns3:hr>103</ns3:hr>
+          </ns3:TrackPointExtension>
+        </extensions>
+      </trkpt>
+      <trkpt lat="37.54938217811286449432373046875" lon="127.571797482669353485107421875">
+        <ele>287.399993896484375</ele>
+        <time>2024-04-05T23:06:21.000Z</time>
+        <extensions>
+          <ns3:TrackPointExtension>
+            <ns3:atemp>15.0</ns3:atemp>
+            <ns3:hr>103</ns3:hr>
+          </ns3:TrackPointExtension>
+        </extensions>
+      </trkpt>
+
+TCX
+      <Trackpoint>
+        <Time>2024-04-05T23:06:17.000Z</Time>
+        <Position>
+          <LatitudeDegrees>37.549412017688155</LatitudeDegrees>
+          <LongitudeDegrees>127.57178801111877</LongitudeDegrees>
+        </Position>
+        <AltitudeMeters>287.0</AltitudeMeters>
+        <DistanceMeters>1227.449951171875</DistanceMeters>
+        <HeartRateBpm>
+          <Value>103</Value>
+        </HeartRateBpm>
+        <Extensions>
+          <ns3:TPX>
+            <ns3:Speed>0.8579999804496765</ns3:Speed>
+          </ns3:TPX>
+        </Extensions>
+      </Trackpoint>
+      <Trackpoint>
+        <Time>2024-04-05T23:06:18.000Z</Time>
+        <AltitudeMeters>287.20001220703125</AltitudeMeters>
+        <DistanceMeters>1227.449951171875</DistanceMeters>
+        <HeartRateBpm>
+          <Value>103</Value>
+        </HeartRateBpm>
+        <Extensions>
+          <ns3:TPX>
+            <ns3:Speed>0.8579999804496765</ns3:Speed>
+          </ns3:TPX>
+        </Extensions>
+      </Trackpoint>
+ */
 
     //참고 http://www.flotcharts.org/flot/examples/tracking/index.html
     //위치정보 http://www.flotcharts.org/flot/examples/interacting/index.html
