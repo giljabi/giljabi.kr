@@ -545,14 +545,14 @@ TCX
 
             if(item != null) {
                 //기울기를 표시, 왼쪽 2개, 오른쪽 2개를 비교한다.
-                if (item.dataIndex > 2 && item.dataIndex < _gpxTrkseqArray.length - 2) {
-                    let leftDistance = (_gpxTrkseqArray[item.dataIndex - 2].dist - _gpxTrkseqArray[item.dataIndex - 1].dist) / 2;
-                    let rightDistance = (_gpxTrkseqArray[item.dataIndex + 1].dist - _gpxTrkseqArray[item.dataIndex + 2].dist) / 2;
+                if (item.dataIndex > 1 && item.dataIndex < _gpxTrkseqArray.length - 1) {
+                    let leftDistance = (_gpxTrkseqArray[item.dataIndex - 1].dist - _gpxTrkseqArray[item.dataIndex - 2].dist) / 2;
+                    let rightDistance = (_gpxTrkseqArray[item.dataIndex + 2].dist - _gpxTrkseqArray[item.dataIndex + 1].dist) / 2;
                     //왼쪽 2개의 중앙에서 오른쪽 중앙의 거리
                     let distance = (Math.abs(leftDistance) + Math.abs(rightDistance) +
-                        Math.abs(_gpxTrkseqArray[item.dataIndex + 1].dist - _gpxTrkseqArray[item.dataIndex - 1].dist)) * 1000;
+                        Math.abs(_gpxTrkseqArray[item.dataIndex + 1].dist - _gpxTrkseqArray[item.dataIndex - 1].dist));
 
-                    let leftElevation = (_gpxTrkseqArray[item.dataIndex - 2].ele + _gpxTrkseqArray[item.dataIndex - 1].ele) / 2;
+                    let leftElevation = (_gpxTrkseqArray[item.dataIndex - 1].ele + _gpxTrkseqArray[item.dataIndex - 2].ele) / 2;
                     let rightElevation = (_gpxTrkseqArray[item.dataIndex + 1].ele + _gpxTrkseqArray[item.dataIndex + 2].ele) / 2;
                     let elevationChange = rightElevation - leftElevation;
 
