@@ -132,6 +132,46 @@ function displayPlaces(places) {
     });
 }
 
+function viewSlopeTooltip(item) {
+    if (item != null) {
+        //기울기를 표시, 왼쪽 2개, 오른쪽 2개를 비교한다.
+        if (item.dataIndex > 1 && item.dataIndex < _gpxTrkseqArray.length - 1) {
+            let leftDistance = (_gpxTrkseqArray[item.dataIndex - 1].dist - _gpxTrkseqArray[item.dataIndex - 2].dist) / 2;
+            let rightDistance = (_gpxTrkseqArray[item.dataIndex + 2].dist - _gpxTrkseqArray[item.dataIndex + 1].dist) / 2;
+            //왼쪽 2개의 중앙에서 오른쪽 중앙의 거리
+            let distance = (Math.abs(leftDistance) + Math.abs(rightDistance) +
+                Math.abs(_gpxTrkseqArray[item.dataIndex + 1].dist - _gpxTrkseqArray[item.dataIndex - 1].dist));
+
+            let leftElevation = (_gpxTrkseqArray[item.dataIndex - 1].ele + _gpxTrkseqArray[item.dataIndex - 2].ele) / 2;
+            let rightElevation = (_gpxTrkseqArray[item.dataIndex + 1].ele + _gpxTrkseqArray[item.dataIndex + 2].ele) / 2;
+            let elevationChange = rightElevation - leftElevation;
+
+            let slope = calculateSlope(distance, elevationChange);
+            //console.log('slope:' + slope + ', elevation:' + elevationChange + ', distance:' + distance);
+
+            let x = item.datapoint[0].toFixed(1),
+                y = item.datapoint[1].toFixed(0);
+            //console.log(x + ' / ' + y + 'item:' + item.toString());
+
+            let backgroundColor; // 기본 색상
+            if (Math.abs(slope) >= 30) {
+                backgroundColor = "#FF0000"; // 높은 값에 대한 색상
+            } else if (Math.abs(slope) >= 20 && Math.abs(slope) < 30) {
+                backgroundColor = "#21ECFF"; // 중간 값에 대한 색상
+            } else if (Math.abs(slope) >= 10 && Math.abs(slope) < 20) {
+                backgroundColor = "#F6A6FF"; // 중간 값에 대한 색상
+            } else
+                backgroundColor = "#FDDDFF"
+
+            $("#tooltip").html(x + '/' + y + ', ' + slope + '%')
+                .css({top: item.pageY - 20, left: item.pageX - 30, "background-color": backgroundColor})
+                .fadeIn(100);
+        } else {
+            $("#tooltip").hide();
+        }
+    }
+}
+
 $(document).ready(function () {
     BASETIME = setBaseTimeToToday(BASETIME);
 
@@ -158,6 +198,17 @@ $(document).ready(function () {
             _map.addOverlayMapTypeId(_mapTypes.terrain);
         }
     });
+
+    //고도정보
+    $("<div id='tooltip'></div>").css({
+        position: "absolute",
+        display: "none",
+        border: "1px solid #fdd",
+        padding: "2px",
+        "background-color": "#fee",
+        opacity: 1.0,
+        "font-size": "10px"
+    }).appendTo("body");
 
     //편의점. 숙박 POI
     $("input[name=daumpoi]").change(function() {
@@ -495,8 +546,7 @@ TCX
             });
 
         //차트에서 마우스의 움직임이 있으면 지도상에 마커를 이동시킨다
-        function updateLegend() {
-            updateLegendTimeout = null;
+        function updateLegend(item) {
             let pos = latestPosition;
             let dataset = plot.getData();
             let seriesIndex = 0;
@@ -522,64 +572,20 @@ TCX
                 position: new kakao.maps.LatLng(_gpxTrkseqArray[seriesIndex].lat, _gpxTrkseqArray[seriesIndex].lng)
             });
             cursorMarker.setMap(_map);
+            viewSlopeTooltip(item);
         }
 
-        //고도정보
-        $("<div id='tooltip'></div>").css({
-            position: "absolute",
-            display: "none",
-            border: "1px solid #fdd",
-            padding: "2px",
-            "background-color": "#fee",
-            opacity: 0.80,
-            "font-size": "12px"
-        }).appendTo("body");
 
         //차트에서 마우스의 움직임이 있으면....
         $("#elevationImage").bind("plothover", function (event, pos, item) {
             latestPosition = pos;
             if (!updateLegendTimeout) {
-                updateLegendTimeout = setTimeout(updateLegend, 50);
+                setTimeout(function() {
+                    updateLegend(item);
+                }, 50);
             }
             //console.log('item.dataIndex:' + item.dataIndex);
-
-            if(item != null) {
-                //기울기를 표시, 왼쪽 2개, 오른쪽 2개를 비교한다.
-                if (item.dataIndex > 1 && item.dataIndex < _gpxTrkseqArray.length - 1) {
-                    let leftDistance = (_gpxTrkseqArray[item.dataIndex - 1].dist - _gpxTrkseqArray[item.dataIndex - 2].dist) / 2;
-                    let rightDistance = (_gpxTrkseqArray[item.dataIndex + 2].dist - _gpxTrkseqArray[item.dataIndex + 1].dist) / 2;
-                    //왼쪽 2개의 중앙에서 오른쪽 중앙의 거리
-                    let distance = (Math.abs(leftDistance) + Math.abs(rightDistance) +
-                        Math.abs(_gpxTrkseqArray[item.dataIndex + 1].dist - _gpxTrkseqArray[item.dataIndex - 1].dist));
-
-                    let leftElevation = (_gpxTrkseqArray[item.dataIndex - 1].ele + _gpxTrkseqArray[item.dataIndex - 2].ele) / 2;
-                    let rightElevation = (_gpxTrkseqArray[item.dataIndex + 1].ele + _gpxTrkseqArray[item.dataIndex + 2].ele) / 2;
-                    let elevationChange = rightElevation - leftElevation;
-
-                    let slope = calculateSlope(distance, elevationChange);
-                    //console.log('slope:' + slope + ', elevation:' + elevationChange + ', distance:' + distance);
-
-                    let x = item.datapoint[0].toFixed(1),
-                        y = item.datapoint[1].toFixed(0);
-                    //console.log(x + ' / ' + y + 'item:' + item.toString());
-
-                    let backgroundColor; // 기본 색상
-                    if (Math.abs(slope) >= 30) {
-                        backgroundColor = "#FF0000"; // 높은 값에 대한 색상
-                    } else if (Math.abs(slope) >= 20 && Math.abs(slope) < 30) {
-                        backgroundColor = "#21ECFF"; // 중간 값에 대한 색상
-                    } else if (Math.abs(slope) >= 10 && Math.abs(slope) < 20) {
-                        backgroundColor = "#F6A6FF"; // 중간 값에 대한 색상
-                    } else
-                        backgroundColor = "#FDDDFF"
-
-                    $("#tooltip").html(x + '/' + y + ', ' + slope + '%')
-                        .css({top: item.pageY+5, left: item.pageX+5, "background-color": backgroundColor})
-                        .fadeIn(100);
-                } else {
-                    $("#tooltip").hide();
-                }
-            }
+            viewSlopeTooltip(item);
         });
 
         /* zoom을 사용하려는데...잘 안되네..
@@ -606,7 +612,7 @@ TCX
                 //console.log(_markings[i].y + ', ' + maxAlti);
                 let img = new Image();
                 img.onload = function() {
-                        let o = plot.pointOffset({x: marking.x, y: maxAlti});
+                        let o = plot.pointOffset({x: marking.x, y: maxAlti * 1.03});
                         canvascontext.drawImage(img, o.left - img.width / 2, o.top - img.height);
                     }
                 img.src = '/images/'+ marking.sym +'.png'; // 이미지 경로
@@ -987,14 +993,17 @@ TCX
         //경사도에 따른 색상을 표시
         _eleArray.forEach(function (mark) {
             let backgroundColor;
-            if(Math.abs(mark[2]) >= 30)
+            if(mark[2] >= 30)
                 backgroundColor = "#FF0000";
-            else if(Math.abs(mark[2]) >= 20 && Math.abs(mark[2]) < 30)
-                backgroundColor = "#21ECFF";
-            else {
+            else if(mark[2] >= 20 && mark[2] < 30)
+                backgroundColor = "rgb(255,192,192)";
+            else if(mark[2] <= -20 && mark[2] < -30)
+                backgroundColor = "#0000ff";
+            else if(mark[2] <= -30)
+                backgroundColor = "rgb(180,239,255)";
+            else
                 mark[1] = 0;
                 //backgroundColor = "#ffffff";
-            }
 
             gridMarkings.push({color: backgroundColor, lineWidth: 1,
                     xaxis: {from: mark[0], to: mark[0]},
