@@ -531,10 +531,11 @@ TCX
             [{
                 data: _eleArray,
                 color: 'green',
-                //lines: {show: true},
-                //points: {show: false},
-            }], {
-                series: {lines: {show: true, shadowSize: 0, lineWidth: 2}},
+                shadowSize: 0,
+                        //lines: {show: true},
+                        //points: {show: false},
+                    }], {
+            series: {lines: {show: true, lineWidth: 2}},
                 crosshair: {mode: "xy"},
                 //selection: {  //zoom
                 //    mode: "x"
@@ -1026,13 +1027,17 @@ TCX
                 mark[1] = 0;
                 //backgroundColor = "#ffffff";
 
+            //기울기를 표시하기 위한 데이터, 고도선과 겹치는 부분이 있어 약간 아래쪽으로 높이를 보정
+            //let yaxis = mark[1] / plot.getData()[0].yaxis.max;
+            //let y = mark[1] - yaxis * 40;
+            //console.log('mark[1]:'+ mark[1] +', yaxis:' + yaxis + ', y:' + y);
             gridMarkings.push({color: backgroundColor, lineWidth: 1,
                     xaxis: {from: mark[0], to: mark[0]},
                     yaxis: {from: 0, to: mark[1]}});
         });
 
-        plot.setupGrid(); // 그리드 업데이트
-        plot.draw(); // 차트 다시 그리기
+        plot.setupGrid(); // 사용하지 않아도 되나, grid 정보가 변경될것을 대비해서 미리 추가해둠
+        plot.draw(); // 차트 다시 그리기, 기울기정보가 있는 markings를 그려줌
 
         _eleArray = []; //차트정보 초기화
     }
@@ -1079,6 +1084,10 @@ TCX
     });
 });
 
+/**
+ * 전후 1개만 비교해도 될것 같은데....
+ * 기울기를 비교하여 색상을 표시한다.
+ */
 function makeSlope() {
     for (let i = 0; i < _gpxTrkseqArray.length; i++) {
         //좌우 2개값을 기준으로 기울기
