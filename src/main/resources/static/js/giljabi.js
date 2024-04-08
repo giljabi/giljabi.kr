@@ -590,7 +590,12 @@ TCX
             if (!pos.x || !pos.y) {
                 return;
             }
-
+/*
+            console.log('pos.pageX:' + pos.pageX +
+                ',plot.getData()[0].data.length:' + plot.getData()[0].data.length +
+                ', _gpxTrkseqArray.length:' + _gpxTrkseqArray.length
+            ); // + ', item.dataIndex:' + item.dataIndex);
+*/
             latestPosition = pos;
             if (!updateLegendTimeout) {
                 setTimeout(function() {
