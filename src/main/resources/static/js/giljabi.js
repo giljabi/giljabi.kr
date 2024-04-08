@@ -440,20 +440,18 @@ $(document).ready(function () {
         //경로
         //$.each(loadFile.find('gpx').find('trk').find('trkseg').find('trkpt'), function () {
         $.each(loadFile.find('Trackpoint'), function () {
-            let trackPoint = new Point3D(
-                Number($(this).find('LatitudeDegrees').text()),
-                Number($(this).find('LongitudeDegrees').text()),
-                Number($(this).find('AltitudeMeters').text()),
-                Number($(this).find('DistanceMeters').text()),
-                $(this).find('Time').text()
-            );
-
-            //tcx파일은 lat, lng가 null인 경우가 있음, 1초 간격으로 저장하는 경우 gpx에서 없는 시간에 tcx는 position이 없음
-            if(trackPoint.lat == 0 || trackPoint.lng == 0)
-                return true;    //continue
-
-            _gpxTrkseqArray.push(trackPoint);
-            _trkPoly.push(new kakao.maps.LatLng(trackPoint.lat, trackPoint.lng));
+            let position = $(this).find("Position");
+            if(position.length == 1) {  //Position이 없는 경우가 실제로 있음
+                let trackPoint = new Point3D(
+                    Number($(this).find('LatitudeDegrees').text()),
+                    Number($(this).find('LongitudeDegrees').text()),
+                    Number($(this).find('AltitudeMeters').text()),
+                    Number($(this).find('DistanceMeters').text()),
+                    $(this).find('Time').text()
+                );
+                _gpxTrkseqArray.push(trackPoint);
+                _trkPoly.push(new kakao.maps.LatLng(trackPoint.lat, trackPoint.lng));
+            }
         });
         $("input[type='radio'][name='filetype'][value='tcx']").prop("checked", true);
     }
