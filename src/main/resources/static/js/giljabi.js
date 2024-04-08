@@ -1037,7 +1037,8 @@ TCX
         });
 
         plot.setupGrid(); // 사용하지 않아도 되나, grid 정보가 변경될것을 대비해서 미리 추가해둠
-        plot.draw(); // 차트 다시 그리기, 기울기정보가 있는 markings를 그려줌
+        plot.draw(); // plot.setupGrid()는 차트를 그리기 위한 준비이며 변경된 내용을 다기 그리기 위해 호출해야 함,
+                     // 기울기정보가 있는 markings를 그려줌
 
         _eleArray = []; //차트정보 초기화
     }
