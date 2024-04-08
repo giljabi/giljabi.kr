@@ -54,6 +54,9 @@ let poiCategoryMarkers = [];
 let placeOverlay = new kakao.maps.CustomOverlay({zIndex:1});
 let contentNode = document.createElement('div'); // 커스텀 오버레이의 컨텐츠 엘리먼트 입니다
 
+let plot;
+let maxAlti = 0;
+let minAlti = 0;
 
 //POI마커를 모두 제거
 function removeCategryMarker() {
@@ -135,7 +138,7 @@ function displayPlaces(places) {
 function viewSlopeTooltip(item) {
     if (item != null) {
         //기울기를 표시, 왼쪽 2개, 오른쪽 2개를 비교한다.
-        if (item.dataIndex > 1 && item.dataIndex < _gpxTrkseqArray.length - 1) {
+        if (item.dataIndex > 2 && item.dataIndex < _gpxTrkseqArray.length - 2) {
             let leftDistance = (_gpxTrkseqArray[item.dataIndex - 1].dist - _gpxTrkseqArray[item.dataIndex - 2].dist) / 2;
             let rightDistance = (_gpxTrkseqArray[item.dataIndex + 2].dist - _gpxTrkseqArray[item.dataIndex + 1].dist) / 2;
             //왼쪽 2개의 중앙에서 오른쪽 중앙의 거리
@@ -149,27 +152,44 @@ function viewSlopeTooltip(item) {
             let slope = calculateSlope(distance, elevationChange);
             //console.log('slope:' + slope + ', elevation:' + elevationChange + ', distance:' + distance);
 
-            let x = item.datapoint[0].toFixed(1),
+            let x = item.datapoint[0].toFixed(2),
                 y = item.datapoint[1].toFixed(0);
             //console.log(x + ' / ' + y + 'item:' + item.toString());
 
             let backgroundColor; // 기본 색상
-            if (Math.abs(slope) >= 30) {
-                backgroundColor = "#FF0000"; // 높은 값에 대한 색상
-            } else if (Math.abs(slope) >= 20 && Math.abs(slope) < 30) {
-                backgroundColor = "#21ECFF"; // 중간 값에 대한 색상
-            } else if (Math.abs(slope) >= 10 && Math.abs(slope) < 20) {
-                backgroundColor = "#F6A6FF"; // 중간 값에 대한 색상
+            let textColor = "#000000"; // 기본 색상
+            if (slope >= 30) {
+                backgroundColor = "#FF0000";
+                textColor = "#ffffff";
+            } else if (slope >= 20 && slope < 30) {
+                backgroundColor = "rgb(255,192,192)";
+            } else if (slope < -30) {
+                backgroundColor = "#0000ff";
+                textColor = "#ffffff";
+            } else if (slope >= -20 && slope < -30) {
+                backgroundColor = "rgb(180,255,255)";
             } else
-                backgroundColor = "#FDDDFF"
+                backgroundColor = "#ffffff"
 
+            //plot.offset().top - 5 plot의 상단에 tooltip을 고정, placeholderOffset.top + plotOffset.top;
+            //item.pageY - 23 series의 높이를 따라감
             $("#tooltip").html(x + '/' + y + ', ' + slope + '%')
-                .css({top: item.pageY - 20, left: item.pageX - 30, "background-color": backgroundColor})
-                .fadeIn(100);
+                .css({top: item.pageY - 25, left: item.pageX - 30,
+                    "background-color": backgroundColor, "color": textColor})
+                .fadeIn(50);
         } else {
             $("#tooltip").hide();
         }
     }
+}
+
+function getMinMax() {
+    let numbers = [];
+    for (let i = 0; i < _gpxTrkseqArray.length; i++) {
+        numbers.push(_gpxTrkseqArray[i].ele);
+    }
+    maxAlti = Math.max(...numbers);
+    minAlti = Math.min(...numbers);
 }
 
 $(document).ready(function () {
@@ -200,15 +220,9 @@ $(document).ready(function () {
     });
 
     //고도정보
-    $("<div id='tooltip'></div>").css({
-        position: "absolute",
-        display: "none",
-        border: "1px solid #fdd",
-        padding: "2px",
-        "background-color": "#fee",
-        opacity: 1.0,
-        "font-size": "10px"
-    }).appendTo("body");
+    $("<div id='tooltip'></div>")
+        .addClass("tooltip") // .tooltip 클래스 추가
+        .appendTo("body");
 
     //편의점. 숙박 POI
     $("input[name=daumpoi]").change(function() {
@@ -506,19 +520,14 @@ TCX
     //http://www.flotcharts.org/flot/examples/basic-options/index.html
     //plot = $.plot("#elevationImage", [{ data: _eleArray}, { data: horiArray}]
 
-    let plot;
     function drawPlot() {
         $('#elevationImage').empty();
         let updateLegendTimeout = null;
         let latestPosition = null;
         let cursorMarker = new kakao.maps.Marker();
 
-        let numbers = [];
-        for(let i = 0; i < _gpxTrkseqArray.length; i++) {
-            numbers.push(_gpxTrkseqArray[i].ele);
-        }
-        let maxAlti = Math.max(...numbers);
-        let minAlti = Math.min(...numbers);
+        //maxAlti, minAlti
+        getMinMax();
 
         plot = $.plot("#elevationImage",
             [{
@@ -529,14 +538,14 @@ TCX
             }], {
                 series: {lines: {show: true, shadowSize: 0, lineWidth: 2}},
                 crosshair: {mode: "xy"},
+                //selection: {  //zoom
+                //    mode: "x"
+                //},
                 grid: {
                     clickable: true,
                     hoverable: true,
                     show: true,
                     aboveData: true,
-                    //selection: {
-                    //    mode: "xy"
-                    //},
                     markings: [], //세로선(water, summit)을 그리기 위한 데이터
                 }, hooks: { draw: [addImageIcons] },
                 yaxis: {
@@ -578,27 +587,36 @@ TCX
 
         //차트에서 마우스의 움직임이 있으면....
         $("#elevationImage").bind("plothover", function (event, pos, item) {
+            if (!pos.x || !pos.y) {
+                return;
+            }
+
             latestPosition = pos;
             if (!updateLegendTimeout) {
                 setTimeout(function() {
                     updateLegend(item);
                 }, 50);
             }
-            //console.log('item.dataIndex:' + item.dataIndex);
+            //console.log(pos.x + ',' + pos.y); // + ', item.dataIndex:' + item.dataIndex);
             viewSlopeTooltip(item);
         });
 
-        /* zoom을 사용하려는데...잘 안되네..
-        $("#elevationImage").bind("plotselected", function (event, ranges) {
-            var plot = $.plot("#placeholder", [data], $.extend(true, {}, options, {
+        // zoom을 사용하려는데...잘 안되네..
+/*        $("#elevationImage").bind("plotselected", function (event, ranges) {
+            makeSlope();
+            plot = $.plot("#elevationImage", [_eleArray],
+                $.extend(true, {}, options, {
                 xaxis: { min: ranges.xaxis.from, max: ranges.xaxis.to },
                 yaxis: { min: ranges.yaxis.from, max: ranges.yaxis.to }
             }));
+            plot.setupGrid(); // 그리드 업데이트
+            plot.draw(); // 차트 다시 그리기
+            //drawPlot();
         });
         $("#elevationImage").bind("plotunselected", function (event) {
             $("#selection").text("");
-        });
-*/
+        });*/
+
         //웨이포인트 클릭과 같은 위치로 이동기능 추가, item.dataIndex를 사용할 수 있음
         $("#elevationImage").bind("plotclick", function (event, pos, item) {
             if(item != null)
