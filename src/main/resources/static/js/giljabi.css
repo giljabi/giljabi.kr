@@ -337,6 +337,10 @@ h2 {
     color: #777;
 }
 
+.timeClass {
+    font-family: "Lucida Console", Monaco, monospace;
+}
+
 .container {
     width: 100%;
     display: flex; /* This will arrange the child divs in a row */
@@ -401,4 +405,11 @@ h2 {
     border-radius: 5px;
     box-shadow: 0 0 2px green;
     font-size: 12px;
+}
+
+.editorcontainer {
+    width: 100%;
+    display: flex; /* This will arrange the child divs in a row */
+    height: 70vh;
+    position: relative;
 }
