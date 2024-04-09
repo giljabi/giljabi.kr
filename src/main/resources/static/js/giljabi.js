@@ -58,6 +58,12 @@ let plot;
 let maxAlti = 0;
 let minAlti = 0;
 
+//사용자의 속도, 6이상이면 자전거/달리기 경로로 판단하여 기울기를 계산한다.
+//등산 0~20 white, 20~30 rgb(255,192,192), 30~ red
+//자전거 0~5 white, 5~10, 10~,
+let MYSPEED = 6;
+
+
 //POI마커를 모두 제거
 function removeCategryMarker() {
     poiCategoryMarkers.forEach(function (marker) {
@@ -135,6 +141,81 @@ function displayPlaces(places) {
     });
 }
 
+/**
+ * //사용자의 속도, 6이상이면 자전거/달리기 경로로 판단하여 기울기를 계산한다.
+ * //등산 0~20 white, 20~30 rgb(255,192,192), 30~ red
+ * //자전거 0~5 white, 5~10, 10~,
+ * @param slope
+ * @param isFast
+ * @returns {{backgroundColor: string}|{backgroundColor: string, textColor: string}}
+ */
+function setColorOnSlopeForRiding(slope, yPos) {
+    let colorSettings = {
+        backgroundColor: "#FFFFFF", // 기본값
+        textColor: "#000000", // 기본 텍스트 색상
+        yPos: yPos // 대부분의 경우 yPos는 입력값을 그대로 사용
+    };
+
+    if (slope >= 12) {
+        colorSettings.backgroundColor = "#FF0000";
+        colorSettings.textColor = "#ffffff";
+    } else if (slope >= 8) {
+        colorSettings.backgroundColor = "#FF5555";
+    } else if (slope >= 4) {
+        colorSettings.backgroundColor = "#FFAAAA";
+    } else if (slope > -4 && slope < 4) {
+        colorSettings.yPos = 0;
+    } else if (slope >= -4) {
+        colorSettings.backgroundColor = "#AAAAFF";
+        colorSettings.textColor = "#ffffff";
+    } else if (slope >= -8) {
+        colorSettings.backgroundColor = "#5555FF";
+        colorSettings.textColor = "#ffffff";
+    } else if (slope >= -12) {
+        colorSettings.backgroundColor = "#0000ff";
+        colorSettings.textColor = "#ffffff";
+    } else {
+        colorSettings.backgroundColor = "#ffffff";
+        colorSettings.textColor = "#000000";
+        colorSettings.yPos = 0;
+    }
+    return colorSettings;
+}
+
+//등산, 자전거와 동일한 메소드를 하려는데 헷갈려서 구분
+function setColorOnSlopeForHike(slope, yPos) {
+    let colorSettings = {
+        backgroundColor: "#FFFFFF", // 기본값
+        textColor: "#000000", // 기본 텍스트 색상
+        yPos: yPos // 대부분의 경우 yPos는 입력값을 그대로 사용
+    };
+
+    if (slope >= 30) {
+        colorSettings.backgroundColor = "#FF0000";
+        colorSettings.textColor = "#ffffff";
+    } else if (slope >= 20) {
+        colorSettings.backgroundColor = "#FF5555";
+    } else if (slope >= 10) {
+        colorSettings.backgroundColor = "#FFAAAA";
+    } else if (slope > -10 && slope < 10) {
+        colorSettings.yPos = 0;
+    } else if (slope >= -10) {
+        colorSettings.backgroundColor = "#AAAAFF";
+        colorSettings.textColor = "#ffffff";
+    } else if (slope >= -20) {
+        colorSettings.backgroundColor = "#5555FF";
+        colorSettings.textColor = "#ffffff";
+    } else if (slope >= -30) {
+        colorSettings.backgroundColor = "#0000ff";
+        colorSettings.textColor = "#ffffff";
+    } else {
+        colorSettings.backgroundColor = "#ffffff";
+        colorSettings.textColor = "#000000";
+    }
+
+    return colorSettings;
+}
+
 function viewSlopeTooltip(item) {
     if (item != null) {
         //기울기를 표시, 왼쪽 2개, 오른쪽 2개를 비교한다.
@@ -156,26 +237,18 @@ function viewSlopeTooltip(item) {
                 y = item.datapoint[1].toFixed(0);
             //console.log(x + ' / ' + y + 'item:' + item.toString());
 
-            let backgroundColor; // 기본 색상
-            let textColor = "#000000"; // 기본 색상
-            if (slope >= 30) {
-                backgroundColor = "#FF0000";
-                textColor = "#ffffff";
-            } else if (slope >= 20 && slope < 30) {
-                backgroundColor = "rgb(255,192,192)";
-            } else if (slope < -30) {
-                backgroundColor = "#0000ff";
-                textColor = "#ffffff";
-            } else if (slope >= -20 && slope < -30) {
-                backgroundColor = "rgb(180,255,255)";
-            } else
-                backgroundColor = "#ffffff"
+            let colorInfo = {};
+            if(Number(_gpxMetadata.speed) < MYSPEED)
+                colorInfo = setColorOnSlopeForHike(slope, 0/*여기서는 사용안함*/);
+            else
+                colorInfo = setColorOnSlopeForRiding(slope, 0);
 
             //plot.offset().top - 5 plot의 상단에 tooltip을 고정, placeholderOffset.top + plotOffset.top;
             //item.pageY - 23 series의 높이를 따라감
             $("#slopeinfo").html(x + '/' + y + ', ' + slope + '%')
                 .css({top: item.pageY - 25, left: item.pageX - 30,
-                    "background-color": backgroundColor, "color": textColor})
+                    "background-color": colorInfo.backgroundColor,
+                    "color": colorInfo.textColor})
                 .fadeIn(50);
         } else {
             $("#slopeinfo").hide();
@@ -1014,26 +1087,20 @@ TCX
 
         //경사도에 따른 색상을 표시
         _eleArray.forEach(function (mark) {
-            let backgroundColor;
-            if(mark[2] >= 30)
-                backgroundColor = "#FF0000";
-            else if(mark[2] >= 20 && mark[2] < 30)
-                backgroundColor = "rgb(255,192,192)";
-            else if(mark[2] <= -20 && mark[2] < -30)
-                backgroundColor = "#0000ff";
-            else if(mark[2] <= -30)
-                backgroundColor = "rgb(180,239,255)";
+            let colorInfo = {};
+            if(Number(_gpxMetadata.speed) < MYSPEED)
+                colorInfo = setColorOnSlopeForHike(mark[2], mark[1]);
             else
-                mark[1] = 0;
-                //backgroundColor = "#ffffff";
+                colorInfo = setColorOnSlopeForRiding(mark[2], mark[1]);
+
 
             //기울기를 표시하기 위한 데이터, 고도선과 겹치는 부분이 있어 약간 아래쪽으로 높이를 보정
             //let yaxis = mark[1] / plot.getData()[0].yaxis.max;
             //let y = mark[1] - yaxis * 40;
             //console.log('mark[1]:'+ mark[1] +', yaxis:' + yaxis + ', y:' + y);
-            gridMarkings.push({color: backgroundColor, lineWidth: 1,
+            gridMarkings.push({color: colorInfo.backgroundColor, lineWidth: 1,
                     xaxis: {from: mark[0], to: mark[0]},
-                    yaxis: {from: 0, to: mark[1]}});
+                    yaxis: {from: 0, to: colorInfo.yPos}});
         });
 
         plot.setupGrid(); // 사용하지 않아도 되나, grid 정보가 변경될것을 대비해서 미리 추가해둠
