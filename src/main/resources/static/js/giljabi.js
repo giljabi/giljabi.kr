@@ -173,12 +173,12 @@ function viewSlopeTooltip(item) {
 
             //plot.offset().top - 5 plot의 상단에 tooltip을 고정, placeholderOffset.top + plotOffset.top;
             //item.pageY - 23 series의 높이를 따라감
-            $("#tooltip").html(x + '/' + y + ', ' + slope + '%')
+            $("#slopeinfo").html(x + '/' + y + ', ' + slope + '%')
                 .css({top: item.pageY - 25, left: item.pageX - 30,
                     "background-color": backgroundColor, "color": textColor})
                 .fadeIn(50);
         } else {
-            $("#tooltip").hide();
+            $("#slopeinfo").hide();
         }
     }
 }
@@ -220,8 +220,8 @@ $(document).ready(function () {
     });
 
     //고도정보
-    $("<div id='tooltip'></div>")
-        .addClass("tooltip") // .tooltip 클래스 추가
+    $("<div id='slopeinfo'></div>")
+        .addClass("slopeinfobox") // .tooltip 클래스 추가
         .appendTo("body");
 
     //편의점. 숙박 POI

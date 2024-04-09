@@ -265,3 +265,14 @@ h2 {
     width: 20%;
     /* Optional: Adjust the height or set other properties */
 }
+
+.slopeinfobox {
+    position: absolute;
+    display: none;
+    border: 1px solid #fdd;
+    padding: 2px;
+    background-color: #fee;
+    color: white;
+    opacity: 1.0;
+    font-size: 10px;
+}
