@@ -16,13 +16,15 @@
     <script type="text/javascript" src="/js/jquery.flot.crosshair.js"></script>
     <script type="text/javascript" src="/js/jquery-plugin/jquery.blockUI.js"></script>
     <script type="text/javascript" src="/js/jquery-plugin/jquery.cookie.js"></script>
-    <script type="text/javascript" src="/js/common.js"></script>
-    <script type="text/javascript" src="/js/routeutil.js"></script>
-    <script type="text/javascript" src="/js/editor.js"></script>
-    <script type="text/javascript" src="/js/xmlwriter.js"></script>
     <script type="text/javascript" src="/js/FileSaver.min.js"></script>
 
+    <script type="text/javascript" src="/js/common.js"></script>
+    <script type="text/javascript" src="/js/routeutil.js"></script>
+    <script type="text/javascript" src="/js/xmlwriter.js"></script>
+    <script type="text/javascript" src="/js/editor.js"></script>
+
     <link type="text/css" href="/js/jquery-ui.css" rel="stylesheet"/>
+    <link href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" rel="stylesheet">
     <link type="text/css" href="/js/giljabi.css" rel="stylesheet"/>
 
 </head>
@@ -36,19 +38,28 @@
             <p class="modes">
                 <button onclick="selectOverlay('POLYLINE')" style='color:red;'>Track</button>
                 <input class='mapType' type="checkbox" id="chkTerrain"/><label for="chkTerrain">지형정보</label>
+                &nbsp;&nbsp;
+                <input type="radio" name="daumpoi" value="CS2">편의점
+                <input type="radio" name="daumpoi" value="AD5">숙박
+                <input type="radio" name="daumpoi" value="CE7">카페
+                <input type="radio" name="daumpoi" value="FD6">음식점
+                <input type="radio" name="daumpoi" value="" checked>없음
+                &nbsp;&nbsp;
+
                 <!--
                 <input class="mapType" type="checkbox" id="chkBicycle"/><label for="chkBicycle">자전거도로</label>
                 <input class="mapType" type="checkbox" id="chkCertification"/><label
                     for="chkCertification">인증센터</label>
                 <input class="mapType" type="checkbox" id="chkCvs"/><label for="chkCvs">편의점</label>
                 -->
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <a href="https://www.data.go.kr/data/15098177/fileData.do?recommendDataYn=Y" target="_blank">산림청 100대 명산 GPX(트레킹지원센터)</a>
-                <select class="mapType" id="mountain100Select" name="mountain100Select">
-                    <option>선택</option>
-                </select>
-                웨이포인트 포함:
-                <input class="mapType" type="checkbox" id="wptIcon" name="wptIcon" value="true" style="width:20px;">
+
+                <select id="mountain100Select" name="mountain100Select" style="width: 80px;">
+                    <option>한국트레킹지원센터</option>
+                </select>출처:<a href="https://www.data.go.kr/data/15098177/fileData.do?recommendDataYn=Y" target="_blank">Link</a>
+                &nbsp;&nbsp;
+                웨이포인트 포함: <input type="checkbox" id="wptIcon" name="wptIcon" value="true"
+                                 title="배경으로 사용할 gpx 파일에 웨이포인트를 볼 경우 사용하세요."
+                                 style="width:20px;">
             </p>
         </div>
     </div>
