@@ -238,7 +238,7 @@ function viewSlopeTooltip(item) {
             //console.log(x + ' / ' + y + 'item:' + item.toString());
 
             let colorInfo = {};
-            if(Number(_gpxMetadata.speed) < MYSPEED)
+            if(Number($('#averageV').val()) < MYSPEED)
                 colorInfo = setColorOnSlopeForHike(slope, 0/*여기서는 사용안함*/);
             else
                 colorInfo = setColorOnSlopeForRiding(slope, 0);
@@ -1088,7 +1088,7 @@ TCX
         //경사도에 따른 색상을 표시
         _eleArray.forEach(function (mark) {
             let colorInfo = {};
-            if(Number(_gpxMetadata.speed) < MYSPEED)
+            if(Number($('#averageV').val()) < MYSPEED)
                 colorInfo = setColorOnSlopeForHike(mark[2], mark[1]);
             else
                 colorInfo = setColorOnSlopeForRiding(mark[2], mark[1]);
