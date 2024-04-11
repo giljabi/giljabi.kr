@@ -265,6 +265,34 @@ function getMinMax() {
     minAlti = Math.min(...numbers);
 }
 
+let fileid = getParam('fileid', window.location.href);
+if(fileid != null) {
+    $('#blockingAds').show();
+    $.ajax({
+        type: 'post',
+        url : '/tcxshare.do',
+        data: { fileId : getParam('fileid', window.location.href)
+            , command : getParam('command', window.location.href)},
+        dataType:'json',
+        async : false,
+        complete: function() {
+
+        },
+        success:function(data, status) {
+            if(data.resultcode == 'success') {
+                _uf = data.gpxname;
+                _ft = data.filetype;
+                _fl = true;
+                //$('#gpx_metadata_name').val(_uf);
+                makeObject(data.tcxdata);
+            } else {
+                alert(data.resultMessage);
+            }
+            $('#blockingAds').hide();
+        }
+    });
+}
+
 $(document).ready(function () {
     BASETIME = setBaseTimeToToday(BASETIME);
 

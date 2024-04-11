@@ -1,10 +1,12 @@
 package kr.giljabi.api.controller;
 
 import io.swagger.annotations.ApiOperation;
+import kr.giljabi.api.entity.ShareCourses;
 import kr.giljabi.api.geo.Geometry3DPoint;
 import kr.giljabi.api.request.RequestRouteData;
 import kr.giljabi.api.response.Response;
 import kr.giljabi.api.service.RouteService;
+import kr.giljabi.api.service.ShareCoursesService;
 import kr.giljabi.api.utils.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Optional;
 
 /**
  * Open Route Service를 이용한 경로탐색
@@ -27,6 +30,7 @@ import java.util.ArrayList;
 public class RouterController {
 
     private final RouteService geometryService;
+    private final ShareCoursesService shareService;
 
     /**
      * json에 특수문자가 있어 post로 받음
@@ -54,7 +58,12 @@ public class RouterController {
         }
 
     }
-
+    @GetMapping("/api/1.0/gpxshare/{fileid}")
+    @ApiOperation(value="경로 공유", notes = "공유경로 정보 api")
+    public Response getGpxshare(@PathVariable String fileid) {
+        Optional<ShareCourses> share = shareService.findByFileHash(fileid);
+        return new Response(share);
+    }
 
     /**
      * openroute service는 일 호출건수 제약이 있어 임의의 데이터를 응답데이터로 만들어 사용한다.

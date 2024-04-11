@@ -2,8 +2,14 @@ package kr.giljabi.api.service;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import kr.giljabi.api.entity.ApiCallInfo;
+import kr.giljabi.api.entity.ApiCode;
+import kr.giljabi.api.entity.ClientInfo;
+import kr.giljabi.api.entity.ProfileCode;
 import kr.giljabi.api.geo.Geometry3DPoint;
 import kr.giljabi.api.geo.OSRDirectionV2Data;
+import kr.giljabi.api.repository.ApiCallInfoRepository;
+import kr.giljabi.api.repository.ClientInfoRepository;
 import kr.giljabi.api.request.RequestRouteData;
 import kr.giljabi.api.exception.GiljabiException;
 import kr.giljabi.api.utils.GeometryDecoder;
@@ -17,10 +23,11 @@ import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-//import org.springframework.data.repository.query.Param;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
-//import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -32,7 +39,7 @@ import java.util.ArrayList;
  */
 @Slf4j
 @Service
-//@Transactional
+@Transactional
 public class RouteService {
     @Value("${giljabi.openrouteservice.apikey}")
     private String apikey;
@@ -40,21 +47,21 @@ public class RouteService {
     @Value("${giljabi.openrouteservice.directionUrl}")
     private String directionUrl;
 
-    //private final ApiCallInfoRepository apiCallInfoRepository;
-    //private final ClientInfoRepository clientInfoRepository;
+    private final ApiCallInfoRepository apiCallInfoRepository;
+    private final ClientInfoRepository clientInfoRepository;
 
     /**
-     * 생상자 주입방식을 권장
+     * 생성자 주입방식을 권장
      * @param apiCallInfoRepository
      * @param clientInfoRepository
      */
-/*    @Autowired
+    @Autowired
     public RouteService (ApiCallInfoRepository apiCallInfoRepository,
                          ClientInfoRepository clientInfoRepository) {
         this.apiCallInfoRepository = apiCallInfoRepository;
         this.clientInfoRepository = clientInfoRepository;
 
-    }*/
+    }
 
     /**
      * openrouteservice를 사용하지만, google direction를 사용하는 것도 고려할 필요 있음
@@ -95,50 +102,48 @@ public class RouteService {
      * @param direction
      * @param resultList
      */
-    /*
-    private void saveApiCallInfo(RouteData request, OSRDirectionV2Data direction, ArrayList<Geometry3DPoint> resultList) {
-        //DB에 필요한 정보블 저장한다.
-        ApiCallInfo apiCallInfo = new ApiCallInfo();
-        apiCallInfo.setAtLng(request.getStart()[0]);
-        apiCallInfo.setAtLat(request.getStart()[1]);
-        apiCallInfo.setToLng(request.getTarget()[0]);
-        apiCallInfo.setToLat(request.getTarget()[1]);
-        apiCallInfo.setApiCode(ApiCode.DIRECTION);
+//    private void saveApiCallInfo(RouteData request, OSRDirectionV2Data direction, ArrayList<Geometry3DPoint> resultList) {
+//        //DB에 필요한 정보블 저장한다.
+//        ApiCallInfo apiCallInfo = new ApiCallInfo();
+//        apiCallInfo.setAtLng(request.getStart()[0]);
+//        apiCallInfo.setAtLat(request.getStart()[1]);
+//        apiCallInfo.setToLng(request.getTarget()[0]);
+//        apiCallInfo.setToLat(request.getTarget()[1]);
+//        apiCallInfo.setApiCode(ApiCode.DIRECTION);
+//
+//        apiCallInfo.setDistance((int) direction.getRoutes().get(0).getSummary().getDistance());
+//        apiCallInfo.setDuration((int) direction.getRoutes().get(0).getSummary().getDuration());
+//        apiCallInfo.setAscent((int) direction.getRoutes().get(0).getSummary().getAscent());
+//        apiCallInfo.setDescent((int) direction.getRoutes().get(0).getSummary().getDescent());
+//
+//        ProfileCode code = null;
+//        if (request.getProfile().compareTo("cycling-road") == 0)
+//            code = ProfileCode.CYCLING_ROAD;
+//        else if (request.getProfile().compareTo("cycling-mountain") == 0)
+//            code = ProfileCode.CYCLING_MOUNTAIN;
+//        else if (request.getProfile().toUpperCase().compareTo("foot-hiking") == 0)
+//            code = ProfileCode.FOOT_HIKING;
+//        else
+//            code = ProfileCode.CYCLING_ROAD;
+//
+//        apiCallInfo.setProfileCode(code);
+//
+//        apiCallInfo.setTrackCount(resultList.size());
+//        apiCallInfo.setRequestCount(0); //google elevation에서 호출한 횟수를 사용
+//        apiCallInfo.setCreateBy(request.getClientIp());
+//        log.info(apiCallInfo.toString());
+//        apiCallInfoRepository.save(apiCallInfo);
+//        log.info("apiCallInfo.id={}", apiCallInfo.getId());
+//
+//        saveClientInfo(apiCallInfo);
+//    }
 
-        apiCallInfo.setDistance((int) direction.getRoutes().get(0).getSummary().getDistance());
-        apiCallInfo.setDuration((int) direction.getRoutes().get(0).getSummary().getDuration());
-        apiCallInfo.setAscent((int) direction.getRoutes().get(0).getSummary().getAscent());
-        apiCallInfo.setDescent((int) direction.getRoutes().get(0).getSummary().getDescent());
-
-        ProfileCode code = null;
-        if (request.getProfile().compareTo("cycling-road") == 0)
-            code = ProfileCode.CYCLING_ROAD;
-        else if (request.getProfile().compareTo("cycling-mountain") == 0)
-            code = ProfileCode.CYCLING_MOUNTAIN;
-        else if (request.getProfile().toUpperCase().compareTo("foot-hiking") == 0)
-            code = ProfileCode.FOOT_HIKING;
-        else
-            code = ProfileCode.CYCLING_ROAD;
-
-        apiCallInfo.setProfileCode(code);
-
-        apiCallInfo.setTrackCount(resultList.size());
-        apiCallInfo.setRequestCount(0); //google elevation에서 호출한 횟수를 사용
-        apiCallInfo.setCreateBy(request.getClientIp());
-        log.info(apiCallInfo.toString());
-        apiCallInfoRepository.save(apiCallInfo);
-        log.info("apiCallInfo.id={}", apiCallInfo.getId());
-
-        saveClientInfo(apiCallInfo);
-    }
-*/
 
     /**
      * 사용자는 IP로 구분하고, IP를 기준으로 insert/update 한다.
      *
      * @param apiCallInfo
      */
-    /*
     private void saveClientInfo(ApiCallInfo apiCallInfo) {
         ClientInfo findClientInfo = clientInfoRepository.findByClientIp(apiCallInfo.getCreateBy());
         log.info("findClientInfo={}", findClientInfo);
@@ -158,7 +163,7 @@ public class RouteService {
         }
         clientInfoRepository.save(clientInfo);
     }
-*/
+
 
     /**
      * @param httpPost

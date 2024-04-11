@@ -2,17 +2,15 @@ package kr.giljabi.api.entity;
 
 import lombok.*;
 
-//import javax.persistence.*;
+import javax.persistence.*;
 import java.util.Date;
 
-/*
+
 @Entity
 @Getter @Setter
 @ToString
 @NoArgsConstructor
-*/
 public class ApiCallInfo extends BaseEntity {
-/*
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
@@ -37,6 +35,4 @@ public class ApiCallInfo extends BaseEntity {
     private int duration;
     private int ascent;
     private int descent;
-
- */
 }
