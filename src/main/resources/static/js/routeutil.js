@@ -10,7 +10,7 @@ function getDistance(fromPoint, toPoint) {
         Math.cos(deg2rad(fromPoint.lat)) * Math.cos(deg2rad(toPoint.lat)) *
         Math.sin(dLon / 2) * Math.sin(dLon / 2);
     let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c * 0.922125;    //가민거리와 비교해서 보정
+    return R * c;// * 0.922125;    //가민거리와 비교해서 보정
 }
 
 /**
