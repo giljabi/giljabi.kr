@@ -302,41 +302,39 @@ function getParam(name, url) {
     return results == null ? null : results[1];
 }
 
-function fetchAndDecompressData() {
-    let fileHashId = getParam('fileHashId', window.location.href);
-    if(fileHashId == null) {
-        return;
-    }
-    $('#blockingAds').show();
-    $.ajax({
-        url: '/api/1.0/gpxshare/' + fileHashId,
-        async: false,
-        type: 'GET',
-        success: function(response, status) {
-            if (response.status === 0) {
-                const binaryString = atob(response.data.xmlData); // Decode Base64
-                const charData = binaryString.split('').map(c => c.charCodeAt(0));
-                const byteArray = new Uint8Array(charData);
-                const decompressedData = pako.inflate(byteArray, {to: 'string'}); // Decompress
-                console.log('Decompressed Data:', decompressedData);
-                loadTcx(decompressedData);
-            } else {
-                alert('Failed to fetch data');
-            }
-            $('#blockingAds').hide();
-        },
-        error: function(xhr, status, error) {
-            console.error('AJAX request failed:', error);
-        }
+function addWaypoint(info) {
+    info.sym = info.sym === '' ? 'Generic' : info.sym;	//Symbol이 없는 경우
+    let myWayPoint = new Waypoint(_map, info.position, info.name, info.uid, info.sym);
+    //position을 waypoint와 중복해서 사용하는 이유는 overlay에서 정보를 가져오기가 어렵네...
+    _wayPointArray.push({
+        uid: info.uid,
+        position: info.position,
+        customoverlay: myWayPoint,
+        waypointname: info.name,
+        sym: info.sym,
+        ele: info.ele
     });
 }
+
+function drawPolyline(polyline) {
+    // 지도에 표시할 선을 생성합니다
+    let lineStyle = new kakao.maps.Polyline({
+        path: polyline, // 선을 구성하는 좌표배열
+        strokeWeight: 5, // 선의 두께
+        strokeColor: '#FF0000', // 선의 색깔
+        strokeOpacity: 0.7, // 선의 불투명도, 1에서 0 사이의 값이며 0에 가까울수록 투명
+        strokeStyle: 'solid' // 선의 스타일
+    });
+    // 지도에 선을 표시합니다
+    lineStyle.setMap(_map);
+    _polyline.push(lineStyle);
+}
+
 
 $(document).ready(function () {
     BASETIME = setBaseTimeToToday(BASETIME);
 
     $(document).tooltip();
-
-    fetchAndDecompressData();
 
     //지도초기화
     let container = document.getElementById('map');
@@ -411,20 +409,6 @@ $(document).ready(function () {
         }
     });
 
-    function addWaypoint(info) {
-        info.sym = info.sym === '' ? 'Generic' : info.sym;	//Symbol이 없는 경우
-        let myWayPoint = new Waypoint(_map, info.position, info.name, info.uid, info.sym);
-        //position을 waypoint와 중복해서 사용하는 이유는 overlay에서 정보를 가져오기가 어렵네...
-        _wayPointArray.push({
-            uid: info.uid,
-            position: info.position,
-            customoverlay: myWayPoint,
-            waypointname: info.name,
-            sym: info.sym,
-            ele: info.ele
-        });
-    }
-
     $('.waypointIcon').click(function () {
         _pointIcon = this.id;
         $('#selectWaypointIcon').attr('src', 'images/' + _pointIcon + '.png');
@@ -443,6 +427,38 @@ $(document).ready(function () {
         //console.log('direction flag:' + _chkRoute);
     });
 
+    fetchAndDecompressData();
+    //=======================================================================
+    function fetchAndDecompressData() {
+        let fileHashId = getParam('fileHashId', window.location.href);
+        if(fileHashId == null) {
+            return;
+        }
+        $('#blockingAds').show();
+        $.ajax({
+            url: '/api/1.0/gpxshare/' + fileHashId,
+            async: false,
+            type: 'GET',
+            success: function(response, status) {
+                if (response.status === 0) {
+                    const binaryString = atob(response.data.xmlData); // Decode Base64
+                    const charData = binaryString.split('').map(c => c.charCodeAt(0));
+                    const byteArray = new Uint8Array(charData);
+                    const decompressedData = pako.inflate(byteArray, {to: 'string'}); // Decompress
+                    //console.log('Decompressed Data:', decompressedData);
+                    //let loadFile = $($.parseXML(decompressedData.replace(/&/g, "&amp;")))
+                    _fileExt = 'tcx';
+                    fileLoadAndDraw(decompressedData);
+                } else {
+                    alert('Failed to fetch data');
+                }
+                $('#blockingAds').hide();
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX request failed:', error);
+            }
+        });
+    }
     //=======================================================================
     //file loading....
     $('#fileInput').change(function () {
@@ -498,23 +514,23 @@ $(document).ready(function () {
      */
     function loadGpx(loadFile) {
         //정상적인 포맷에서 필요한 정보들...
-        _gpxMetadata.author = loadFile.find('gpx').find('metadata').find('author').text();
-        _gpxMetadata.name = loadFile.find('gpx').find('metadata').find('name').text();
+        _gpxMetadata.author = loadFile.find('gpx > metadata > author').text();
+        _gpxMetadata.name = loadFile.find('gpx > metadata > name').text();
 
         if (_gpxMetadata.name == "")
             $('#gpx_metadata_name').val(_uploadFilename);
         else
             $('#gpx_metadata_name').val(_gpxMetadata.name);
 
-        _gpxMetadata.desc = loadFile.find('gpx').find('metadata').find('desc').text();
-        _gpxMetadata.speed = loadFile.find('gpx').find('metadata').find('speed').text();
+        _gpxMetadata.desc = loadFile.find('gpx > metadata > desc').text();
+        _gpxMetadata.speed = loadFile.find('gpx > metadata > speed').text();
         if (_gpxMetadata.speed == "")
             $('#averageV').val('2');
         else
             $('#averageV').val(_gpxMetadata.speed);
 
         //gpx파일의 waypoint 정보
-        $.each(loadFile.find('gpx').find('wpt'), function () {
+        $.each(loadFile.find('gpx > wpt'), function () {
             let item = new GpxWaypoint(
                 Number($(this).attr('lat')),
                 Number($(this).attr('lon')),
@@ -528,7 +544,7 @@ $(document).ready(function () {
         });
 
         //경로정보
-        $.each(loadFile.find('gpx').find('trk').find('trkseg').find('trkpt'), function () {
+        $.each(loadFile.find('gpx > trk > trkseg > trkpt'), function () {
             let trackPoint = new Point3D(
                 Number($(this).attr('lat')),
                 Number($(this).attr('lon')),
@@ -549,8 +565,8 @@ $(document).ready(function () {
      * @param loadFile
      */
     function loadTcx(loadFile) {
-        _gpxMetadata.author = loadFile.find('TrainingCenterDatabase').find('Folders').find('Courses').find('CourseFolder').find('CourseNameRef').find('Author').text();
-        _gpxMetadata.name = loadFile.find('TrainingCenterDatabase').find('Courses').find('Course').find('Name').text();
+        _gpxMetadata.author = loadFile.find('CourseFolder > CourseNameRef > Author').text();
+        _gpxMetadata.name = loadFile.find('Course > Name').text();
 
         if (_gpxMetadata.name == "")
             $('#gpx_metadata_name').val(_uploadFilename);
@@ -558,7 +574,7 @@ $(document).ready(function () {
             $('#gpx_metadata_name').val(_gpxMetadata.name);
 
         //_gpxMetadata.desc = loadFile.find('gpx').find('metadata').find('desc').text();
-        _gpxMetadata.speed = loadFile.find('TrainingCenterDatabase').find('Courses').find('Course').find('Speed').text();
+        _gpxMetadata.speed = loadFile.find('TrainingCenterDatabase > Courses > Course > Speed').text();
         if (_gpxMetadata.speed == "")
             $('#averageV').val('2');
         else
@@ -596,6 +612,7 @@ $(document).ready(function () {
         });
         $("input[type='radio'][name='filetype'][value='tcx']").prop("checked", true);
     }
+
     /*
     GPX
           <trkpt lat="37.54941201768815517425537109375" lon="127.57178801111876964569091796875">
@@ -705,7 +722,7 @@ TCX
                     break;
                 }
             }
-            //차트 오른쪽에서 마우스가 접근하면 pos.x보다 큰 값이 없어서 seriesIndex가 증가하게 되어 가장 오른쪽 값으로 사용함
+            //차트 오른쪽에서 마우스가 접근하면 pos.x보다 큰 값이 없어서 예외가 발생, seriesIndex가 증가하게 되어 가장 오른쪽 값으로 사용함
             if(seriesIndex > series.length - 1) {
                 seriesIndex = series.length - 1;
             }
@@ -721,7 +738,7 @@ TCX
                 position: new kakao.maps.LatLng(_gpxTrkseqArray[seriesIndex].lat, _gpxTrkseqArray[seriesIndex].lng)
             });
             cursorMarker.setMap(_map);
-            viewSlopeTooltip(item);
+            //viewSlopeTooltip(item);
         }
 
 
@@ -768,11 +785,9 @@ TCX
                 goCenter(_gpxTrkseqArray[item.dataIndex].lat, _gpxTrkseqArray[item.dataIndex - 1].lng,5);
         });
 
-        //웨이포인트의 water, summit 아이콘
+        //웨이포인트의 water, summit 아이콘은 차트에 표시
         function addImageIcons(plot, canvascontext) {
             _markings.forEach(function (marking) {
-            //for (let i = 0; i < _markings.length; i++) {
-                //console.log(_markings[i].y + ', ' + maxAlti);
                 let img = new Image();
                 img.onload = function() {
                         let o = plot.pointOffset({x: marking.x, y: maxAlti * 1.03});
@@ -796,7 +811,9 @@ TCX
             getWaypointInfo();
     });
 
-    //gpx파일을 병합한다.
+    /**
+     * 파일 병합기능은 준비중
+     */
     $('#mergeInput').change(function () {
         alert('준비중입니다.');
         return;
@@ -865,7 +882,7 @@ TCX
 
             //waypoint가 있는경우 모두 넣어준다. 잘라내기 어려워서... 입력 후 손으로 지우는게 편함.....
             ////var wpt = _xmlData.find('gpx').find('wpt');
-            $.each(_xmlData.find('gpx').find('wpt'), function () {
+            $.each(_xmlData.find('gpx > wpt'), function () {
                 let item = GpxWaypoint(
                     $(this).attr('lat'),
                     $(this).attr('lon'),
@@ -925,20 +942,6 @@ TCX
         drawPolyline(polyline);
 
         drawPlot();
-    }
-
-    function drawPolyline(polyline) {
-        // 지도에 표시할 선을 생성합니다
-        let lineStyle = new kakao.maps.Polyline({
-            path: polyline, // 선을 구성하는 좌표배열
-            strokeWeight: 5, // 선의 두께
-            strokeColor: '#FF0000', // 선의 색깔
-            strokeOpacity: 0.7, // 선의 불투명도, 1에서 0 사이의 값이며 0에 가까울수록 투명
-            strokeStyle: 'solid' // 선의 스타일
-        });
-        // 지도에 선을 표시합니다
-        lineStyle.setMap(_map);
-        _polyline.push(lineStyle);
     }
 
     //경로 뒤집기...
@@ -1255,7 +1258,8 @@ function makeChartIcon() {
     //chart에 water, summit 아이콘을 표시하기 위한 데이터
     _markings = [];
     for (let j = 0; j < waypointSortByDistance.length; j++) {
-        if (waypointSortByDistance[j].symbol === 'water' || waypointSortByDistance[j].symbol === 'summit') {
+        if (waypointSortByDistance[j].symbol.toLowerCase() === 'water' ||
+            waypointSortByDistance[j].symbol.toLowerCase() === 'summit') {
             for (let k = 0; k < _gpxTrkseqArray.length; k++) {
                 if ((waypointSortByDistance[j].point.lat == _gpxTrkseqArray[k].lat) &&
                     (waypointSortByDistance[j].point.lng == _gpxTrkseqArray[k].lng)) {
