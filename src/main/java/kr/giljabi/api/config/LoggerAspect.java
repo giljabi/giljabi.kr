@@ -35,7 +35,6 @@ public class LoggerAspect {
 
         String controllerName = pjp.getSignature().getDeclaringType().getSimpleName();
         String methodName = pjp.getSignature().getName();
-        //String remoteAddr = request.getRemoteAddr();
         String remoteAddr = request.getHeader("X-Forwarded-For"); //nginx 사용시 remoteAddr
 
         long startAt = System.currentTimeMillis();
