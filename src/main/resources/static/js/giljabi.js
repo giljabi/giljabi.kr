@@ -793,7 +793,7 @@ TCX
                         let o = plot.pointOffset({x: marking.x, y: maxAlti * 1.03});
                         canvascontext.drawImage(img, o.left - img.width / 2, o.top - img.height);
                     }
-                img.src = '/images/'+ marking.sym +'.png'; // 이미지 경로
+                img.src = '/images/'+ marking.sym.toLowerCase() +'.png'; // 이미지 경로
             });
         }
 
