@@ -13,9 +13,12 @@ import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.json.JSONObject;
+import org.springframework.util.Base64Utils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.zip.Deflater;
 
 /**
  * Http Utils
@@ -118,6 +121,53 @@ public class MyHttpUtils {
             if (httpClient != null) httpClient.close();
         }
         //log.info(result);
+        return result;
+    }
+
+    public static String compressData(String textData) {
+        try {
+            byte[] input = textData.getBytes("UTF-8");
+
+            Deflater deflater = new Deflater();
+            deflater.setInput(input);
+            deflater.finish();
+
+            byte[] compressedData = new byte[input.length];  // Extra space for compression overhead
+            deflater.deflate(compressedData);
+            deflater.end();
+            return Base64Utils.encodeToString(compressedData);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static byte[] byteCompress(byte[] data) {
+        Deflater deflater = new Deflater();
+        deflater.setLevel(Deflater.BEST_COMPRESSION);
+        deflater.setInput(data);
+
+        log.info("Before xml file size:" + String.format("%, 9dbyte", data.length));
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(data.length);
+        deflater.finish();
+
+        byte[] buffer = new byte[1024];
+
+        while(!deflater.finished()) {
+            int count = deflater.deflate(buffer);
+            baos.write(buffer, 0, count);
+        }
+
+        byte[] result = baos.toByteArray();
+
+        try {
+            baos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+        log.info("After xml file size: " + String.format("%, 9dbyte", result.length));
+
         return result;
     }
 }
