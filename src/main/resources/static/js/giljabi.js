@@ -340,7 +340,7 @@ $(document).ready(function () {
     let container = document.getElementById('map');
     let options = {
         center: getLocation(),	//사용자 위치 또는 서울시청
-        level: 8 //default 8
+        level: 12 //default 8
     };
 
     _map = new kakao.maps.Map(container, options);
