@@ -30,7 +30,6 @@ import java.util.Optional;
 public class RouterController {
 
     private final RouteService geometryService;
-    private final ShareCoursesService shareService;
 
     /**
      * json에 특수문자가 있어 post로 받음
@@ -57,12 +56,6 @@ public class RouterController {
             return response;
         }
 
-    }
-    @GetMapping("/api/1.0/gpxshare/{fileid}")
-    @ApiOperation(value="경로 공유", notes = "공유경로 정보 api")
-    public Response getGpxshare(@PathVariable String fileid) {
-        Optional<ShareCourses> share = shareService.findByFileHash(fileid);
-        return new Response(share);
     }
 
     /**

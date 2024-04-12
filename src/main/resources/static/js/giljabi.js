@@ -293,10 +293,50 @@ if(fileid != null) {
     });
 }
 
+function getParam(name, url) {
+    if (!url) url = location.href;
+    name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+    let regexS = "[\\?&]"+name+"=([^&#]*)";
+    let regex = new RegExp( regexS );
+    let results = regex.exec( url );
+    return results == null ? null : results[1];
+}
+
+function fetchAndDecompressData() {
+    let fileHashId = getParam('fileHashId', window.location.href);
+    if(fileHashId == null) {
+        return;
+    }
+    $('#blockingAds').show();
+    $.ajax({
+        url: '/api/1.0/gpxshare/' + fileHashId,
+        async: false,
+        type: 'GET',
+        success: function(response, status) {
+            if (response.status === 0) {
+                const binaryString = atob(response.data.xmlData); // Decode Base64
+                const charData = binaryString.split('').map(c => c.charCodeAt(0));
+                const byteArray = new Uint8Array(charData);
+                const decompressedData = pako.inflate(byteArray, {to: 'string'}); // Decompress
+                console.log('Decompressed Data:', decompressedData);
+                loadTcx(decompressedData);
+            } else {
+                alert('Failed to fetch data');
+            }
+            $('#blockingAds').hide();
+        },
+        error: function(xhr, status, error) {
+            console.error('AJAX request failed:', error);
+        }
+    });
+}
+
 $(document).ready(function () {
     BASETIME = setBaseTimeToToday(BASETIME);
 
     $(document).tooltip();
+
+    fetchAndDecompressData();
 
     //지도초기화
     let container = document.getElementById('map');

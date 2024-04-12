@@ -4,6 +4,8 @@ import kr.giljabi.api.utils.ErrorCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import java.util.zip.Deflater;
+import org.springframework.util.Base64Utils;
 
 @Getter @Setter
 @ToString
@@ -36,5 +38,4 @@ public class Response {
         this.status = errorCode.getStatus();
         this.message = errorCode.getMessage();
     }
-
 }

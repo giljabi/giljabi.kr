@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-//@Profile({"local"})
+@Profile({"local"})
 @Configuration
 @EnableSwagger2
 public class SwaggerConfig {
@@ -40,7 +40,7 @@ public class SwaggerConfig {
 
   private ApiInfo ApiInfoBuilder() {
     return new ApiInfoBuilder()
-            .title("길잡이 ")
+            //.title("길잡이 ")
             .description("API 상세소개 및 사용법 등")
             .version("1.0")
             .build();
