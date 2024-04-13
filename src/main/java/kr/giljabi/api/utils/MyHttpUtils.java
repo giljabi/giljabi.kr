@@ -124,24 +124,6 @@ public class MyHttpUtils {
         return result;
     }
 
-    public static String compressData(String textData) {
-        try {
-            byte[] input = textData.getBytes("UTF-8");
-
-            Deflater deflater = new Deflater();
-            deflater.setInput(input);
-            deflater.finish();
-
-            byte[] compressedData = new byte[input.length];  // Extra space for compression overhead
-            deflater.deflate(compressedData);
-            deflater.end();
-            return Base64Utils.encodeToString(compressedData);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
     public static byte[] byteCompress(byte[] data) {
         Deflater deflater = new Deflater();
         deflater.setLevel(Deflater.BEST_COMPRESSION);

@@ -26,9 +26,10 @@
     <script type="text/javascript" src="/js/jquery-plugin/jquery.jqGrid.min.js"></script>
 
     <!-- SheetJS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.14.3/xlsx.full.min.js"></script>
+    <script type="text/javascript" src="/js/xlsx-full-0.14.3-min.js"></script>
     <!--FileSaver [savaAs 함수 이용] -->
     <script type="text/javascript" src="/js/FileSaver.min.js"></script>
+    <!-- pako [gzip 압축/해제] -->
     <script type="text/javascript" src="/js/pako-2.1.0.js"></script>
 
     <script type="text/javascript" src="/js/common.js"></script>
@@ -37,7 +38,6 @@
     <script type="text/javascript" src="/js/xmlwriter.js"></script>
     <script type="text/javascript" src="/js/giljabi.js"></script>
     <link type="text/css" href="/js/jquery-ui.css" rel="stylesheet"/>
-    <link href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" rel="stylesheet">
     <link type="text/css" href="/js/giljabi.css" rel="stylesheet"/>
 
 </head>
@@ -100,7 +100,9 @@
                title="들머리/날머리를 양끝에 넣어주면 보기가 편합니다."
                value="이정표 정보"/>
         <input type="button" id="waypointexcelsave" value="이정표 엑셀저장"/>
+        <!--
         파일병합: <input type="file" id="mergeInput" accept=".gpx,.tcx" size="0" disabled>
+        -->
     </p>
 </div>
 <div class="containerPlot">

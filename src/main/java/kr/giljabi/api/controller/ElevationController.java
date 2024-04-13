@@ -2,10 +2,12 @@ package kr.giljabi.api.controller;
 
 import io.swagger.annotations.ApiOperation;
 import kr.giljabi.api.geo.*;
+import kr.giljabi.api.response.Gpx100Response;
 import kr.giljabi.api.service.GoogleService;
 import kr.giljabi.api.request.RequestElevationData;
 import kr.giljabi.api.response.Response;
 import kr.giljabi.api.utils.ErrorCode;
+import kr.giljabi.api.utils.MyHttpUtils;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,14 +19,12 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.util.Base64Utils;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -33,6 +33,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Gpx track 정보를 tcx 변환
@@ -72,36 +74,6 @@ public class ElevationController {
             return new Response(ErrorCode.STATUS_EXCEPTION.getStatus(), e.getMessage());
         }
     }
-/*
-    @GetMapping("/api/1.0/mountain")
-    @ApiOperation(value = "국립공원 GPX정보, ", notes = "파일 목록")
-    public Response getMountainList() {
-        List<String> list = new ArrayList<>();
-        StringBuffer sb = new StringBuffer();
-        try {
-            PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-            Resource[] resources = resolver.getResources("classpath:/kr/*.gpx");
-            for (Resource resource : resources) {
-                list.add(resource.getFilename());
-            }
-            return new Response(list);
-        } catch (Exception e) {
-            return new Response(ErrorCode.STATUS_EXCEPTION.getStatus(), e.getMessage());
-        }
-    }
-
-    @GetMapping("/api/1.0/mountain/{filename}")
-    @ApiOperation(value = "국립공원 G ", notes = "파일 목록")
-    public Response getMountainTrackinfo(@PathVariable String filename) {
-        try {
-            Resource resource = resourceLoader.getResource("classpath:/kr/" + filename);
-            String xmlFile = new String(Files.readAllBytes(Paths.get(resource.getURI())), "UTF-8");
-            return new Response(xmlFile);
-        } catch (Exception e) {
-            return new Response(ErrorCode.STATUS_EXCEPTION.getStatus(), e.getMessage());
-        }
-    }
-*/
 
     @GetMapping("/api/1.0/mountain100")
     @ApiOperation(value = "산림청 100대 명산",
@@ -109,11 +81,12 @@ public class ElevationController {
                     "산림청 100대명산의 POI(관심지점), 갈림길(방면), 노면정보를 제공하는 GPX 포맷의 공간정보 파일데이터<br>" +
                     "https://www.data.go.kr/data/15098177/fileData.do?recommendDataYn=Y<br>")
     public Response getMountainList100() {
-        List<String> list = new ArrayList<>();
-        StringBuffer sb = new StringBuffer();
         try {
-            String fileFullName = String.format("%s/%s", mountain100Path, "100.txt");
-            List<String> lines = Files.readAllLines(Paths.get(fileFullName));
+            ClassPathResource resource = new ClassPathResource("etc/100.txt");
+            //jar 파일 내부에서 파일을 읽기 위해서는 InputStream을 사용해야 한다.
+            InputStream inputStream = resource.getInputStream();
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+            List<String> lines = bufferedReader.lines().collect(Collectors.toList());
             List<Mountain100> fileList = new ArrayList<>();
             for (String line : lines) {
                 if(line.charAt(0) == '#')
@@ -139,7 +112,8 @@ public class ElevationController {
     }
 
     @GetMapping("/api/1.0/mountain100/{filename}")
-    @ApiOperation(value = "산림청 100대 명산 이름으로 검색한 gpx 파일 목록")
+    @ApiOperation(value = "산림청 100대 명산 이름으로 검색한 gpx 파일 목록은 2개 이상일 수 있어 " +
+            "목록을 반환하고 클라이언트에서 파일을 순차적으로 요청한다.")
     public Response getMountainList100Files(@PathVariable String filename) {
         List<String> fileList = new ArrayList<>();
         try {
@@ -171,10 +145,15 @@ public class ElevationController {
     }
 
     @GetMapping("/api/1.0/mountain100Gpx/{filename}")
-    @ApiOperation(value = "산림청 100대 명산 gpx 파일내용 ")
+    @ApiOperation(value = "산림청 100대 명산 gpx 경로정보, gpx 파일로 관리하고 압축해서 전송한다 ")
     public Response getMountainList100Gpxfile(@PathVariable String filename) {
         try {
-            return new Response(readFileAsString(filename));
+            Gpx100Response gpx100Response = new Gpx100Response();
+            byte[] xmlFile = readFileAsString(filename).getBytes();
+            String xmlData = Base64Utils.encodeToString(MyHttpUtils.byteCompress(xmlFile));
+            gpx100Response.setTrackName(filename);
+            gpx100Response.setXmlData(xmlData);
+            return new Response(Optional.of(gpx100Response));
         } catch (Exception e) {
             return new Response(ErrorCode.STATUS_EXCEPTION.getStatus(), e.getMessage());
         }

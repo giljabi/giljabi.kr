@@ -234,7 +234,12 @@ $(document).ready(function () {
                 },
                 success: function (response, status) {
                     if (response.status === 0) {
-                        basePathLoadGpx(response.data, '#0037ff');
+                        const binaryString = atob(response.data.xmlData); // Decode Base64
+                        const charData = binaryString.split('').map(c => c.charCodeAt(0));
+                        const byteArray = new Uint8Array(charData);
+                        const decompressedData = pako.inflate(byteArray, {to: 'string'}); // Decompress
+
+                        basePathLoadGpx(decompressedData, '#0037ff');
                     } else {
                         alert(response.message);
                     }

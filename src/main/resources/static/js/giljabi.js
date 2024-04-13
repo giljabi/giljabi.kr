@@ -430,13 +430,13 @@ $(document).ready(function () {
     fetchAndDecompressData();
     //=======================================================================
     function fetchAndDecompressData() {
-        let fileHashId = getParam('fileHashId', window.location.href);
-        if(fileHashId == null) {
+        let fileid = getParam('fileid', window.location.href);
+        if(fileid == null) {
             return;
         }
         $('#blockingAds').show();
         $.ajax({
-            url: '/api/1.0/gpxshare/' + fileHashId,
+            url: '/api/1.0/gpxshare/' + fileid,
             async: false,
             type: 'GET',
             success: function(response, status) {
