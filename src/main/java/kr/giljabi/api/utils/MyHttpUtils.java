@@ -147,7 +147,7 @@ public class MyHttpUtils {
         deflater.setLevel(Deflater.BEST_COMPRESSION);
         deflater.setInput(data);
 
-        log.info("Before xml file size:" + String.format("%, 9dbyte", data.length));
+        log.info("xml file size:          " + String.format("%, 9dbyte", data.length));
         ByteArrayOutputStream baos = new ByteArrayOutputStream(data.length);
         deflater.finish();
 
@@ -166,7 +166,7 @@ public class MyHttpUtils {
             e.printStackTrace();
             return null;
         }
-        log.info("After xml file size: " + String.format("%, 9dbyte", result.length));
+        log.info("xml compress file size: " + String.format("%, 9dbyte", result.length));
 
         return result;
     }
