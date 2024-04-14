@@ -105,8 +105,11 @@ fi
 ## 2024.03.25
 ### h2 db 사용삭제
 #### giljabi.html 웨이포인트 편집/경로 검색
+* https://giljabi.tistory.com/27
 * trkseg가 2개 이상이 있는 경우, 이어서 그려주고 저장시 1개로 저장
+
 #### editor.html 경로그리기
+* https://giljabi.tistory.com/28
 * "한국등산트레킹지원센터_산림청 100대명산" gpx를 배경으로 두고 원하는 경로를 그릴 수 있게 개선
   * 출처: https://www.data.go.kr/data/15098177/fileData.do?recommendDataYn=Y
   * forest100.zip 압축파일 내용을 forest100 폴더에 넣어줌
