@@ -111,7 +111,7 @@ public class ElevationController {
         }
     }
 
-    @GetMapping("/api/1.0/mountain100/{filename}")
+    @GetMapping("/api/1.0/mountainGpxLists/{filename}")
     @ApiOperation(value = "산림청 100대 명산 이름으로 검색한 gpx 파일 목록은 2개 이상일 수 있어 " +
             "목록을 반환하고 클라이언트에서 파일을 순차적으로 요청한다.")
     public Response getMountainList100Files(@PathVariable String filename) {
@@ -144,7 +144,7 @@ public class ElevationController {
         return new String(binaryData, StandardCharsets.UTF_8);
     }
 
-    @GetMapping("/api/1.0/mountain100Gpx/{filename}")
+    @GetMapping("/api/1.0/mountainGpx/{filename}")
     @ApiOperation(value = "산림청 100대 명산 gpx 경로정보, gpx 파일로 관리하고 압축해서 전송한다 ")
     public Response getMountainList100Gpxfile(@PathVariable String filename) {
         try {

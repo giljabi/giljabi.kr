@@ -25,6 +25,66 @@ function getGpxTrk(lat, lon, ele) {
 
 let eleFalg = false;	//고도정보를 받아온 경우 true
 
+function drawGpx(response) {
+    const binaryString = atob(response.data.xmlData); // Decode Base64
+    const charData = binaryString.split('').map(c => c.charCodeAt(0));
+    const byteArray = new Uint8Array(charData);
+    const decompressedData = pako.inflate(byteArray, {to: 'string'}); // Decompress
+
+    basePathLoadGpx(decompressedData, '#0037ff');
+}
+
+/**
+ * 1개 산은 여러개의 gpx 파일로 구성되어 gpx 목록을 가져온다.
+ * @param selectedValue
+ * @returns {*[]}
+ */
+function getMountainGpxLists(mountainName) {
+    let mountainList = [];
+    $.ajax({
+        type: 'get',
+        url: '/api/1.0/mountainGpxLists/' + mountainName,
+        contentType: 'application/json',
+        dataType: 'json',
+        async: false,
+        complete: function () {
+        },
+        success: function (response, status) {
+            if (response.status === 0) {
+                mountainList = response.data;
+            } else {
+                console.log(response.message);
+            }
+        },
+    });
+    return mountainList;
+}
+
+/**
+ * gpx 목록을 비동기식으로 받아서 화면에 그려준다.
+ * @param mountainList
+ */
+function getMountainGpx(mountainList) {
+    $.each(mountainList, function (index, ele) {
+        $.ajax({
+            type: 'get',
+            url: '/api/1.0/mountainGpx/' + mountainList[index],
+            contentType: 'application/json',
+            dataType: 'json',
+            async: false,
+            complete: function () {
+            },
+            success: function (response, status) {
+                if (response.status === 0) {
+                    drawGpx(response);
+                } else {
+                    console.log(response.message);
+                }
+            },
+        });
+    });
+}
+
 $(document).ready(function () {
     BASETIME = setBaseTimeToToday(BASETIME);
 
@@ -32,7 +92,7 @@ $(document).ready(function () {
 
     let options = {
         center: getLocation(), //Seoul city hall
-        level: 8
+        level: 13
     };
     _globalMap = new kakao.maps.Map(document.getElementById('map'), options);
 
@@ -125,6 +185,8 @@ $(document).ready(function () {
             reader.readAsText(file);
             $('#gpx_metadata_name').val(_fileName);
         }
+        moveCenterList(_gpxTrkseqArray);
+
     });
 
     //
@@ -138,7 +200,7 @@ $(document).ready(function () {
 
         reader.readAsText(file);
     });
-
+/*
     $('#moutain').click(function () {
         let mountainList = [];
         $.ajax({
@@ -177,7 +239,38 @@ $(document).ready(function () {
             });
         });
     });
+*/
+    $('#all100').click(function () {
+        //산목록
+        let mountain100Select = $('#mountain100Select option').map(function() {
+            return $(this).val();
+        }).get();
+        //첫째 데이터는 제외한다.
+        mountain100Select.shift();
+        let totalMountains = mountain100Select.length;
+        let completedTasks = 0;
 
+        mountain100Select.forEach(function (mountain, index) {
+            // Calculate delay based on index
+            setTimeout(function() {
+                let mountainGpxList = getMountainGpxLists(mountain);
+                getMountainGpx(mountainGpxList);
+                completedTasks++;
+                let percentComplete = (completedTasks / totalMountains) * 100;
+
+                $('#progress-bar').val(Math.round(percentComplete) + '%');
+
+                if (completedTasks === totalMountains) {
+                    $('#progress-bar').val("");
+                }
+            }, 500 * index); // Delay increases by 1 second each iteration
+        });
+        $('#all100')
+            .css({'color': '#aaa', 'opacity': '0.5'})
+            .prop('disabled', true);
+    });
+
+    // combo box에 산 목록을 채운다
     function combo100() {
         $.ajax({
             type: 'get',
@@ -192,9 +285,9 @@ $(document).ready(function () {
                     response.data.forEach(function (mountain) {
                         $('#mountain100Select').append($('<option></option>').val(mountain.filename).html(mountain.name));
                     });
-                    console.info($('#mountain100Select').html());
+                    //console.log($('#mountain100Select').html());
                 } else {
-                    alert(response.message);
+                    console.log(response.message);
                 }
             },
         });
@@ -203,49 +296,9 @@ $(document).ready(function () {
     $('#mountain100Select').on('change', function () {
         // this를 사용하여 현재 선택된 옵션의 value를 얻음
         let selectedValue = $(this).val();
-
-        let mountainList = [];
-        $.ajax({
-            type: 'get',
-            url: '/api/1.0/mountain100/' + selectedValue,
-            contentType: 'application/json',
-            dataType: 'json',
-            async: false,
-            complete: function () {
-            },
-            success: function (response, status) {
-                if (response.status === 0) {
-                    mountainList = response.data;
-                } else {
-                    alert(response.message);
-                }
-            },
-        });
+        let mountainList = getMountainGpxLists(selectedValue);
         //console.log(mountainList);
-
-        $.each(mountainList, function (index, ele) {
-            $.ajax({
-                type: 'get',
-                url: '/api/1.0/mountain100Gpx/' + mountainList[index],
-                contentType: 'application/json',
-                dataType: 'json',
-                async: true,
-                complete: function () {
-                },
-                success: function (response, status) {
-                    if (response.status === 0) {
-                        const binaryString = atob(response.data.xmlData); // Decode Base64
-                        const charData = binaryString.split('').map(c => c.charCodeAt(0));
-                        const byteArray = new Uint8Array(charData);
-                        const decompressedData = pako.inflate(byteArray, {to: 'string'}); // Decompress
-
-                        basePathLoadGpx(decompressedData, '#0037ff');
-                    } else {
-                        alert(response.message);
-                    }
-                },
-            });
-        });
+        getMountainGpx(mountainList);
     });
 
     combo100();
@@ -371,7 +424,7 @@ $(document).ready(function () {
                     drawPlot();
                 } else {
                     eleFalg = false;
-                    alert(response.message);
+                    console.log(response.message);
                 }
                 $('#blockingAds').hide();
             },
@@ -471,9 +524,8 @@ function makeObject(xml) {
             _trkPoly.push(new kakao.maps.LatLng($(this).attr('lat'), $(this).attr('lon'))); //polyline을 그리기 위한 정보
         });
     } else if (_fileExt.toLowerCase() == 'tcx') {
-        loadTcx(_xmlData);
+        //loadTcx(_xmlData);
     }
-    moveCenterList(_gpxTrkseqArray);
 
     //시작과 끝 표시
     makeMarkerPoint(_globalMap, 'start', _gpxTrkseqArray[0]);
@@ -494,7 +546,7 @@ function moveCenterList(pointList) {
 
 function moveCenterPoint(kakaoPoint) {
     _globalMap.setCenter(kakaoPoint); //중심점을 경로상의 중간을 설정한다.
-    _globalMap.setLevel(7);
+    //_globalMap.setLevel(7);
 }
 
 /*
@@ -577,7 +629,7 @@ function basePathLoadGpx(gpxfile, strokeColor) {
             strokeWeight: 3
         });
         basePolyline.push(lineStyle);
-        moveCenterPoint(trkptList[parseInt(trkptList.length / 2)]);
+        //moveCenterPoint(trkptList[parseInt(trkptList.length / 2)]);
     });
 
     $.each(reader.find('gpx').find('wpt'), function () {
