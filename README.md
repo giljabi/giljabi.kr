@@ -1,6 +1,97 @@
 
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fparknamjun%2Fgiljabi&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 
+## 2024.04.14
+### Database 사용
+* mysql을 사용하고 있고 운영정보이므로 아래 yml에서 적절히 수정해야 함
+* yml파일은 실제 운영정보가 있어 첨부되지 않음
+  * application-local.yml
+  * application-real.yml
+
+### 경로정보 저장
+* 100대 명산정보 위치정보 개선
+* deploy.sh 추가, git에 파일을 추가하지 않고 설명만 추가
+```shell
+#!/bin/bash
+
+mvn clean package -Dmaven.test.skip=true -f pom.xml
+
+SERVER_USER=bitnami
+SERVER_IP=serveripv4
+SERVER_PATH=server_path
+LOCAL_PATH=./target/giljabi-1.0.0.jar
+GILJABI_PEM=ssh 접속을 위한 key파일.pem
+
+ssh -i $GILJABI_PEM $SERVER_USER@$SERVER_IP << EOF
+  echo "Attempting to gracefully stop Spring Boot..."
+  # Assuming usage of Spring Boot Actuator to shutdown
+  curl -X POST localhost:8080/actuator/shutdown
+
+  echo "Executing kill script..."
+  ./kill.sh
+  if [ \$? -ne 0 ]; then
+    echo "Failed to execute kill script. Exiting..."
+    exit 1
+  fi
+  echo "Kill script executed successfully."
+EOF
+
+if [ $? -eq 0 ]; then
+  echo "Deployment script completed successfully."
+else
+  echo "Deployment failed. Please check the logs."
+fi
+
+echo "Deploying to $SERVER_IP"
+#scp -i $GILJABI_PEM $LOCAL_PATH $SERVER_USER@$SERVER_IP:$SERVER_PATH
+# 파일이 큰 경우 업로드 시간이 오래 걸리므로 rsync 사용하여 진행사항을 볼 수 있음
+rsync -avh --progress -e "ssh -i $GILJABI_PEM" $LOCAL_PATH $SERVER_USER@$SERVER_IP:$SERVER_PATH/
+
+ssh -i $GILJABI_PEM $SERVER_USER@$SERVER_IP << EOF
+  echo "Changing directory to $SERVER_PATH..."
+  cd $SERVER_PATH
+  ./run.sh
+EOF
+```
+
+### server shell files
+* run.sh
+```shell
+#!/bin/sh
+
+APP_NAME=giljabi-1.0.0.jar
+
+PID=$(ps -ef | grep $APP_NAME | grep -v grep | awk '{print $2}')
+if [ -z "$PID" ]; then
+    echo "Application is not running."
+else
+    echo "Killing application with PID: $PID"
+    kill -9 $PID
+    echo "Application terminated."
+fi
+
+echo "Start giljabi application"
+nohup java -jar -Dspring.profiles.active=real -Djava.net.preferIPv4Stack=true giljabi-1.0.0.jar > /dev/null 2>&1 &
+```
+
+* kill.sh
+```shell
+#!/bin/sh
+
+APP_NAME=giljabi-1.0.0.jar
+
+PID=$(ps -ef | grep $APP_NAME | grep -v grep | awk '{print $2}')
+if [ -z "$PID" ]; then
+    echo "Application is not running."
+else
+    echo "Killing application with PID: $PID"
+    kill -9 $PID
+    echo "Application terminated."
+fi
+
+```
+
+
 ## 2024.04.05
 ### 경사도 정보 추가
 * 완만하게 보이지만 경사도가 매우 높은 경우가 있어서 경사도 정보를 툴팁과 차트에 붉은색으로 추가
