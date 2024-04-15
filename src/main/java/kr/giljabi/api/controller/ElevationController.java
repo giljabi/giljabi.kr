@@ -2,6 +2,7 @@ package kr.giljabi.api.controller;
 
 import io.swagger.annotations.ApiOperation;
 import kr.giljabi.api.geo.*;
+import kr.giljabi.api.request.RequestElevationSaveData;
 import kr.giljabi.api.response.Gpx100Response;
 import kr.giljabi.api.service.GoogleService;
 import kr.giljabi.api.request.RequestElevationData;
@@ -11,14 +12,9 @@ import kr.giljabi.api.utils.MyHttpUtils;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.system.ApplicationHome;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.util.Base64Utils;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
@@ -26,12 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -55,6 +46,8 @@ public class ElevationController {
     @Value("${giljabi.mountain100.path}")
     private String mountain100Path;
 
+    @Value("${giljabi.xmlshare.path}")
+    private String xmlSharePath;
 
     @PostMapping("/api/1.0/elevation")
     @ApiOperation(value = "고도정보", notes = "google elevation api 이용하여 고도정보를 받아오는 api")
@@ -159,6 +152,16 @@ public class ElevationController {
         }
     }
 
+    @PostMapping("/api/1.0/saveElevation")
+    @ApiOperation(value = "GPX정보", notes = "GPX정보를 저장한다.")
+    public Response saveElevation(final @Valid @RequestBody RequestElevationSaveData request) {
+        try {
+            MyHttpUtils.saveXmlFile(request, xmlSharePath);
+            return new Response(ErrorCode.STATUS_SUCCESS.getStatus(), ErrorCode.STATUS_SUCCESS.getMessage());
+        } catch (Exception e) {
+            return new Response(ErrorCode.STATUS_EXCEPTION.getStatus(), e.getMessage());
+        }
+    }
 
     private Response getMountainData() {
         Response response = new Response(0, "정상 처리 되었습니다.");

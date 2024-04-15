@@ -85,6 +85,36 @@ function getMountainGpx(mountainList) {
     });
 }
 
+function saveGpxToServer(saveData) {
+    const textEncoder = new TextEncoder();
+    const byteArray = textEncoder.encode(saveData);
+    const compressedData = pako.deflate(byteArray);
+    const base64Encoded = btoa(String.fromCharCode.apply(null, compressedData));
+    let jsonData = {
+        gpxName: _fileName,
+        fileExt: _filetype,
+        wayPointCount: 0,
+        trackPointCount: _gpxTrkseqArray.length,
+        distance: _gpxTrkseqArray[_gpxTrkseqArray.length - 1].dist, //Meter
+        xmlData: base64Encoded,
+    };
+
+    $.ajax({
+        url: '/api/1.0/saveElevation',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(jsonData),
+        async: true,    //pc 저장과 별개...
+        success: function (response) {
+            //console.log('Data successfully sent to the server');
+            //console.log(response);
+        },
+        error: function (xhr, status, error) {
+            console.log('Error sending data: ' + error);
+        }
+    });
+}
+
 $(document).ready(function () {
     BASETIME = setBaseTimeToToday(BASETIME);
 
@@ -474,9 +504,12 @@ $(document).ready(function () {
         }
         let saveData = saveGpx(_fileName, Number($('#averageV').val()),
             [], _gpxTrkseqArray);
+
         saveAs(new Blob([saveData], {
             type: "application/vnd.garmin.gpx+xml"
         }), _fileName + '.' + _filetype);
+
+        saveGpxToServer(saveData);
 
     });
 
