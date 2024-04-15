@@ -1,6 +1,27 @@
 
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fparknamjun%2Fgiljabi&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 
+## 2024.04.15
+### Database sql 로그 포맷 변경
+* jpa의 format_sql, show_sql을 사용하지 않고 p6spy를 사용하여 sql로그를 출력
+```sql
+INFO 118324 --- [nio-9090-exec-8] p6spy                                    : OperationTime : 4ms|
+    select
+        sharecours0_.fileid as fileid1_2_,
+        sharecours0_.distance as distance2_2_,
+        sharecours0_.downcnt as downcnt3_2_,
+        sharecours0_.elevation as elevatio4_2_,
+        ...
+    from
+      tcxsharecourses sharecours0_
+    where
+      sharecours0_.filehash='8a68fb2ecc4ae72ab097dc7fff0b9296'
+```
+### post, get 요청정보 로그
+* post는 한번 읽으면 사라지기 때문에 로그를 남기기 위해 filter를 사용하여 로그를 남김
+* LoggerAspect.java 참조
+
+
 ## 2024.04.14
 ### Database 사용
 * mysql을 사용하고 있고 운영정보이므로 아래 yml에서 적절히 수정해야 함
