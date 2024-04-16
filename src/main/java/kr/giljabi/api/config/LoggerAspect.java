@@ -80,7 +80,7 @@ public class LoggerAspect {
     }
 
     private String getLogString(String message) {
-        return message.length() > 100
+        return message.length() > 200
                 ? message.substring(0, 200) + "..."
                 : message;
     }
