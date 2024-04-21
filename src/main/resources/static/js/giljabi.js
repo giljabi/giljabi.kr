@@ -506,6 +506,8 @@ $(document).ready(function () {
         _map.setLevel(10);
 
         getWaypointInfo();
+        getUpDown(_gpxTrkseqArray);
+
     }
 
     /**

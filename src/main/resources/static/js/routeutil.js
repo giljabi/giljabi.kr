@@ -301,3 +301,16 @@ function findSteepSlopes(gpxTrkseqArray) {
 
     return steepPoints;
 }
+
+function getUpDown(gpxTrkseqArray) {
+    let upDown = {up: 0, down: 0};
+    for (let i = 1; i < gpxTrkseqArray.length; i++) {
+        if (gpxTrkseqArray[i].ele > gpxTrkseqArray[i - 1].ele) {
+            upDown.up += (gpxTrkseqArray[i].ele - gpxTrkseqArray[i - 1].ele);
+        } else {
+            upDown.down += (gpxTrkseqArray[i - 1].ele - gpxTrkseqArray[i].ele);
+        }
+    }
+    console.log(upDown);
+    return upDown;
+}
