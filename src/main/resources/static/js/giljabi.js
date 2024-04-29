@@ -245,9 +245,17 @@ function viewSlopeTooltip(item) {
 
             //plot.offset().top - 5 plot의 상단에 tooltip을 고정, placeholderOffset.top + plotOffset.top;
             //item.pageY - 23 series의 높이를 따라감
-            $("#slopeinfo").html(x + '/' + y + ', ' + slope + '%')
-                .css({top: item.pageY - 25, left: item.pageX - 30,
+            //hr, atemp가 있으면....
+            let html = x + '/' + y + ', ' + slope + '%';
+            if (_gpxTrkseqArray[item.dataIndex].hr != '')
+                html += ', HR:' + _gpxTrkseqArray[item.dataIndex].hr;
+            if(_gpxTrkseqArray[item.dataIndex].atemp != '')
+                html += ', Atemp:' + _gpxTrkseqArray[item.dataIndex].atemp;
+
+            $("#slopeinfo").html(html)
+                .css({top: item.pageY - 30, left: item.pageX - 30,
                     "background-color": colorInfo.backgroundColor,
+                    "box-sizing": "border-box",
                     "color": colorInfo.textColor})
                 .fadeIn(50);
         } else {
@@ -547,13 +555,21 @@ $(document).ready(function () {
 
         //경로정보
         $.each(loadFile.find('gpx > trk > trkseg > trkpt'), function () {
+            //garmin gpx extensions data
+            let atemp = $(this).find('extensions').find('ns3\\:TrackPointExtension').find('ns3\\:atemp').text();
+            let hr = $(this).find('extensions').find('ns3\\:TrackPointExtension').find('ns3\\:hr').text();
+            //let cad = $(this).find('extensions').find('ns3\\:TrackPointExtension').find('ns3\\:cad').text();
+
+            //console.log('atemp:' + atemp +',hr:' + hr);
+
             let trackPoint = new Point3D(
                 Number($(this).attr('lat')),
                 Number($(this).attr('lon')),
                 Number($(this).find('ele').text()),
                 Number($(this).find('dist').text()),
-                $(this).find('time').text()
-            );
+                $(this).find('time').text(),
+                hr, atemp
+        );
             _gpxTrkseqArray.push(trackPoint);
             _trkPoly.push(new kakao.maps.LatLng(trackPoint.lat, trackPoint.lng));
         });
@@ -606,7 +622,9 @@ $(document).ready(function () {
                     Number($(this).find('LongitudeDegrees').text()),
                     Number($(this).find('AltitudeMeters').text()),
                     Number($(this).find('DistanceMeters').text()),
-                    $(this).find('Time').text()
+                    $(this).find('Time').text(),
+                    $(this).find('HeartRateBpm').find('Value').text(),
+                    ''
                 );
                 _gpxTrkseqArray.push(trackPoint);
                 _trkPoly.push(new kakao.maps.LatLng(trackPoint.lat, trackPoint.lng));
@@ -1120,6 +1138,7 @@ TCX
 
         _gpxTrkseqArray[0].time = (new Date(BASETIME)).toISOString();
         _gpxTrkseqArray[0].dist = 0;
+
         let ptDateTime = new Date(BASETIME);
         //시간 = 거리 / 속도
         let speed = Number($('#averageV').val());
@@ -1131,6 +1150,7 @@ TCX
             _gpxTrkseqArray[trkptIndex].time = ptDateTime.toISOString();
             //console.log(_gpxTrkseqArray[trkptIndex]);
         }
+
 
         ptDateTime = new Date(BASETIME);
         for (let wayIndex = 0; wayIndex < waypointSortByDistance.length; wayIndex++) {

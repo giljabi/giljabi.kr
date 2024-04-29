@@ -1,6 +1,28 @@
 
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fparknamjun%2Fgiljabi&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 
+## 2024.04.29
+* Garmin connect에서 받은 gpx, tcx에 있는 확장정보를 조회하고 저장시 사용하지 않음
+  * gpx
+  ```xml
+        <extensions>
+          <ns3:TrackPointExtension>
+            <ns3:atemp>17.0</ns3:atemp>
+            <ns3:hr>97</ns3:hr>
+          </ns3:TrackPointExtension>
+        </extensions>
+  ```
+  * tcx
+  ```xml
+              <HeartRateBpm>
+              <Value>97</Value>
+            </HeartRateBpm>
+  ```
+* 거리, 고도, 심박, 온도(tcx는 없음)
+* ![img.png](src/main/resources/static/images/extenstion-hr.png)
+* Garmin 온도계: 산에서 온도가 궁금할때 많은 도움도 되고 기록이 함께 되어 편리함
+  * https://www.garmin.com/en-US/p/107335
+
 ## 2024.04.15
 ### Database sql 로그 포맷 변경
 * jpa의 format_sql, show_sql을 사용하지 않고 p6spy를 사용하여 sql로그를 출력
