@@ -411,3 +411,9 @@ h2 {
     height: 70vh;
     position: relative;
 }
+
+#elevationImage .legendLabel {
+    font-size: 12px; /* Set your desired font size */
+    font-family: 'Arial', sans-serif;
+    font-weight: bold;
+}

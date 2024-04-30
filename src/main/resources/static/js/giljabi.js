@@ -63,7 +63,7 @@ let minAlti = 0;
 //자전거 0~5 white, 5~10, 10~,
 let MYSPEED = 6;
 
-
+let labelsData = {};    //MAX HR, MIN HR, MAX ATEMP, MIN ATEMP
 //POI마커를 모두 제거
 function removeCategryMarker() {
     poiCategoryMarkers.forEach(function (marker) {
@@ -250,14 +250,14 @@ function viewSlopeTooltip(item) {
             if (_gpxTrkseqArray[item.dataIndex].hr != '')
                 html += ', HR:' + _gpxTrkseqArray[item.dataIndex].hr;
             if(_gpxTrkseqArray[item.dataIndex].atemp != '')
-                html += ', Atemp:' + _gpxTrkseqArray[item.dataIndex].atemp;
+                html += ', Temp:' + _gpxTrkseqArray[item.dataIndex].atemp + '℃';
 
             $("#slopeinfo").html(html)
                 .css({top: item.pageY - 30, left: item.pageX - 30,
                     "background-color": colorInfo.backgroundColor,
                     "box-sizing": "border-box",
                     "color": colorInfo.textColor})
-                .fadeIn(50);
+                .fadeIn(100);
         } else {
             $("#slopeinfo").hide();
         }
@@ -338,6 +338,17 @@ function drawPolyline(polyline) {
     _polyline.push(lineStyle);
 }
 
+//심박이 있는 경우에만 표시, 깔딱고개
+function makeMarkMaxHeartBeat() {
+    if(labelsData.maxHeartRate > 0) {
+        let point = _eleArray[labelsData.maxHeartPos];
+        let offset = plot.pointOffset({x: point[0], y: point[1]});
+        let ctx = plot.getCanvas().getContext("2d");
+        ctx.font = "12px Arial";
+        ctx.fillStyle = "red";
+        ctx.fillText("▼", offset.left, offset.top - 2);
+    }
+}
 
 $(document).ready(function () {
     BASETIME = setBaseTimeToToday(BASETIME);
@@ -514,7 +525,6 @@ $(document).ready(function () {
         _map.setLevel(10);
 
         getWaypointInfo();
-        getUpDown(_gpxTrkseqArray);
 
     }
 
@@ -568,7 +578,8 @@ $(document).ready(function () {
                 Number($(this).find('ele').text()),
                 Number($(this).find('dist').text()),
                 $(this).find('time').text(),
-                hr, atemp
+                Number(hr),
+                Number(atemp)
         );
             _gpxTrkseqArray.push(trackPoint);
             _trkPoly.push(new kakao.maps.LatLng(trackPoint.lat, trackPoint.lng));
@@ -623,8 +634,8 @@ $(document).ready(function () {
                     Number($(this).find('AltitudeMeters').text()),
                     Number($(this).find('DistanceMeters').text()),
                     $(this).find('Time').text(),
-                    $(this).find('HeartRateBpm').find('Value').text(),
-                    ''
+                    Number($(this).find('HeartRateBpm').find('Value').text()),
+                    0
                 );
                 _gpxTrkseqArray.push(trackPoint);
                 _trkPoly.push(new kakao.maps.LatLng(trackPoint.lat, trackPoint.lng));
@@ -705,6 +716,14 @@ TCX
         //maxAlti, minAlti
         getMinMax();
 
+        //획득, 하강, 심박, 온도
+        labelsData = analyzePoints(_gpxTrkseqArray);
+        let plotLabel =  '▲ ' + labelsData.totalRise + ' ▼ ' + labelsData.totalFall;
+        if(labelsData.maxHeartRate > 0)
+            plotLabel += ', HR:' + labelsData.maxHeartRate;
+        if(labelsData.lowestTemp != '' && labelsData.highestTemp != 0)
+            plotLabel += ', Temp:' + labelsData.lowestTemp + '~' + labelsData.highestTemp + '°C';
+
         plot = $.plot("#elevationImage",
             [{
                 data: _eleArray,
@@ -712,8 +731,11 @@ TCX
                 shadowSize: 0,
                         //lines: {show: true},
                         //points: {show: false},
-                    }], {
-            series: {lines: {show: true, lineWidth: 2}},
+                label: plotLabel,
+            }]
+            , {
+                series: {lines: {show: true, lineWidth: 2}},
+                legend: { position: 'nw', margin: [0, -1]},
                 crosshair: {mode: "xy"},
                 //selection: {  //zoom
                 //    mode: "x"
@@ -730,6 +752,22 @@ TCX
                     max: maxAlti * 1.2,
                     } //위/아래 여백
             });
+
+        //
+        // var hashSymbol = function(ctx, x, y) {
+        //     ctx.font = "18px Arial"; // Set the font size and type
+        //     ctx.textAlign = 'center'; // Center the text horizontally
+        //     ctx.fillText("#", x, y); // Draw the "#" symbol at the coordinates
+        // };
+        //
+        // // Hook to draw on the canvas overlay
+        // $("<div class='flot-overlay'></div>").appendTo(plot.getPlaceholder()).on("elevationImage", function () {
+        //     var ctx = plot.getCanvas().getContext("2d");
+        //     var o = plot.pointOffset({ x: 2, y: 5 }); // Specify the data point to draw the symbol at
+        //
+        //     ctx.fillStyle = "#FF0000"; // Set the color of the "#" symbol
+        //     hashSymbol(ctx, o.left, o.top); // Draw at the specified X position
+        // });
 
         //차트에서 마우스의 움직임이 있으면 지도상에 마커를 이동시킨다
         function updateLegend(item) {
@@ -758,7 +796,6 @@ TCX
                 position: new kakao.maps.LatLng(_gpxTrkseqArray[seriesIndex].lat, _gpxTrkseqArray[seriesIndex].lng)
             });
             cursorMarker.setMap(_map);
-            //viewSlopeTooltip(item);
         }
 
 
@@ -781,6 +818,9 @@ TCX
             }
             //console.log(pos.x + ',' + pos.y); // + ', item.dataIndex:' + item.dataIndex);
             viewSlopeTooltip(item);
+        });
+        $("#elevationImage").mouseleave(function() { //plotleave가 없는 경우
+            $("#slopeinfo").hide();
         });
 
         // zoom을 사용하려는데...잘 안되네..
@@ -1172,6 +1212,7 @@ TCX
         makeChartIcon();
 
         drawPlot();
+
         let gridMarkings = plot.getOptions().grid.markings;
 /*        _markings.forEach(function (mark) {
             //아이콘의 세로선은 필요하지 않을 듯....
@@ -1199,6 +1240,9 @@ TCX
         plot.setupGrid(); // 사용하지 않아도 되나, grid 정보가 변경될것을 대비해서 미리 추가해둠
         plot.draw(); // plot.setupGrid()는 차트를 그리기 위한 준비이며 변경된 내용을 다기 그리기 위해 호출해야 함,
                      // 기울기정보가 있는 markings를 그려줌
+
+        //심박이 있는 경우 최고위치에 마커를 표시, plot이 끝난 다음에 해야 함
+        makeMarkMaxHeartBeat();
 
         _eleArray = []; //차트정보 초기화
     }

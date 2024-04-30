@@ -1,6 +1,10 @@
 
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fparknamjun%2Fgiljabi&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 
+## 2024.04.30
+* 깔딱고개: 심박이 있는 경우 최고점 표기
+* ![img.png](src/main/resources/static/images/extenstion-hr-max.png)
+
 ## 2024.04.29
 * Garmin connect에서 받은 gpx, tcx에 있는 확장정보를 조회하고 저장시 사용하지 않음
   * gpx
@@ -20,7 +24,7 @@
   ```
 * 거리, 고도, 심박, 온도(tcx는 없음)
 * ![img.png](src/main/resources/static/images/extenstion-hr.png)
-* Garmin 온도계: 산에서 온도가 궁금할때 많은 도움도 되고 기록이 함께 되어 편리함
+* Garmin Tempe(온도계): 산에서 온도가 궁금할때 많은 도움도 되고 기록이 함께 되어 편리함
   * https://www.garmin.com/en-US/p/107335
 
 ## 2024.04.15

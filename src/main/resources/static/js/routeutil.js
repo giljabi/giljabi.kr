@@ -304,15 +304,49 @@ function findSteepSlopes(gpxTrkseqArray) {
     return steepPoints;
 }
 
-function getUpDown(gpxTrkseqArray) {
-    let upDown = {up: 0, down: 0};
-    for (let i = 1; i < gpxTrkseqArray.length; i++) {
-        if (gpxTrkseqArray[i].ele > gpxTrkseqArray[i - 1].ele) {
-            upDown.up += (gpxTrkseqArray[i].ele - gpxTrkseqArray[i - 1].ele);
+/**
+ * 고도 상승과 하강 계산
+ * @param gpxTrkseqArray
+ * @returns {{up: number, down: number}}
+ */
+function analyzePoints(points) {
+    let totalRise = 0;
+    let totalFall = 0;
+    let maxHeartRate = 0;
+    let maxHeartPos = 0;
+    let highestTemp = -99; // Initialize to very low to find the max
+    let lowestTemp = 99; // Initialize to very high to find the min
+
+    for (let i = 1; i < points.length; i++) {
+        // Calculate total rise and fall
+        let elevationChange = points[i].ele - points[i - 1].ele;
+        if (elevationChange > 0) {
+            totalRise += elevationChange;
         } else {
-            upDown.down += (gpxTrkseqArray[i - 1].ele - gpxTrkseqArray[i].ele);
+            totalFall -= elevationChange; // elevationChange is negative, so we subtract to add the positive value.
+        }
+
+        // Find maximum heart rate
+        if (points[i].hr > maxHeartRate) {
+            maxHeartRate = points[i].hr;
+            maxHeartPos = i;
+        }
+
+        // Find highest and lowest temperature
+        if (points[i].atemp > highestTemp) {
+            highestTemp = points[i].atemp;
+        }
+        if (points[i].atemp < lowestTemp) {
+            lowestTemp = points[i].atemp;
         }
     }
-    console.log(upDown);
-    return upDown;
+
+    return {
+        totalRise: Math.ceil(totalRise),
+        totalFall: Math.ceil(totalFall),
+        maxHeartRate: maxHeartRate,
+        maxHeartPos: maxHeartPos,
+        highestTemp: highestTemp,
+        lowestTemp: lowestTemp
+    };
 }
