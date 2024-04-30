@@ -720,9 +720,10 @@ TCX
         labelsData = analyzePoints(_gpxTrkseqArray);
         let plotLabel =  '▲ ' + labelsData.totalRise + ' ▼ ' + labelsData.totalFall;
         if(labelsData.maxHeartRate > 0)
-            plotLabel += ', HR:' + labelsData.maxHeartRate;
+            plotLabel += ', <span style="color: red;">HR:' + labelsData.maxHeartRate + "</span>";
         if(labelsData.lowestTemp != '' && labelsData.highestTemp != 0)
-            plotLabel += ', Temp:' + labelsData.lowestTemp + '~' + labelsData.highestTemp + '°C';
+            plotLabel += ', Temp: <span style="color: blue;">' + labelsData.lowestTemp + "</span>"+ '~' +
+                '<span style="color: red;">' + labelsData.highestTemp + '</span>°C';
 
         plot = $.plot("#elevationImage",
             [{
