@@ -161,10 +161,13 @@ function setColorOnSlopeForRiding(slope, yPos) {
         colorSettings.textColor = "#ffffff";
     } else if (slope >= 8) {
         colorSettings.backgroundColor = "#FF5555";
+        colorSettings.textColor = "#ffffff";
     } else if (slope >= 4) {
         colorSettings.backgroundColor = "#FFAAAA";
+        colorSettings.textColor = "#ffffff";
     } else if (slope > -4 && slope < 4) {
         colorSettings.yPos = 0;
+        colorSettings.textColor = "#ffffff";
     } else if (slope >= -4) {
         colorSettings.backgroundColor = "#AAAAFF";
         colorSettings.textColor = "#ffffff";
@@ -193,24 +196,27 @@ function setColorOnSlopeForHike(slope, yPos) {
     if (slope >= 30) {
         colorSettings.backgroundColor = "#FF0000";
         colorSettings.textColor = "#ffffff";
-    } else if (slope >= 20) {
+    } else if (slope >= 20 && slope < 30) {
         colorSettings.backgroundColor = "#FF5555";
-    } else if (slope >= 10) {
+        colorSettings.textColor = "#ffffff";
+    } else if (slope >= 10 && slope < 20) {
         colorSettings.backgroundColor = "#FFAAAA";
+        colorSettings.textColor = "#ffffff";
     } else if (slope > -10 && slope < 10) {
         colorSettings.yPos = 0;
-    } else if (slope >= -10) {
+    } else if (slope <= -10 && slope > -20) {
         colorSettings.backgroundColor = "#AAAAFF";
         colorSettings.textColor = "#ffffff";
-    } else if (slope >= -20) {
+    } else if (slope <= -20 && slope > -30) {
         colorSettings.backgroundColor = "#5555FF";
         colorSettings.textColor = "#ffffff";
-    } else if (slope >= -30) {
-        colorSettings.backgroundColor = "#0000ff";
+    } else if (slope <= -30) {
+        colorSettings.backgroundColor = "#0080ff";
         colorSettings.textColor = "#ffffff";
     } else {
-        colorSettings.backgroundColor = "#ffffff";
-        colorSettings.textColor = "#000000";
+        colorSettings.backgroundColor = "#0000ff";
+        colorSettings.textColor = "#ffffff";
+        colorSettings.yPos = 0;
     }
 
     return colorSettings;
