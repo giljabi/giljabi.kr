@@ -316,6 +316,8 @@ function analyzePoints(points) {
     let maxHeartPos = 0;
     let highestTemp = -99; // Initialize to very low to find the max
     let lowestTemp = 99; // Initialize to very high to find the min
+    let highestTempPos = 0;
+    let lowestTempPos = 0;
 
     for (let i = 1; i < points.length; i++) {
         // Calculate total rise and fall
@@ -335,9 +337,11 @@ function analyzePoints(points) {
         // Find highest and lowest temperature
         if (points[i].atemp > highestTemp) {
             highestTemp = points[i].atemp;
+            highestTempPos = i;
         }
         if (points[i].atemp < lowestTemp) {
             lowestTemp = points[i].atemp;
+            lowestTempPos = i;
         }
     }
 
@@ -347,6 +351,8 @@ function analyzePoints(points) {
         maxHeartRate: maxHeartRate,
         maxHeartPos: maxHeartPos,
         highestTemp: highestTemp,
-        lowestTemp: lowestTemp
+        highestTempPos: highestTempPos,
+        lowestTemp: lowestTemp,
+        lowestTempPos: lowestTempPos,
     };
 }

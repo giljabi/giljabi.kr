@@ -352,8 +352,29 @@ function makeMarkMaxHeartBeat() {
         let ctx = plot.getCanvas().getContext("2d");
         ctx.font = "12px Arial";
         ctx.fillStyle = "red";
+        ctx.fillText("♥", offset.left, offset.top - 2);
+    }
+
+    if(labelsData.highestTempPos > 0) {
+        let point = _eleArray[labelsData.highestTempPos];
+        let offset = plot.pointOffset({x: point[0], y: point[1]});
+        let ctx = plot.getCanvas().getContext("2d");
+        ctx.font = "12px Arial";
+        ctx.fillStyle = "red";
+        ctx.fillText("▲", offset.left, offset.top - 2);
+    }
+
+    if(labelsData.lowestTempPos > 0) {
+        let point = _eleArray[labelsData.lowestTempPos];
+        let offset = plot.pointOffset({x: point[0], y: point[1]});
+        let ctx = plot.getCanvas().getContext("2d");
+        ctx.font = "12px Arial";
+        ctx.fillStyle = "blue";
         ctx.fillText("▼", offset.left, offset.top - 2);
     }
+
+
+
 }
 
 $(document).ready(function () {
