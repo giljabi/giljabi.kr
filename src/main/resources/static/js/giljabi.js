@@ -350,7 +350,7 @@ function makeMarkMaxHeartBeat() {
         let point = _eleArray[labelsData.maxHeartPos];
         let offset = plot.pointOffset({x: point[0], y: point[1]});
         let ctx = plot.getCanvas().getContext("2d");
-        ctx.font = "12px Arial";
+        ctx.font = "15px Arial";
         ctx.fillStyle = "red";
         ctx.fillText("♥", offset.left, offset.top - 2);
     }
@@ -372,9 +372,6 @@ function makeMarkMaxHeartBeat() {
         ctx.fillStyle = "blue";
         ctx.fillText("▼", offset.left, offset.top - 2);
     }
-
-
-
 }
 
 $(document).ready(function () {
