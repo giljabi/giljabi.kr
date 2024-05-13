@@ -744,7 +744,7 @@ TCX
         labelsData = analyzePoints(_gpxTrkseqArray);
         let plotLabel =  '▲' + labelsData.totalRise + ' ▼' + labelsData.totalFall;
         if(labelsData.maxHeartRate > 0)
-            plotLabel += ', <span style="color: red;">HR:' + labelsData.maxHeartRate + "</span>";
+            plotLabel += ', <span style="color: red;">♥' + labelsData.maxHeartRate + "</span>";
         if(labelsData.lowestTemp != '' && labelsData.highestTemp != 0)
             plotLabel += ', Temp: <span style="color: blue;">' + labelsData.lowestTemp + "</span>"+ '~' +
                 '<span style="color: red;">' + labelsData.highestTemp + '</span>°C';
@@ -760,7 +760,10 @@ TCX
             }]
             , {
                 series: {lines: {show: true, lineWidth: 2}},
-                legend: { position: 'nw', margin: [0, -1]},
+                legend: {
+                    position: 'nw',
+                    margin: [0, 0],//north west, 윗쪽으로 0px 이동
+                },
                 crosshair: {mode: "xy"},
                 //selection: {  //zoom
                 //    mode: "x"
