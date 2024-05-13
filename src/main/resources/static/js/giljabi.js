@@ -745,7 +745,7 @@ TCX
 
         //획득, 하강, 심박, 온도
         labelsData = analyzePoints(_gpxTrkseqArray);
-        let plotLabel =  '▲ ' + labelsData.totalRise + ' ▼ ' + labelsData.totalFall;
+        let plotLabel =  '▲' + labelsData.totalRise + ' ▼' + labelsData.totalFall;
         if(labelsData.maxHeartRate > 0)
             plotLabel += ', <span style="color: red;">HR:' + labelsData.maxHeartRate + "</span>";
         if(labelsData.lowestTemp != '' && labelsData.highestTemp != 0)
