@@ -745,7 +745,7 @@ TCX
         let plotLabel =  '▲' + labelsData.totalRise + ' ▼' + labelsData.totalFall;
         if(labelsData.maxHeartRate > 0)
             plotLabel += ', <span style="color: red;">♥' + labelsData.maxHeartRate + "</span>";
-        if(labelsData.lowestTemp != '' && labelsData.highestTemp != 0)
+        if(labelsData.lowestTemp == -99 && labelsData.highestTemp != 99)
             plotLabel += ', Temp: <span style="color: blue;">' + labelsData.lowestTemp + "</span>"+ '~' +
                 '<span style="color: red;">' + labelsData.highestTemp + '</span>°C';
 
@@ -873,18 +873,17 @@ TCX
                 goCenter(_gpxTrkseqArray[item.dataIndex].lat, _gpxTrkseqArray[item.dataIndex - 1].lng,5);
         });
 
-        //웨이포인트의 water, summit 아이콘은 차트에 표시
+        //웨이포인트의 water, food 아이콘은 차트에 표시
         function addImageIcons(plot, canvascontext) {
             _markings.forEach(function (marking) {
                 let img = new Image();
                 img.onload = function() {
-                        let o = plot.pointOffset({x: marking.x, y: maxAlti * 1.03});
-                        canvascontext.drawImage(img, o.left - img.width / 2, o.top - img.height);
+                        let o = plot.pointOffset({x: marking.x, y: maxAlti * 1.2});
+                        canvascontext.drawImage(img, o.left - img.width / 2, o.top, 15, 15);
                     }
                 img.src = '/images/'+ marking.sym.toLowerCase() +'.png'; // 이미지 경로
             });
         }
-
     }
 
     $('#reset').click(function () {
@@ -1349,11 +1348,11 @@ function makeSlope() {
 }
 
 function makeChartIcon() {
-    //chart에 water, summit 아이콘을 표시하기 위한 데이터
+    //chart에 water, food 아이콘을 표시하기 위한 데이터
     _markings = [];
     for (let j = 0; j < waypointSortByDistance.length; j++) {
         if (waypointSortByDistance[j].symbol.toLowerCase() === 'water' ||
-            waypointSortByDistance[j].symbol.toLowerCase() === 'summit') {
+            waypointSortByDistance[j].symbol.toLowerCase() === 'food') {
             for (let k = 0; k < _gpxTrkseqArray.length; k++) {
                 if ((waypointSortByDistance[j].point.lat == _gpxTrkseqArray[k].lat) &&
                     (waypointSortByDistance[j].point.lng == _gpxTrkseqArray[k].lng)) {

@@ -335,13 +335,15 @@ function analyzePoints(points) {
         }
 
         // Find highest and lowest temperature
-        if (points[i].atemp > highestTemp) {
-            highestTemp = points[i].atemp;
-            highestTempPos = i;
-        }
-        if (points[i].atemp < lowestTemp) {
-            lowestTemp = points[i].atemp;
-            lowestTempPos = i;
+        if (points[i].atemp != 0) {
+            if (points[i].atemp > highestTemp) {
+                highestTemp = points[i].atemp;
+                highestTempPos = i;
+            }
+            if (points[i].atemp < lowestTemp) {
+                lowestTemp = points[i].atemp;
+                lowestTempPos = i;
+            }
         }
     }
 
