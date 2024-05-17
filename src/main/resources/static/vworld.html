@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>VWorld 지도 예제</title>
+    <style>
+        #map {
+            width: 100%;
+            height: 100vh;
+        }
+    </style>
+    <script type="text/javascript" src="/js/jquery-3.3.1.js"></script>
+    <script type="text/javascript" src="/js/togeojson-0.16.0.js"></script>
+    <script type="text/javascript"
+            src="https://map.vworld.kr/js/webglMapInit.js.do?version=3.0&apiKey=EF0CBEDB-A6FA-3FD9-B1B3-D7C725EF09D3">
+    </script>
+</head>
+<body>
+<div id="vmap" style="width:800px;height:600px;left:0px;top:0px"></div>
+
+<script>
+$(document).ready(function () {
+
+    let vwMap;
+    let options = {
+        mapId: "vmap",// 지도맵 컨테이너 아이디
+        initPosition: new vw.CameraPosition(
+            new vw.CoordZ(-97, 38, 3000000),
+            new vw.Direction(0, -95, 0)
+        ), // 초기 위치
+        logo: false,	 // 하단 로고 설정. true : 표출, false : 미표출
+        navigation: true // 오른쪽 상단 네비게이션 설정. true : 표출, false : 미표출
+    };
+
+    vwMap = new vw.Map();
+    vwMap.setOption(options);
+    vwMap.setMapId("vmap");
+    vwMap.setInitPosition(
+        new vw.CameraPosition(
+            new vw.CoordZ(127.425, 38.196, 13487), new vw.Direction(-90, 0, 0)
+        ),
+        new vw.CameraPosition(
+            new vw.CoordZ(128.469583, 38.440109, 2416), new vw.Direction(0, -90, 0)
+        )
+    );
+
+    // 로고 및 네비 설정.
+    vwMap.setLogoVisible(false);
+    vwMap.setNavigationZoomVisible(true);
+    vwMap.start(); // 지도 생성
+
+
+    //https://www.vworld.kr/dev/v4dv_opn3dmap2exam_s002.do?exaIde=EXAID_08000000000006&tabMenu=m1&searchKeyword=
+    var sVector = new vw.source.Vector();
+    var lVector = new vw.layer.Vector(sVector);
+    lVector.setName("Example Layer");
+
+    var lineArray = [];
+    let l1 = new vw.CoordZ(127.472555, 37.957961, 111);
+    let l2 = new vw.CoordZ(127.494045, 37.988290, 1349);
+    let l3 = new vw.CoordZ(127.472370, 37.958208, 261);
+    let coordCol =  new vw.Collection([l1, l2, l3]);
+    let lines = new vw.geom.LineString(coordCol);
+    let lineFeature = new vw.Feature(lines , null);
+    lineFeature.getAttributes().set("title", "라인스트링");
+    lVector.getSource().getFeatures().add(lineFeature);
+    vwMap.getLayers().add(lVector)
+});
+
+</script>
+</body>
+</html>

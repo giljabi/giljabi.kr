@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>VWorld 지도 예제 - KML 데이터</title>
+    <style>
+        #map {
+            width: 100%;
+            height: 100vh;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript"
+            src="https://map.vworld.kr/js/webglMapInit.js.do?version=3.0&apiKey=EF0CBEDB-A6FA-3FD9-B1B3-D7C725EF09D3">
+    </script>
+</head>
+<body>
+<div id="map"></div>
+<script>
+    $(document).ready(function() {
+        // 지도 초기화
+        var map = new ol.Map({
+            target: 'map',
+            layers: [
+                new ol.layer.Tile({
+                    source: new ol.source.XYZ({
+                        url: 'https://api.vworld.kr/req/wmts/1.0.0/EF0CBEDB-A6FA-3FD9-B1B3-D7C725EF09D3/Base/{z}/{y}/{x}.png'.replace('{apikey}', 'EF0CBEDB-A6FA-3FD9-B1B3-D7C725EF09D3')
+                    })
+                })
+            ],
+            view: new ol.View({
+                center: ol.proj.fromLonLat([127.024612, 37.532600]),
+                zoom: 10
+            })
+        });
+
+        // KML 파일 로드 및 지도에 추가
+        $.ajax({
+            url: '/js/track.kml',
+            dataType: 'xml',
+            success: function(kmlData) {
+                var format = new ol.format.KML();
+                var features = format.readFeatures(kmlData, {
+                    featureProjection: 'EPSG:3857'
+                });
+
+                var vectorSource = new ol.source.Vector({
+                    features: features
+                });
+
+                var vectorLayer = new ol.layer.Vector({
+                    source: vectorSource,
+                    style: new ol.style.Style({
+                        stroke: new ol.style.Stroke({
+                            color: '#ff0000',
+                            width: 2
+                        })
+                    })
+                });
+
+                map.addLayer(vectorLayer);
+            }
+        });
+    });
+</script>
+</body>
+</html>
