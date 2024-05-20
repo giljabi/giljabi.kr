@@ -101,14 +101,15 @@ GpxWaypoint.prototype.toString = function toString() {
  * getGpxTrk
  * 좌표정보는 소수점 이하 6자리만 사용
  */
-function Point3D(lat, lng, ele, dist, time, hr, atemp) {
+function Point3D(lat, lng, ele, dist, time, hr, atemp, slope) {
     this.lat = Number(lat.toFixed(6));
     this.lng = Number(lng.toFixed(6));
     this.ele = isNaN(ele) ? 0 : Number(ele.toFixed(2));
     this.dist = isNaN(dist) ? 0 : Number(dist.toFixed(2));  //garmin gpx 포맷에는 없음
     this.time = time;
-    this.hr = hr;       //Heart Rate, plot에서만 사용
-    this.atemp = atemp; //Air Temperature, plot에서만 사용
+    this.hr = hr !== undefined ? hr: 0;       //Heart Rate, plot에서만 사용
+    this.atemp = atemp !== undefined ? Number(atemp) : null; //Air Temperature, plot에서만 사용
+    this.slope = slope !== undefined ? Number(slope.toFixed(0)) : 0;     //경사도
 }
 
 Point3D.prototype.toString = function toString() {
@@ -314,8 +315,8 @@ function analyzePoints(points) {
     let totalFall = 0;
     let maxHeartRate = 0;
     let maxHeartPos = 0;
-    let highestTemp = -99; // Initialize to very low to find the max
-    let lowestTemp = 99; // Initialize to very high to find the min
+    let highestTemp = -99;
+    let lowestTemp = 99;
     let highestTempPos = 0;
     let lowestTempPos = 0;
 
@@ -335,7 +336,7 @@ function analyzePoints(points) {
         }
 
         // Find highest and lowest temperature
-        if (points[i].atemp != 0) {
+        if (points[i].atemp != null) {
             if (points[i].atemp > highestTemp) {
                 highestTemp = points[i].atemp;
                 highestTempPos = i;

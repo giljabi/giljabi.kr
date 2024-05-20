@@ -224,49 +224,33 @@ function setColorOnSlopeForHike(slope, yPos) {
 
 function viewSlopeTooltip(item) {
     if (item != null) {
-        //기울기를 표시, 왼쪽 2개, 오른쪽 2개를 비교한다.
-        if (item.dataIndex > 2 && item.dataIndex < _gpxTrkseqArray.length - 2) {
-            let leftDistance = (_gpxTrkseqArray[item.dataIndex - 1].dist - _gpxTrkseqArray[item.dataIndex - 2].dist) / 2;
-            let rightDistance = (_gpxTrkseqArray[item.dataIndex + 2].dist - _gpxTrkseqArray[item.dataIndex + 1].dist) / 2;
-            //왼쪽 2개의 중앙에서 오른쪽 중앙의 거리
-            let distance = (Math.abs(leftDistance) + Math.abs(rightDistance) +
-                Math.abs(_gpxTrkseqArray[item.dataIndex + 1].dist - _gpxTrkseqArray[item.dataIndex - 1].dist));
+        let slope = item.series.data[item.dataIndex][2];
 
-            let leftElevation = (_gpxTrkseqArray[item.dataIndex - 1].ele + _gpxTrkseqArray[item.dataIndex - 2].ele) / 2;
-            let rightElevation = (_gpxTrkseqArray[item.dataIndex + 1].ele + _gpxTrkseqArray[item.dataIndex + 2].ele) / 2;
-            let elevationChange = rightElevation - leftElevation;
+        let x = item.datapoint[0].toFixed(2),
+            y = item.datapoint[1].toFixed(0);
+        //console.log(x + ' / ' + y + 'item:' + item.toString());
 
-            let slope = calculateSlope(distance, elevationChange);
-            //console.log('slope:' + slope + ', elevation:' + elevationChange + ', distance:' + distance);
+        let colorInfo = {};
+        if(Number($('#averageV').val()) < MYSPEED)
+            colorInfo = setColorOnSlopeForHike(slope, 0/*여기서는 사용안함*/);
+        else
+            colorInfo = setColorOnSlopeForRiding(slope, 0);
 
-            let x = item.datapoint[0].toFixed(2),
-                y = item.datapoint[1].toFixed(0);
-            //console.log(x + ' / ' + y + 'item:' + item.toString());
+        //plot.offset().top - 5 plot의 상단에 tooltip을 고정, placeholderOffset.top + plotOffset.top;
+        //item.pageY - 23 series의 높이를 따라감
+        //hr, atemp가 있으면....
+        let html = x + '/' + y + ', ' + slope + '%';
+        if (_gpxTrkseqArray[item.dataIndex].hr != '')
+            html += ', HR:' + _gpxTrkseqArray[item.dataIndex].hr;
+        if(_gpxTrkseqArray[item.dataIndex].atemp != null)
+            html += ', Temp:' + _gpxTrkseqArray[item.dataIndex].atemp + '℃';
 
-            let colorInfo = {};
-            if(Number($('#averageV').val()) < MYSPEED)
-                colorInfo = setColorOnSlopeForHike(slope, 0/*여기서는 사용안함*/);
-            else
-                colorInfo = setColorOnSlopeForRiding(slope, 0);
-
-            //plot.offset().top - 5 plot의 상단에 tooltip을 고정, placeholderOffset.top + plotOffset.top;
-            //item.pageY - 23 series의 높이를 따라감
-            //hr, atemp가 있으면....
-            let html = x + '/' + y + ', ' + slope + '%';
-            if (_gpxTrkseqArray[item.dataIndex].hr != '')
-                html += ', HR:' + _gpxTrkseqArray[item.dataIndex].hr;
-            if(_gpxTrkseqArray[item.dataIndex].atemp != '')
-                html += ', Temp:' + _gpxTrkseqArray[item.dataIndex].atemp + '℃';
-
-            $("#slopeinfo").html(html)
-                .css({top: item.pageY - 30, left: item.pageX - 30,
-                    "background-color": colorInfo.backgroundColor,
-                    "box-sizing": "border-box",
-                    "color": colorInfo.textColor})
-                .fadeIn(100);
-        } else {
-            $("#slopeinfo").hide();
-        }
+        $("#slopeinfo").html(html)
+            .css({top: item.pageY - 30, left: item.pageX - 30,
+                "background-color": colorInfo.backgroundColor,
+                "box-sizing": "border-box",
+                "color": colorInfo.textColor})
+            .fadeIn(100);
     }
 }
 
@@ -355,23 +339,32 @@ function makeMarkMaxHeartBeat() {
         ctx.fillText("♥", offset.left, offset.top - 2);
     }
 
-    if(labelsData.highestTempPos > 0) {
-        let point = _eleArray[labelsData.highestTempPos];
-        let offset = plot.pointOffset({x: point[0], y: point[1]});
-        let ctx = plot.getCanvas().getContext("2d");
-        ctx.font = "12px Arial";
-        ctx.fillStyle = "red";
-        ctx.fillText("▲", offset.left, offset.top - 2);
-    }
 
-    if(labelsData.lowestTempPos > 0) {
-        let point = _eleArray[labelsData.lowestTempPos];
-        let offset = plot.pointOffset({x: point[0], y: point[1]});
-        let ctx = plot.getCanvas().getContext("2d");
-        ctx.font = "12px Arial";
-        ctx.fillStyle = "blue";
-        ctx.fillText("▼", offset.left, offset.top - 2);
+    if(labelsData.highestTempPos != labelsData.lowestTempPos) {
+        let pointHigh = _eleArray[labelsData.highestTempPos];
+        let offsetHigh = plot.pointOffset({x: pointHigh[0], y: pointHigh[1]});
+        let ctxHigh = plot.getCanvas().getContext("2d");
+        ctxHigh.font = "12px Arial";
+        ctxHigh.fillStyle = "red";
+        ctxHigh.fillText("▲", offsetHigh.left, offsetHigh.top - 2);
+
+        let pointLow = _eleArray[labelsData.lowestTempPos];
+        let offsetLow = plot.pointOffset({x: pointLow[0], y: pointLow[1]});
+        let ctxLow = plot.getCanvas().getContext("2d");
+        ctxLow.font = "12px Arial";
+        ctxLow.fillStyle = "blue";
+        ctxLow.fillText("▼", offsetLow.left, offsetLow.top - 2);
     }
+}
+
+//point 정보에 경사도 정보를 추가한다. 끝점은 경사도가 0
+function makeSlopeByPoint(index) {
+    if(index == 0 || index == _gpxTrkseqArray.length - 1)
+        return 0;
+
+    let nextPos = _gpxTrkseqArray[index + 1];
+    let currPos = _gpxTrkseqArray[index]
+    return calculateSlope(getDistance(nextPos, currPos), nextPos.ele - currPos.ele);
 }
 
 $(document).ready(function () {
@@ -588,7 +581,7 @@ $(document).ready(function () {
         });
 
         //경로정보
-        $.each(loadFile.find('gpx > trk > trkseg > trkpt'), function () {
+        $.each(loadFile.find('gpx > trk > trkseg > trkpt'), function (index, value) {
             //garmin gpx extensions data
             let atemp = $(this).find('extensions').find('ns3\\:TrackPointExtension').find('ns3\\:atemp').text();
             let hr = $(this).find('extensions').find('ns3\\:TrackPointExtension').find('ns3\\:hr').text();
@@ -603,7 +596,8 @@ $(document).ready(function () {
                 Number($(this).find('dist').text()),
                 $(this).find('time').text(),
                 Number(hr),
-                Number(atemp)
+                atemp,
+                0//gpx 파일에 slope 정보는 없는상태
         );
             _gpxTrkseqArray.push(trackPoint);
             _trkPoly.push(new kakao.maps.LatLng(trackPoint.lat, trackPoint.lng));
@@ -651,15 +645,14 @@ $(document).ready(function () {
         //$.each(loadFile.find('gpx').find('trk').find('trkseg').find('trkpt'), function () {
         $.each(loadFile.find('Trackpoint'), function () {
             let position = $(this).find("Position");
-            if(position.length == 1) {  //Position이 없는 경우가 실제로 있음
+            if(position.length == 1) {  //Position이 없는 경우가 실제로 있음, 1단위 기록했을 경우 TCX로 다운시 무조건 시간을 기록함
                 let trackPoint = new Point3D(
                     Number($(this).find('LatitudeDegrees').text()),
                     Number($(this).find('LongitudeDegrees').text()),
                     Number($(this).find('AltitudeMeters').text()),
                     Number($(this).find('DistanceMeters').text()),
                     $(this).find('Time').text(),
-                    Number($(this).find('HeartRateBpm').find('Value').text()),
-                    0
+                    Number($(this).find('HeartRateBpm').find('Value').text())
                 );
                 _gpxTrkseqArray.push(trackPoint);
                 _trkPoly.push(new kakao.maps.LatLng(trackPoint.lat, trackPoint.lng));
@@ -745,7 +738,7 @@ TCX
         let plotLabel =  '▲' + labelsData.totalRise + ' ▼' + labelsData.totalFall;
         if(labelsData.maxHeartRate > 0)
             plotLabel += ', <span style="color: red;">♥' + labelsData.maxHeartRate + "</span>";
-        if(labelsData.lowestTemp == -99 && labelsData.highestTemp != 99)
+        if(labelsData.highestTempPos != labelsData.lowestTempPos) //최고/최저 온도가 같은 경우는 데이터가 없음
             plotLabel += ', Temp: <span style="color: blue;">' + labelsData.lowestTemp + "</span>"+ '~' +
                 '<span style="color: red;">' + labelsData.highestTemp + '</span>°C';
 
@@ -1322,28 +1315,9 @@ TCX
  */
 function makeSlope() {
     for (let i = 0; i < _gpxTrkseqArray.length; i++) {
-        //좌우 2개값을 기준으로 기울기
-        if (i > 2 && i < _gpxTrkseqArray.length - 2) {
-            let leftDistance = Math.abs(_gpxTrkseqArray[i - 2].dist - _gpxTrkseqArray[i - 1].dist) / 2;
-            let rightDistance = Math.abs(_gpxTrkseqArray[i + 1].dist - _gpxTrkseqArray[i + 2].dist) / 2;
-            //왼쪽 2개의 중앙에서 오른쪽 중앙의 거리
-            let distance = (Math.abs(leftDistance) + Math.abs(rightDistance) +
-                Math.abs(_gpxTrkseqArray[i + 1].dist - _gpxTrkseqArray[i - 1].dist));
-
-            let leftElevation = (_gpxTrkseqArray[i - 2].ele + _gpxTrkseqArray[i - 1].ele) / 2;
-            let rightElevation = (_gpxTrkseqArray[i + 1].ele + _gpxTrkseqArray[i + 2].ele) / 2;
-            let elevationChange = rightElevation - leftElevation;
-
-            let slope = calculateSlope(distance, elevationChange);
-            //console.log('slope:' + slope + ', elevation:' + elevationChange + ', distance:' + distance);
-            //steepPoints.push({x: _gpxTrkseqArray[i].dist, y: _gpxTrkseqArray[i].ele, slope: slope});
-
-            //chart의 x, y축을 위한 데이터
-            _eleArray.push([_gpxTrkseqArray[i].dist / 1000, Number(_gpxTrkseqArray[i].ele), slope]);
-        } else {
-            //양쪽 끝점 2개는 기울기를 0으로 처리
-            _eleArray.push([_gpxTrkseqArray[i].dist / 1000, Number(_gpxTrkseqArray[i].ele), 0]);
-        }
+        //경사도를 단순하게 계산, 참고용으로 보는거라...
+        _gpxTrkseqArray[i].slope = makeSlopeByPoint(i);
+        _eleArray.push([_gpxTrkseqArray[i].dist / 1000, Number(_gpxTrkseqArray[i].ele), _gpxTrkseqArray[i].slope]);
     }
 }
 
