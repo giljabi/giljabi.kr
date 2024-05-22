@@ -321,32 +321,23 @@ function analyzePoints(points) {
     let lowestTempPos = 0;
 
     for (let i = 1; i < points.length; i++) {
-        // Calculate total rise and fall
         let elevationChange = points[i].ele - points[i - 1].ele;
         if (elevationChange > 0) {
             totalRise += elevationChange;
         } else {
-            totalFall -= elevationChange; // elevationChange is negative, so we subtract to add the positive value.
-        }
-
-        // Find maximum heart rate
-        if (points[i].hr > maxHeartRate) {
-            maxHeartRate = points[i].hr;
-            maxHeartPos = i;
-        }
-
-        // Find highest and lowest temperature
-        if (points[i].atemp != null) {
-            if (points[i].atemp > highestTemp) {
-                highestTemp = points[i].atemp;
-                highestTempPos = i;
-            }
-            if (points[i].atemp < lowestTemp) {
-                lowestTemp = points[i].atemp;
-                lowestTempPos = i;
-            }
+            totalFall -= elevationChange;
         }
     }
+    let atemps = points.map(point => point.atemp).filter(atemp => atemp !== null);
+    let hrs = points.map(point => point.hr).filter(hr => hr !== null);
+
+    maxHeartRate = Math.max(...hrs);
+    maxHeartPos = hrs.indexOf(maxHeartRate);
+
+    highestTemp = Math.max(...atemps);
+    lowestTemp = Math.min(...atemps);
+    highestTempPos = atemps.indexOf(highestTemp);
+    lowestTempPos = atemps.indexOf(lowestTemp);
 
     return {
         totalRise: Math.ceil(totalRise),

@@ -240,9 +240,9 @@ function viewSlopeTooltip(item) {
         //item.pageY - 23 series의 높이를 따라감
         //hr, atemp가 있으면....
         let html = x + '/' + y + ', ' + slope + '%';
-        if (_gpxTrkseqArray[item.dataIndex].hr != '')
+        if (labelsData.maxHeartRate > 0)
             html += ', HR:' + _gpxTrkseqArray[item.dataIndex].hr;
-        if(_gpxTrkseqArray[item.dataIndex].atemp != null)
+        if(labelsData.highestTempPos != labelsData.lowestTempPos) //최고/최저 온도가 같은 경우는 데이터가 없음
             html += ', Temp:' + _gpxTrkseqArray[item.dataIndex].atemp + '℃';
 
         $("#slopeinfo").html(html)
@@ -338,7 +338,6 @@ function makeMarkMaxHeartBeat() {
         ctx.fillStyle = "red";
         ctx.fillText("♥", offset.left, offset.top - 2);
     }
-
 
     if(labelsData.highestTempPos != labelsData.lowestTempPos) {
         let pointHigh = _eleArray[labelsData.highestTempPos];
@@ -1314,10 +1313,35 @@ TCX
  * 기울기를 비교하여 색상을 표시한다.
  */
 function makeSlope() {
+    // for (let i = 0; i < _gpxTrkseqArray.length; i++) {
+    //     //경사도를 단순하게 계산, 참고용으로 보는거라...
+    //     _gpxTrkseqArray[i].slope = makeSlopeByPoint(i);
+    //     _eleArray.push([_gpxTrkseqArray[i].dist / 1000, Number(_gpxTrkseqArray[i].ele), _gpxTrkseqArray[i].slope]);
+    // }
+    //다시 원복, 이유는 너무 급격한 데이터의 변화가 있네...
     for (let i = 0; i < _gpxTrkseqArray.length; i++) {
-        //경사도를 단순하게 계산, 참고용으로 보는거라...
-        _gpxTrkseqArray[i].slope = makeSlopeByPoint(i);
-        _eleArray.push([_gpxTrkseqArray[i].dist / 1000, Number(_gpxTrkseqArray[i].ele), _gpxTrkseqArray[i].slope]);
+        //좌우 2개값을 기준으로 기울기
+        if (i > 2 && i < _gpxTrkseqArray.length - 2) {
+            let leftDistance = Math.abs(_gpxTrkseqArray[i - 2].dist - _gpxTrkseqArray[i - 1].dist) / 2;
+            let rightDistance = Math.abs(_gpxTrkseqArray[i + 1].dist - _gpxTrkseqArray[i + 2].dist) / 2;
+            //왼쪽 2개의 중앙에서 오른쪽 중앙의 거리
+            let distance = (Math.abs(leftDistance) + Math.abs(rightDistance) +
+                Math.abs(_gpxTrkseqArray[i + 1].dist - _gpxTrkseqArray[i - 1].dist));
+
+            let leftElevation = (_gpxTrkseqArray[i - 2].ele + _gpxTrkseqArray[i - 1].ele) / 2;
+            let rightElevation = (_gpxTrkseqArray[i + 1].ele + _gpxTrkseqArray[i + 2].ele) / 2;
+            let elevationChange = rightElevation - leftElevation;
+
+            let slope = calculateSlope(distance, elevationChange);
+            //console.log('slope:' + slope + ', elevation:' + elevationChange + ', distance:' + distance);
+            //steepPoints.push({x: _gpxTrkseqArray[i].dist, y: _gpxTrkseqArray[i].ele, slope: slope});
+
+            //chart의 x, y축을 위한 데이터
+            _eleArray.push([_gpxTrkseqArray[i].dist / 1000, Number(_gpxTrkseqArray[i].ele), slope]);
+        } else {
+            //양쪽 끝점 2개는 기울기를 0으로 처리
+            _eleArray.push([_gpxTrkseqArray[i].dist / 1000, Number(_gpxTrkseqArray[i].ele), 0]);
+        }
     }
 }
 
