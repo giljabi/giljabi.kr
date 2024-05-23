@@ -7,14 +7,21 @@
 
     <style>
         #progressBar {
-            width: 0%;
-            height: 100%;
+            width: 100%;
             background-color: #4caf50;
             text-align: center;
             line-height: 25px;
             color: white;
         }
-
+        .modes {
+            width:100vw;
+            height:3vh;
+            position: absolute;
+            align-content: center;
+            z-index: 1;
+            color: white;
+            background-color: #4caf50;
+        }
     </style>
     <!-- API key를 포함하여 브이월드 API URL을 지정하여 호출끝  -->
     <script type="text/javascript"
@@ -27,9 +34,8 @@
 </head>
 
 <body>
-<div id="progressBar" style="width:97vw;height:25px;position:center;left:0px;top:0px;background-color: #4caf50"></div>
-<div id="vmap" style="width:97vw;height:97vh;position:center;left:0px;top:0px"></div>
-<!--div id="vmap" style="width:99%;height:99vh;position:absolute;left:0px;top:0px"></div> -->
+<div id="progressBar" ></div>
+<div id="vmap" style="width:100vw;height:97vh;position:center;left:0px;top:0px"></div>
 </body>
 
 <script>
@@ -108,7 +114,7 @@
         makeWaypointMark();
 
         $('#progressBar').text('지도가 준비되었습니다.');
-        $('#progressBar').css('background-color', '#ffffff');
+        $('#progressBar').css({'background-color': '#ffffff', 'height': '0px'});
     }
 
     function makeWaypointMark() {
