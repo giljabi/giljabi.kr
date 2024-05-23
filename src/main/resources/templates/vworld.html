@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>KMLLayer</title>
+
+    <style>
+        #progressBar {
+            width: 0%;
+            height: 100%;
+            background-color: #4caf50;
+            text-align: center;
+            line-height: 25px;
+            color: white;
+        }
+
+    </style>
+    <!-- API key를 포함하여 브이월드 API URL을 지정하여 호출끝  -->
+    <script type="text/javascript"
+            src="https://map.vworld.kr/js/webglMapInit.js.do?version=2.0&apiKey=EF0CBEDB-A6FA-3FD9-B1B3-D7C725EF09D3">
+    </script>
+    <script type="text/javascript" src="/js/jquery-3.3.1.js"></script>
+    <script type="text/javascript" src="/js/jquery-ui.js"></script>
+    <script type="text/javascript" src="/js/FileSaver.min.js"></script>
+    <script type="text/javascript" src="/js/lz-string-1.4.4-min.js"></script>
+</head>
+
+<body>
+<div id="progressBar" style="width:97vw;height:25px;position:center;left:0px;top:0px;background-color: #4caf50"></div>
+<div id="vmap" style="width:97vw;height:97vh;position:center;left:0px;top:0px"></div>
+<!--div id="vmap" style="width:99%;height:99vh;position:absolute;left:0px;top:0px"></div> -->
+</body>
+
+<script>
+    let map;
+    let xmlData;
+    let gpxLine = [];
+
+    function initMap(home, init) {
+        let mapOptions = new vw.MapOptions(
+            vw.BasemapType.PHOTO_HYBRID, //vw.BasemapType.GRAPHIC 2D지도 전용
+            '', //layersArr 2D지도 전용
+            vw.DensityType.FULL, //controlDensity vw.DensityType.FULL 2D지도 전용
+            '', //interactionDensity vw.DensityType.BASIC 2D지도 전용
+            false, //controlAutoArrange true 2D지도 전용
+            home,
+            init
+        );
+
+        map = new vw.Map("vmap", mapOptions);
+        //map.setLogoVisible(false);
+    }
+
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    $(document).ready(function() {
+        document.addEventListener('wheel', function(event) {
+            console.log(map.getView().getZoom());
+            console.log('wheel event:' + new Date());
+        }, { passive: true });
+
+        let gpxdata = '[[${gpxdata}]]';
+        xmlData = $(LZString.decompressFromBase64(gpxdata));
+
+        $('#progressBar').text('데이터를 읽고 있습니다. 잠시만 기다려 주십시오.');
+        $('#progressBar').css('background-color', '#4caf50');
+
+        console.log('5:' + new Date());
+        let trpktLength = $(xmlData).find('trkpt').length;
+        $(xmlData).find('trkpt').each(function(index) {
+            gpxLine.push(new vw.Coord(
+                Number($(this).attr('lon')),
+                Number($(this).attr('lat')))
+            );
+            //let percentComplete = (index / trpktLength) * 100;
+            //$('#progressBar').css('width', percentComplete + '%');
+            //$('#progressBar').text(percentComplete + '%');
+        });
+        console.log('6:' + new Date());
+
+        let midPos = gpxLine[Math.floor(gpxLine.length / 2)];
+        let startPos = gpxLine[0];
+
+        let cameraHomePosition = new vw.CameraPosition(
+            new vw.CoordZ(startPos.x, startPos.y, 5000),
+            new vw.Direction(-90, 0, 0)
+        );
+
+        let cameraInitPosition = new vw.CameraPosition(
+            new vw.CoordZ(midPos.x, midPos.y, 1000),
+            new vw.Direction(0, -45, 0)
+        );
+
+        initMap(cameraHomePosition, cameraInitPosition);
+    });
+
+    vw.ws3dInitCallBack = function() {
+        let polyline = new vw.Collection(gpxLine);
+        let line = new vw.geom.LineString(polyline);
+        line.setFillColor(vw.Color.RED);
+        line.setWidth(5);
+        line.setName("GPXLINE");
+        line.create();
+
+        makeWaypointMark();
+
+        $('#progressBar').text('지도가 준비되었습니다.');
+        $('#progressBar').css('background-color', '#ffffff');
+    }
+
+    function makeWaypointMark() {
+        let markImage = 'https://map.vworld.kr/images/v2map/spotmarker.png';
+
+        $(xmlData).find('wpt').each(function() {
+            let markPos = new vw.Coord(
+                Number($(this).attr('lon')),
+                Number($(this).attr('lat')));
+
+            let labelOptions = {
+                showBackground : true // 라벨 백그라운드 적용유무
+                ,backgroundColor : ws3d.common.Color.fromCssColorString('#FFFFFF').withAlpha(0.9) // 백그라운드 css색상으로 부터 color생성하기
+                , text: $(this).find('name').text() // 라벨 적용.
+                ,font: '12px 고딕,sans-serif' // 글자폰트
+                ,fillColor: ws3d.common.Color.fromCssColorString('#000000') // 글자색상
+                ,disableDepthTestDistance: Number.POSITIVE_INFINITY // 라벨이 지형에 파뭍히지 않도록 설정.
+                ,style : ws3d.common.LabelStyle.FILL // 라벨 글자 안쪽 및 외곽 색상 채우기 FILL, FILL_AND_OUTLINE, OUTLINE
+                ,pixelOffset : new ws3d.common.Cartesian2(0, -2) // 생략가능. 생략시 마커 위에 표시됨. x : 0 - 가운데, (음수)-50 - 왼쪽방향, (양수)50 - 오른쪽방향, y : 0 - 아이콘 바로 위, (음수)-50 : 위쪽 방향, (양수) 50 : 아래쪽방향
+            };
+
+            map.createMarker('', markPos.x, markPos.y, '', markImage, 0, 0, 0, labelOptions);
+        });
+    }
+</script>
+
+</html>

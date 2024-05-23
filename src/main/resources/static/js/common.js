@@ -300,3 +300,20 @@ function convertSecondsToDaysHoursMinutes(seconds) {
 
 	return String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0');
 }
+
+function compressToBase64(data) {
+	const textEncoder = new TextEncoder();
+	const byteArray = textEncoder.encode(data);
+	const compressedData = pako.deflate(byteArray);
+	const base64Encoded = btoa(String.fromCharCode.apply(null, new Uint8Array(compressedData)));
+	return base64Encoded;
+}
+
+function decompressFromBase64(base64Encoded) {
+	const binaryString = atob(base64Encoded);
+	const charData = binaryString.split('').map(c => c.charCodeAt(0));
+	const byteArray = new Uint8Array(charData);
+	const decompressedData = pako.inflate(byteArray, {to: 'string'}); // Decompress
+	return decompressedData;
+}
+

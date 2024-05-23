@@ -878,6 +878,41 @@ TCX
         }
     }
 
+    $('#viewVworld').click(function () {
+        let gpxData = saveGpx(_uploadFilename, Number($('#averageV').val()),
+            waypointSortByDistance, _gpxTrkseqArray);
+        //let newWindow = window.open('', 'vworldWindow', 'width=800,height=600');
+        //
+        // $.ajax({
+        //     type: 'POST',
+        //     url: '/vworld',
+        //     contentType: 'text/plain; charset=UTF-8',
+        //     dataType: 'json',
+        //     data: {gpxdata: LZString.compressToBase64(gpxData)},
+        //     success: function(data, status) {
+        //         newWindow.document.open();
+        //         newWindow.document.write(data); // 서버에서 받은 HTML 데이터를 출력
+        //         newWindow.document.close();
+        //     }
+        // });
+        let form = $('<form>', {
+            action: '/vworld',
+            method: 'POST',
+            target: 'vworldWindow'
+        }).appendTo('body');
+
+        $('<input>', {
+            name: 'gpxdata',
+            value: LZString.compressToBase64(gpxData),
+            style: 'display:none'
+        }).appendTo(form);
+
+        window.open('', 'vworldWindow', 'width=800,height=700');
+
+        form.submit();
+        form.remove();
+    });
+
     $('#reset').click(function () {
         if (confirm('초기화 할까요?'))
             location.href = '/giljabi.html';
