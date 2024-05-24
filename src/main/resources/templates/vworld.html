@@ -7,23 +7,36 @@
 
     <style>
         #progressBar {
+            position: absolute;
             width: 100%;
             background-color: #4caf50;
             text-align: center;
             line-height: 25px;
             color: white;
-        }
-        .modes {
-            width:100vw;
-            height:3vh;
-            position: absolute;
-            align-content: center;
             z-index: 1;
-            color: white;
-            background-color: #4caf50;
+        }
+        /*
+        .bottom-div {
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: green;
+        }
+        */
+        .top-div {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .parent {
+            position: relative;
+            border: 1px solid #000;
         }
     </style>
-    <!-- API key를 포함하여 브이월드 API URL을 지정하여 호출끝  -->
+    <!-- API key를 포함하여 브이월드 API URL을 지정하여 호출, https가 아니면 사용하는 domain을 추가해야 함  -->
     <script type="text/javascript"
             src="https://map.vworld.kr/js/webglMapInit.js.do?version=2.0&apiKey=EF0CBEDB-A6FA-3FD9-B1B3-D7C725EF09D3">
     </script>
@@ -34,14 +47,31 @@
 </head>
 
 <body>
-<div id="progressBar" ></div>
-<div id="vmap" style="width:100vw;height:97vh;position:center;left:0px;top:0px"></div>
+<div class="parent">
+    <div id="progressBar" ></div>
+    <button id="saveImage" style="position:absolute;top:10px;left:10px;z-index: 100; display: none;">이미지 저장</button>
+    <select id="lineWidth" style="position:absolute;top:10px;left:100px;z-index: 100; display: none;height:24px;">
+        <option value="1">라인두께: 1</option>
+        <option value="3" selected>라인두께: 3</option>
+        <option value="5">라인두께: 5</option>
+        <option value="10">라인두께: 10</option>
+        <option value="25">라인두께: 25</option>
+    </select>
+    <select id="lineColor" style="position:absolute;top:10px;left:195px;z-index: 100; display: none;height:24px;">
+        <option value="RED" selected>RED</option>
+        <option value="YELLOW">YELLOW</option>
+        <option value="WHITE">WHITE</option>
+    </select>
+    <div id="vmap" class="top-div" style="width:100vw;height:97vh;position:center;left:0px;top:0px">
+    </div>
+</div>
 </body>
 
 <script>
     let map;
     let xmlData;
-    let gpxLine = [];
+    let gpxLineArray = [];
+    let gpxLine;
 
     function initMap(home, init) {
         let mapOptions = new vw.MapOptions(
@@ -64,31 +94,28 @@
 
     $(document).ready(function() {
         document.addEventListener('wheel', function(event) {
-            console.log(map.getView().getZoom());
-            console.log('wheel event:' + new Date());
+            //console.log(map.getView().getZoom());
+            //console.log('wheel event:' + new Date());
         }, { passive: true });
 
         let gpxdata = '[[${gpxdata}]]';
         xmlData = $(LZString.decompressFromBase64(gpxdata));
 
-        $('#progressBar').text('데이터를 읽고 있습니다. 잠시만 기다려 주십시오.');
+        $('#progressBar').text('데이터를 읽고 있습니다. 데이터가 큰 경우 시간이 오래걸리지만 기다려 주세요.');
         $('#progressBar').css('background-color', '#4caf50');
 
         console.log('5:' + new Date());
         let trpktLength = $(xmlData).find('trkpt').length;
         $(xmlData).find('trkpt').each(function(index) {
-            gpxLine.push(new vw.Coord(
+            gpxLineArray.push(new vw.Coord(
                 Number($(this).attr('lon')),
                 Number($(this).attr('lat')))
             );
-            //let percentComplete = (index / trpktLength) * 100;
-            //$('#progressBar').css('width', percentComplete + '%');
-            //$('#progressBar').text(percentComplete + '%');
         });
         console.log('6:' + new Date());
 
-        let midPos = gpxLine[Math.floor(gpxLine.length / 2)];
-        let startPos = gpxLine[0];
+        let midPos = gpxLineArray[Math.floor(gpxLineArray.length / 2)];
+        let startPos = gpxLineArray[0];
 
         let cameraHomePosition = new vw.CameraPosition(
             new vw.CoordZ(startPos.x, startPos.y, 5000),
@@ -101,20 +128,41 @@
         );
 
         initMap(cameraHomePosition, cameraInitPosition);
+
+        $('#saveImage').click(function() {
+            let fileName = $(xmlData).find('metadata > name').text();
+            if(fileName === '') {
+                fileName = new Date().toISOString().replace(/:/g, '-');
+            }
+            map.saveAsImage(fileName + '.png');
+        });
+
+        $('#lineWidth').change(function() {
+            //let line = map.getCollection('GPXLINE');
+            gpxLine.setWidth(Number($(this).val()));
+            gpxLine.redraw();
+        });
+        $('#lineColor').change(function() {
+            gpxLine.setFillColor(vw.Color[$(this).val()]);
+            gpxLine.redraw();
+        });
     });
 
     vw.ws3dInitCallBack = function() {
-        let polyline = new vw.Collection(gpxLine);
-        let line = new vw.geom.LineString(polyline);
-        line.setFillColor(vw.Color.RED);
-        line.setWidth(5);
-        line.setName("GPXLINE");
-        line.create();
+        let polyline = new vw.Collection(gpxLineArray);
+        gpxLine = new vw.geom.LineString(polyline);
+        gpxLine.setFillColor(vw.Color.RED);
+        gpxLine.setWidth(5);
+        gpxLine.setName("GPXLINE");
+        gpxLine.create();
 
         makeWaypointMark();
 
         $('#progressBar').text('지도가 준비되었습니다.');
-        $('#progressBar').css({'background-color': '#ffffff', 'height': '0px'});
+        $('#progressBar').fadeOut(1000);
+        $('#saveImage').show();
+        $('#lineWidth').show();
+        $('#lineColor').show();
     }
 
     function makeWaypointMark() {
@@ -127,13 +175,13 @@
 
             let labelOptions = {
                 showBackground : true // 라벨 백그라운드 적용유무
-                ,backgroundColor : ws3d.common.Color.fromCssColorString('#FFFFFF').withAlpha(0.9) // 백그라운드 css색상으로 부터 color생성하기
+                , backgroundColor : ws3d.common.Color.fromCssColorString('#FFFFFF').withAlpha(1) // 백그라운드 css색상으로 부터 color생성하기
                 , text: $(this).find('name').text() // 라벨 적용.
-                ,font: '12px 고딕,sans-serif' // 글자폰트
-                ,fillColor: ws3d.common.Color.fromCssColorString('#000000') // 글자색상
-                ,disableDepthTestDistance: Number.POSITIVE_INFINITY // 라벨이 지형에 파뭍히지 않도록 설정.
-                ,style : ws3d.common.LabelStyle.FILL // 라벨 글자 안쪽 및 외곽 색상 채우기 FILL, FILL_AND_OUTLINE, OUTLINE
-                ,pixelOffset : new ws3d.common.Cartesian2(0, -2) // 생략가능. 생략시 마커 위에 표시됨. x : 0 - 가운데, (음수)-50 - 왼쪽방향, (양수)50 - 오른쪽방향, y : 0 - 아이콘 바로 위, (음수)-50 : 위쪽 방향, (양수) 50 : 아래쪽방향
+                , font: '12px Gothic, sans-serif'// 글자폰트
+                , fillColor: ws3d.common.Color.fromCssColorString('#000000') // 글자색상
+                , disableDepthTestDistance: Number.POSITIVE_INFINITY // 라벨이 지형에 파뭍히지 않도록 설정.
+                , style : ws3d.common.LabelStyle.FILL // 라벨 글자 안쪽 및 외곽 색상 채우기 FILL, FILL_AND_OUTLINE, OUTLINE
+                , pixelOffset : new ws3d.common.Cartesian2(0, -2) // 생략가능. 생략시 마커 위에 표시됨. x : 0 - 가운데, (음수)-50 - 왼쪽방향, (양수)50 - 오른쪽방향, y : 0 - 아이콘 바로 위, (음수)-50 : 위쪽 방향, (양수) 50 : 아래쪽방향
             };
 
             map.createMarker('', markPos.x, markPos.y, '', markImage, 0, 0, 0, labelOptions);
