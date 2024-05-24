@@ -35,6 +35,13 @@
             position: relative;
             border: 1px solid #000;
         }
+        .ioClass {
+            position:absolute;
+            top:10px;
+            z-index: 100;
+            display: none;
+            height:24px;
+        }
     </style>
     <!-- API key를 포함하여 브이월드 API URL을 지정하여 호출, https가 아니면 사용하는 domain을 추가해야 함  -->
     <script type="text/javascript"
@@ -44,25 +51,27 @@
     <script type="text/javascript" src="/js/jquery-ui.js"></script>
     <script type="text/javascript" src="/js/FileSaver.min.js"></script>
     <script type="text/javascript" src="/js/lz-string-1.4.4-min.js"></script>
+    <script type="text/javascript" src="/js/routeutil.js"></script>
 </head>
 
 <body>
 <div class="parent">
     <div id="progressBar" ></div>
-    <button id="saveImage" style="position:absolute;top:10px;left:10px;z-index: 100; display: none;">이미지 저장</button>
-    <select id="lineWidth" style="position:absolute;top:10px;left:100px;z-index: 100; display: none;height:24px;">
+    <button id="saveImage" class="ioClass" style="left:10px;">이미지 저장</button>
+    <select id="lineWidth" class="ioClass" style="left:100px;">
         <option value="1">라인두께: 1</option>
         <option value="3" selected>라인두께: 3</option>
         <option value="5">라인두께: 5</option>
         <option value="10">라인두께: 10</option>
         <option value="25">라인두께: 25</option>
     </select>
-    <select id="lineColor" style="position:absolute;top:10px;left:195px;z-index: 100; display: none;height:24px;">
+    <select id="lineColor" class="ioClass" style="left:195px;">
         <option value="RED" selected>RED</option>
         <option value="YELLOW">YELLOW</option>
         <option value="WHITE">WHITE</option>
     </select>
-    <div id="vmap" class="top-div" style="width:100vw;height:97vh;position:center;left:0px;top:0px">
+    <button id="rotateButton" class="ioClass" style="left:270px;" value="start">Rotate Start</button>
+    <div id="vmap" class="top-div" style="width:100vw;height:97vh;position:center;left:0px;top:0px;">
     </div>
 </div>
 </body>
@@ -72,6 +81,8 @@
     let xmlData;
     let gpxLineArray = [];
     let gpxLine;
+    let midPos;
+    let rotate = null;
 
     function initMap(home, init) {
         let mapOptions = new vw.MapOptions(
@@ -114,7 +125,7 @@
         });
         console.log('6:' + new Date());
 
-        let midPos = gpxLineArray[Math.floor(gpxLineArray.length / 2)];
+        midPos = gpxLineArray[Math.floor(gpxLineArray.length / 2)];
         let startPos = gpxLineArray[0];
 
         let cameraHomePosition = new vw.CameraPosition(
@@ -146,7 +157,55 @@
             gpxLine.setFillColor(vw.Color[$(this).val()]);
             gpxLine.redraw();
         });
+        $('#rotateButton').click(function() {
+            if($('#rotateButton').val() == 'start')
+                rotateEvent();
+            else {
+                $('#rotateButton').text('Rotate Start').val('start');
+                rotate.stop();
+            }
+        });
+
     });
+
+    function rotateEvent() {
+        let startMidDistance = getDistance(
+            { lng: gpxLineArray[0].x, lat: gpxLineArray[0].y},
+            { lng: midPos.x, lat: midPos.y});
+
+        let midToEndDistance = getDistance(
+            { lng: midPos.x, lat: midPos.y},
+            { lng: gpxLineArray[gpxLineArray.length - 1].x, lat: gpxLineArray[gpxLineArray.length - 1].y});
+
+        let altitude;
+        startMidDistance > midToEndDistance ?
+            altitude = startMidDistance * 1.5 :
+            altitude = midToEndDistance * 1.5;
+
+        let centerPos = new vw.CoordZ(midPos.x, midPos.y, 0);
+        rotate = new vw.cameraAction.Rotate(centerPos, altitude);
+        rotate.setTarget(centerPos);
+        rotate.setDistance(altitude);
+        rotate.start();
+        $('#rotateButton').text('Rotate Stop').val('stop');
+
+    }
+
+    // function rotateControl(flag, loc, _altitude){
+    //     if(flag == "setLocation"){
+    //         if(rotate == null){
+    //             rotate = new vw.cameraAction.Rotate(loc, _altitude);
+    //             rotate.setSpeed(10);
+    //         }else{
+    //             rotate.setTarget(loc);
+    //             rotate.setDistance(_altitude);
+    //         }
+    //     }else if(flag == "start"){
+    //         rotate.start();
+    //     }else if(flag == "stop"){
+    //         rotate.stop();
+    //     }
+    // }
 
     vw.ws3dInitCallBack = function() {
         let polyline = new vw.Collection(gpxLineArray);
@@ -160,9 +219,7 @@
 
         $('#progressBar').text('지도가 준비되었습니다.');
         $('#progressBar').fadeOut(1000);
-        $('#saveImage').show();
-        $('#lineWidth').show();
-        $('#lineColor').show();
+        $('.ioClass').show();
     }
 
     function makeWaypointMark() {
