@@ -67,10 +67,14 @@
     </select>
     <select id="lineColor" class="ioClass" style="left:195px;">
         <option value="RED" selected>RED</option>
-        <option value="YELLOW">YELLOW</option>
-        <option value="WHITE">WHITE</option>
+        <option value="#009dff">Sky Blue</option>
     </select>
     <button id="rotateButton" class="ioClass" style="left:270px;" value="start">Rotate Start</button>
+    <button id="flyButton" class="ioClass" style="left:360px;" value="flyStart">Fly Start</button>
+    <button id="startButton" class="ioClass" style="left:430px;">Start Recording</button>
+    <button id="stopButton" disabled class="ioClass" style="left:545px;">Stop Recording</button>
+    <video id="videoPreview" controls></video>
+
     <div id="vmap" class="top-div" style="width:100vw;height:97vh;position:center;left:0px;top:0px;">
     </div>
 </div>
@@ -83,6 +87,11 @@
     let gpxLine;
     let midPos;
     let rotate = null;
+    let fly = true;
+    let flyLine;
+
+    let mediaRecorder;
+    let recordedChunks = [];
 
     function initMap(home, init) {
         let mapOptions = new vw.MapOptions(
@@ -153,10 +162,12 @@
             gpxLine.setWidth(Number($(this).val()));
             gpxLine.redraw();
         });
+
         $('#lineColor').change(function() {
             gpxLine.setFillColor(vw.Color[$(this).val()]);
             gpxLine.redraw();
         });
+
         $('#rotateButton').click(function() {
             if($('#rotateButton').val() == 'start')
                 rotateEvent();
@@ -165,8 +176,178 @@
                 rotate.stop();
             }
         });
+        $('#flyButton').click(function() {
+            flyAlongPath();
+            $('#flyButton').prop('disabled', true);
 
+/*            if($('#flyButton').val() == 'flyStart') {
+                //$('#flyButton').text('Fly Stop').val('flyStop');
+                //fly = true;
+                flyAlongPath();
+            } else {
+                //$('#flyButton').text('Fly Start').val('flyStart');
+                //fly = false;
+            }*/
+        });
+
+        $('#startButton').click(async function() {
+            try {
+                const stream = await navigator.mediaDevices.getDisplayMedia({
+                    video: true,
+                    audio: true
+                });
+
+                mediaRecorder = new MediaRecorder(stream);
+
+                mediaRecorder.ondataavailable = function(event) {
+                    if (event.data.size > 0) {
+                        recordedChunks.push(event.data);
+                    }
+                };
+
+                mediaRecorder.onstop = function() {
+                    const blob = new Blob(recordedChunks, {
+                        type: 'video/webm'
+                    });
+                    recordedChunks = [];
+
+                    const url = URL.createObjectURL(blob);
+                    $('#videoPreview').attr('src', url);
+
+                    const a = $('<a>')
+                        .attr('href', url)
+                        .attr('download', 'screen-recording.webm')
+                        .appendTo('body');
+                    a[0].click();
+                    a.remove();
+                    URL.revokeObjectURL(url);
+                };
+
+                mediaRecorder.start();
+                $('#startButton').prop('disabled', true);
+                $('#stopButton').prop('disabled', false);
+            } catch (err) {
+                console.error("Error: " + err);
+            }
+        });
+
+        $('#stopButton').click(function() {
+            mediaRecorder.stop();
+            $('#startButton').prop('disabled', false);
+            $('#stopButton').prop('disabled', true);
+        });
     });
+
+    /**
+     * 최대 60초내로 끝내야 하므로 24프레임 * 60초 = 1440프레임
+     * trkpt를 1440포인트으로 나누어 계산해서 처리해야 함
+     * @returns {Promise<void>}
+     */
+    async function flyAlongPath() {
+        let tilt = -20; // Initial tilt angle
+        let decreasing = true; // Direction flag
+        let time = 1440 / 2;
+        let gpxLineZ = [];
+        $(xmlData).find('trkpt').each(function(index) {
+            gpxLineZ.push(new vw.CoordZ(
+                Number($(this).attr('lon')),
+                Number($(this).attr('lat')),
+                Number($(this).find('ele').text())));
+        });
+
+        //if(flyLine != null) flyLine.remove(); 안됨...
+
+        let flyPolyline = [];
+        let flyCollection;
+        let interval;
+
+        if(gpxLineZ.length > time)
+            interval = Math.ceil(gpxLineZ.length / time);
+        else
+            interval = 1;
+
+        for(let i = 0; i < gpxLineZ.length; i += interval) {
+            if(!fly) {
+                console.log('fly false');
+                break;
+            }
+            let movePo = new vw.CoordZ(gpxLineZ[i].x, gpxLineZ[i].y, gpxLineZ[i].z * 3);
+
+            flyPolyline.push(movePo);
+            flyCollection = new vw.Collection(flyPolyline);
+            flyLine = new vw.geom.LineString(flyCollection);
+            flyLine.setFillColor(vw.Color.YELLOW);
+            flyLine.setWidth(20);
+            flyLine.setName("flyLine");
+            flyLine.create();
+
+            if (decreasing) {
+                tilt -= 1;
+                if (tilt <= -45) {
+                    decreasing = false; // Change direction to increasing
+                }
+            } else {
+                tilt += 1;
+                if (tilt >= -25) {
+                    decreasing = true; // Change direction to decreasing
+                }
+            }
+            let angle = calculateBearing(gpxLineZ[i], gpxLineZ[i + interval]);
+            //let angle = i % 360; // Ensures the angle is between 0 and 89
+
+            let direction = new vw.Direction(angle, tilt, 0);
+            console.log(i + ',' + direction + ',' + movePo);
+            map.moveTo(new vw.CameraPosition(movePo, direction));
+            await conditionalSleep(500);
+        }
+    }
+    function toRadians(degrees) {
+        return degrees * (Math.PI / 180);
+    }
+
+    // Function to convert radians to degrees
+    function toDegrees(radians) {
+        return radians * (180 / Math.PI);
+    }
+
+    // Function to calculate initial bearing between two points
+    //2지점이 아니라 2지점 사이에 있는 것과 다음 2지점 사이의 평균의 방향을 구하면 어떨지...
+    function calculateBearing(start, end) {
+        const lat1 = toRadians(start.y);
+        const lat2 = toRadians(end.y);
+        const deltaLong = toRadians(end.x - start.x);
+
+        const y = Math.sin(deltaLong) * Math.cos(lat2);
+        const x = Math.cos(lat1) * Math.sin(lat2) -
+            Math.sin(lat1) * Math.cos(lat2) * Math.cos(deltaLong);
+
+        let bearing = Math.atan2(y, x);
+        bearing = toDegrees(bearing);
+        bearing = (bearing + 360) % 360; // Normalize to 0-360
+
+        return bearing;
+    }
+
+    function conditionalSleep(ms) {
+        return new Promise(resolve => {
+            const interval = 50; // Check every 50ms
+            let elapsed = 0;
+            const checkFly = () => {
+                if (!fly) {
+                    console.log("Sleep interrupted due to fly being false.");
+                    resolve();
+                    return;
+                }
+                elapsed += interval;
+                if (elapsed >= ms) {
+                    resolve();
+                } else {
+                    setTimeout(checkFly, interval);
+                }
+            };
+            setTimeout(checkFly, interval);
+        });
+    }
 
     function rotateEvent() {
         let startMidDistance = getDistance(
@@ -190,22 +371,6 @@
         $('#rotateButton').text('Rotate Stop').val('stop');
 
     }
-
-    // function rotateControl(flag, loc, _altitude){
-    //     if(flag == "setLocation"){
-    //         if(rotate == null){
-    //             rotate = new vw.cameraAction.Rotate(loc, _altitude);
-    //             rotate.setSpeed(10);
-    //         }else{
-    //             rotate.setTarget(loc);
-    //             rotate.setDistance(_altitude);
-    //         }
-    //     }else if(flag == "start"){
-    //         rotate.start();
-    //     }else if(flag == "stop"){
-    //         rotate.stop();
-    //     }
-    // }
 
     vw.ws3dInitCallBack = function() {
         let polyline = new vw.Collection(gpxLineArray);
