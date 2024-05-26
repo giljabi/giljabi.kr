@@ -319,6 +319,9 @@ function analyzePoints(points) {
     let lowestTemp = 99;
     let highestTempPos = 0;
     let lowestTempPos = 0;
+    let summitHeight = 0;
+    let summitPos = 0;
+    let summitCoord = {};
 
     for (let i = 1; i < points.length; i++) {
         let elevationChange = points[i].ele - points[i - 1].ele;
@@ -328,8 +331,12 @@ function analyzePoints(points) {
             totalFall -= elevationChange;
         }
     }
+    let eles = points.map(point => point.ele).filter(ele => ele !== null);
     let atemps = points.map(point => point.atemp).filter(atemp => atemp !== null);
     let hrs = points.map(point => point.hr).filter(hr => hr !== null);
+
+    summitHeight = Math.max(...eles);
+    summitPos = eles.indexOf(summitHeight);
 
     maxHeartRate = Math.max(...hrs);
     maxHeartPos = hrs.indexOf(maxHeartRate);
@@ -344,9 +351,13 @@ function analyzePoints(points) {
         totalFall: Math.ceil(totalFall),
         maxHeartRate: maxHeartRate,
         maxHeartPos: maxHeartPos,
+        maxHeartCoord: points[maxHeartPos],
         highestTemp: highestTemp,
         highestTempPos: highestTempPos,
         lowestTemp: lowestTemp,
         lowestTempPos: lowestTempPos,
+        summitHeight: summitHeight,
+        summitPos: summitPos,
+        summitCoord: points[summitPos],
     };
 }

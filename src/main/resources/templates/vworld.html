@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html xmlns="http://www.w3.org/1999/html">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -67,13 +67,16 @@
     </select>
     <select id="lineColor" class="ioClass" style="left:195px;">
         <option value="RED" selected>RED</option>
-        <option value="#009dff">Sky Blue</option>
+        <option value="CYAN">CYAN</option>
+        <option value="YELLOW">YELLOW</option>
     </select>
     <button id="rotateButton" class="ioClass" style="left:270px;" value="start">Rotate Start</button>
     <button id="flyButton" class="ioClass" style="left:360px;" value="flyStart">Fly Start</button>
+    <!--
     <button id="startButton" class="ioClass" style="left:430px;">Start Recording</button>
     <button id="stopButton" disabled class="ioClass" style="left:545px;">Stop Recording</button>
     <video id="videoPreview" controls></video>
+-->
 
     <div id="vmap" class="top-div" style="width:100vw;height:97vh;position:center;left:0px;top:0px;">
     </div>
@@ -89,6 +92,7 @@
     let rotate = null;
     let fly = true;
     let flyLine;
+    let labelsData;
 
     let mediaRecorder;
     let recordedChunks = [];
@@ -119,20 +123,19 @@
         }, { passive: true });
 
         let gpxdata = '[[${gpxdata}]]';
+        let labels = '[[${labelsData}]]';
         xmlData = $(LZString.decompressFromBase64(gpxdata));
+        labelsData = JSON.parse(LZString.decompressFromBase64(labels));
 
         $('#progressBar').text('데이터를 읽고 있습니다. 데이터가 큰 경우 시간이 오래걸리지만 기다려 주세요.');
         $('#progressBar').css('background-color', '#4caf50');
 
-        console.log('5:' + new Date());
-        let trpktLength = $(xmlData).find('trkpt').length;
         $(xmlData).find('trkpt').each(function(index) {
             gpxLineArray.push(new vw.Coord(
                 Number($(this).attr('lon')),
                 Number($(this).attr('lat')))
             );
         });
-        console.log('6:' + new Date());
 
         midPos = gpxLineArray[Math.floor(gpxLineArray.length / 2)];
         let startPos = gpxLineArray[0];
@@ -178,16 +181,14 @@
         });
         $('#flyButton').click(function() {
             flyAlongPath();
-            $('#flyButton').prop('disabled', true);
-
-/*            if($('#flyButton').val() == 'flyStart') {
-                //$('#flyButton').text('Fly Stop').val('flyStop');
-                //fly = true;
+            if($('#flyButton').val() == 'flyStart') {
+                $('#flyButton').text('Fly Stop').val('flyStop');
+                fly = true;
                 flyAlongPath();
             } else {
-                //$('#flyButton').text('Fly Start').val('flyStart');
-                //fly = false;
-            }*/
+                $('#flyButton').text('Fly Start').val('flyStart');
+                fly = false;
+            }
         });
 
         $('#startButton').click(async function() {
@@ -196,24 +197,19 @@
                     video: true,
                     audio: true
                 });
-
                 mediaRecorder = new MediaRecorder(stream);
-
                 mediaRecorder.ondataavailable = function(event) {
                     if (event.data.size > 0) {
                         recordedChunks.push(event.data);
                     }
                 };
-
                 mediaRecorder.onstop = function() {
                     const blob = new Blob(recordedChunks, {
                         type: 'video/webm'
                     });
                     recordedChunks = [];
-
                     const url = URL.createObjectURL(blob);
                     $('#videoPreview').attr('src', url);
-
                     const a = $('<a>')
                         .attr('href', url)
                         .attr('download', 'screen-recording.webm')
@@ -237,6 +233,31 @@
             $('#stopButton').prop('disabled', true);
         });
     });
+    // Function to calculate a quadratic Bezier point
+    function quadraticBezier(p0, p1, p2, t) {
+        const x = (1 - t) * (1 - t) * p0.x + 2 * (1 - t) * t * p1.x + t * t * p2.x;
+        const y = (1 - t) * (1 - t) * p0.y + 2 * (1 - t) * t * p1.y + t * t * p2.y;
+        const z = (1 - t) * (1 - t) * p0.z + 2 * (1 - t) * t * p1.z + t * t * p2.z;
+        return { x, y, z };
+    }
+
+    // Function to generate a Bezier curve from gpxLine
+    function generateBezierCurve(gpxLine, segments = 100) {
+        let bezierCurve = [];
+
+        for (let i = 0; i < gpxLine.length - 2; i += 2) {
+            const p0 = gpxLine[i];
+            const p1 = gpxLine[i + 1];
+            const p2 = gpxLine[i + 2];
+
+            for (let t = 0; t <= 1; t += 1 / segments) {
+                const point = quadraticBezier(p0, p1, p2, t);
+                bezierCurve.push(point);
+            }
+        }
+
+        return bezierCurve;
+    }
 
     /**
      * 최대 60초내로 끝내야 하므로 24프레임 * 60초 = 1440프레임
@@ -246,7 +267,7 @@
     async function flyAlongPath() {
         let tilt = -20; // Initial tilt angle
         let decreasing = true; // Direction flag
-        let time = 1440 / 2;
+        let time = 1440 / 4; //짧게...
         let gpxLineZ = [];
         $(xmlData).find('trkpt').each(function(index) {
             gpxLineZ.push(new vw.CoordZ(
@@ -258,7 +279,6 @@
         //if(flyLine != null) flyLine.remove(); 안됨...
 
         let flyPolyline = [];
-        let flyCollection;
         let interval;
 
         if(gpxLineZ.length > time)
@@ -266,18 +286,22 @@
         else
             interval = 1;
 
+        //gpxLineZ = generateBezierCurve(gpxLineZ, interval);
+
         for(let i = 0; i < gpxLineZ.length; i += interval) {
+            flyLine = null;
+
             if(!fly) {
                 console.log('fly false');
                 break;
             }
-            let movePo = new vw.CoordZ(gpxLineZ[i].x, gpxLineZ[i].y, gpxLineZ[i].z * 3);
+            let movePo = new vw.CoordZ(gpxLineZ[i].x, gpxLineZ[i].y, gpxLineZ[i].z + 500)
 
             flyPolyline.push(movePo);
-            flyCollection = new vw.Collection(flyPolyline);
+            let flyCollection = new vw.Collection(flyPolyline);
             flyLine = new vw.geom.LineString(flyCollection);
             flyLine.setFillColor(vw.Color.YELLOW);
-            flyLine.setWidth(20);
+            flyLine.setWidth(10);
             flyLine.setName("flyLine");
             flyLine.create();
 
@@ -293,7 +317,6 @@
                 }
             }
             let angle = calculateBearing(gpxLineZ[i], gpxLineZ[i + interval]);
-            //let angle = i % 360; // Ensures the angle is between 0 and 89
 
             let direction = new vw.Direction(angle, tilt, 0);
             console.log(i + ',' + direction + ',' + movePo);
@@ -309,7 +332,51 @@
     function toDegrees(radians) {
         return radians * (180 / Math.PI);
     }
+    // Linear interpolation function
+    function lerp(start, end, t) {
+        return start + (end - start) * t;
+    }
 
+    // Function to smoothly move the angle
+    async function flyAlongPath2() {
+        let duration = 500; // Duration of each segment in milliseconds
+        let segments = 100; // Number of interpolation steps per segment
+        let gpxLineZ = [];
+        $(xmlData).find('trkpt').each(function(index) {
+            gpxLineZ.push(new vw.CoordZ(
+                Number($(this).attr('lon')),
+                Number($(this).attr('lat')),
+                Number($(this).find('ele').text())));
+        });
+        for (let i = 0; i < gpxLineZ.length - 1; i++) {
+            let startPoint = gpxLineZ[i];
+            let endPoint = gpxLineZ[i + 1];
+
+            let startDirection = new vw.Direction(0, -45, 0); // Initial direction
+            let endDirection = new vw.Direction(90, -45, 0); // Final direction
+
+            for (let step = 0; step <= segments; step++) {
+                let t = step / segments;
+
+                // Interpolate position
+                let x = lerp(startPoint.x, endPoint.x, t);
+                let y = lerp(startPoint.y, endPoint.y, t);
+                let z = lerp(startPoint.z, endPoint.z, t);
+                let movePo = new vw.CoordZ(x, y, z * 4);
+
+                // Interpolate direction
+                let heading = lerp(startDirection.heading, endDirection.heading, t);
+                let pitch = lerp(startDirection.pitch, endDirection.pitch, t);
+                let direction = new vw.Direction(heading, pitch, 0);
+
+                // Move camera
+                map.moveTo(new vw.CameraPosition(movePo, direction));
+
+                // Wait for the next frame
+                await new Promise(resolve => setTimeout(resolve, duration / segments));
+            }
+        }
+    }
     // Function to calculate initial bearing between two points
     //2지점이 아니라 2지점 사이에 있는 것과 다음 2지점 사이의 평균의 방향을 구하면 어떨지...
     function calculateBearing(start, end) {
@@ -380,7 +447,12 @@
         gpxLine.setName("GPXLINE");
         gpxLine.create();
 
-        makeWaypointMark();
+        if(labelsData.maxHeartRate > 0) {
+            makeHeartMark();
+            makeSummitMark();
+        } else {
+            makeWaypointMark();
+        }
 
         $('#progressBar').text('지도가 준비되었습니다.');
         $('#progressBar').fadeOut(1000);
@@ -405,9 +477,42 @@
                 , style : ws3d.common.LabelStyle.FILL // 라벨 글자 안쪽 및 외곽 색상 채우기 FILL, FILL_AND_OUTLINE, OUTLINE
                 , pixelOffset : new ws3d.common.Cartesian2(0, -2) // 생략가능. 생략시 마커 위에 표시됨. x : 0 - 가운데, (음수)-50 - 왼쪽방향, (양수)50 - 오른쪽방향, y : 0 - 아이콘 바로 위, (음수)-50 : 위쪽 방향, (양수) 50 : 아래쪽방향
             };
-
             map.createMarker('', markPos.x, markPos.y, '', markImage, 0, 0, 0, labelOptions);
         });
+    }
+
+    function makeHeartMark() {
+        let markImage = '/images/heart.png';
+
+        let labelOptions = {
+            showBackground : true // 라벨 백그라운드 적용유무
+            , backgroundColor : ws3d.common.Color.fromCssColorString('#FFFFFF').withAlpha(1) // 백그라운드 css색상으로 부터 color생성하기
+            , text: '최고 심박: ' + labelsData.maxHeartRate // 라벨 적용.
+            , font: '12px Gothic, sans-serif'// 글자폰트
+            , fillColor: ws3d.common.Color.fromCssColorString('#000000') // 글자색상
+            , disableDepthTestDistance: Number.POSITIVE_INFINITY // 라벨이 지형에 파뭍히지 않도록 설정.
+            , style : ws3d.common.LabelStyle.FILL // 라벨 글자 안쪽 및 외곽 색상 채우기 FILL, FILL_AND_OUTLINE, OUTLINE
+            , pixelOffset : new ws3d.common.Cartesian2(0, -2) // 생략가능. 생략시 마커 위에 표시됨. x : 0 - 가운데, (음수)-50 - 왼쪽방향, (양수)50 - 오른쪽방향, y : 0 - 아이콘 바로 위, (음수)-50 : 위쪽 방향, (양수) 50 : 아래쪽방향
+        };
+        map.createMarker('', labelsData.maxHeartCoord.lng, labelsData.maxHeartCoord.lat,
+            '', markImage, 0, 0, 0, labelOptions);
+    }
+
+    function makeSummitMark() {
+        let markImage = 'https://map.vworld.kr/images/v2map/spotmarker.png';
+        //let markImage = '/images/summit.png';
+
+        let labelOptions = {
+            showBackground : true // 라벨 백그라운드 적용유무
+            , backgroundColor : ws3d.common.Color.fromCssColorString('#FFFFFF').withAlpha(1) // 백그라운드 css색상으로 부터 color생성하기
+            , text: '정상 높이: ' + labelsData.summitHeight // 라벨 적용.
+            , font: '12px Gothic, sans-serif'// 글자폰트
+            , fillColor: ws3d.common.Color.fromCssColorString('#000000') // 글자색상
+            , disableDepthTestDistance: Number.POSITIVE_INFINITY // 라벨이 지형에 파뭍히지 않도록 설정.
+            , style : ws3d.common.LabelStyle.FILL // 라벨 글자 안쪽 및 외곽 색상 채우기 FILL, FILL_AND_OUTLINE, OUTLINE
+            , pixelOffset : new ws3d.common.Cartesian2(0, -2) // 생략가능. 생략시 마커 위에 표시됨. x : 0 - 가운데, (음수)-50 - 왼쪽방향, (양수)50 - 오른쪽방향, y : 0 - 아이콘 바로 위, (음수)-50 : 위쪽 방향, (양수) 50 : 아래쪽방향
+        };
+        map.createMarker('', labelsData.summitCoord.lng, labelsData.summitCoord.lat, '', markImage, 0, 0, 0, labelOptions);
     }
 </script>
 

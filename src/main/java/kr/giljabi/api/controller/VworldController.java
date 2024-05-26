@@ -18,10 +18,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class VworldController {
 
     @PostMapping("/vworld")
-    public String handlePostRequest(@RequestParam("gpxdata")  String data, Model model) {
+    public String handlePostRequest(@RequestParam("gpxdata")  String gpxdata,
+                                    @RequestParam("labelsData")  String labelsData,
+                                    Model model) {
         //String decompressed = LZString.decompressFromBase64(data);
-        System.out.println("data length: " + data.length());
-        model.addAttribute("gpxdata", data);
+        System.out.println("data length: " + gpxdata.length());
+        System.out.println("labelsData: " + labelsData);
+        model.addAttribute("gpxdata", gpxdata);
+        model.addAttribute("labelsData", labelsData);
         return "vworld";
     }
 

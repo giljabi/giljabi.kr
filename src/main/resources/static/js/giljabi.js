@@ -906,6 +906,11 @@ TCX
             value: LZString.compressToBase64(gpxData),
             style: 'display:none'
         }).appendTo(form);
+        $('<input>', {
+            name: 'labelsData',
+            value: LZString.compressToBase64(JSON.stringify(labelsData)),
+            style: 'display:none'
+        }).appendTo(form);
 
         window.open('', 'vworldWindow', 'width=800,height=700');
 
