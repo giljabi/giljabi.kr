@@ -28,7 +28,7 @@ body {
 
 .elevationContainer {
     box-sizing: border-box;
-    width: 932px;
+    width: 950px;
     height: 150px;
     border: 1px solid #ddd;
 }
@@ -38,6 +38,13 @@ body {
     height: 100%;
     font-size: 14px;
     line-height: 1.2em;
+}
+
+.fileContainer {
+    width: 210px;
+    height: 120px;
+    color: white;
+    border: 1px solid #ddd;
 }
 
 .waypoint {
@@ -370,6 +377,16 @@ h2 {
 }
 
 .containerLine {
+    width: 950px;
+    margin-bottom: 0;
+    vertical-align: top;
+    height: 35px;
+    display: flex;
+}
+
+.containerLineFile {
+    position: absolute;
+    left: 980px;
     margin-bottom: 0;
     vertical-align: top;
     height: 35px;
@@ -377,7 +394,7 @@ h2 {
 }
 
 .containerPlot {
-    width: 1150px;
+    width: 950px;
     margin-bottom: 0;
     vertical-align: top;
     height: 120px;

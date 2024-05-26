@@ -10,11 +10,23 @@ import kr.giljabi.api.service.ShareCoursesService;
 import kr.giljabi.api.utils.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.imaging.Imaging;
+import org.apache.commons.imaging.common.ImageMetadata;
+import org.apache.commons.imaging.formats.jpeg.JpegImageMetadata;
+import org.apache.commons.imaging.formats.tiff.TiffField;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.nio.file.*;
 
 /**
  * Open Route Service를 이용한 경로탐색
@@ -28,6 +40,9 @@ import java.util.Optional;
 @RestController
 @RequiredArgsConstructor
 public class RouterController {
+
+    @Value("${giljabi.image.path}")
+    private String imagePath;
 
     private final RouteService geometryService;
 
@@ -55,7 +70,41 @@ public class RouterController {
             response = new Response(ErrorCode.STATUS_EXCEPTION.getStatus(), e.getMessage());
             return response;
         }
+    }
 
+    @PostMapping("/api/1.0/imageUpload")
+    public Response handleFileUpload(@RequestParam("file") MultipartFile file) {
+        try {
+            //for (MultipartFile file : files) {
+                Path filePath = Paths.get(imagePath + "/" + file.getOriginalFilename());
+                Files.createDirectories(filePath.getParent());
+                Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+                getMetaData(file);
+                //}
+            return new Response(ErrorCode.STATUS_SUCCESS.getStatus(),
+                    "Files uploaded successfully.");
+        } catch (Exception e) {
+            return new Response(ErrorCode.STATUS_FAILURE.getStatus(), e.getMessage());
+        }
+    }
+
+    private void getMetaData(MultipartFile file) throws Exception {
+        ImageMetadata metadata = Imaging.getMetadata(file.getInputStream(), file.getOriginalFilename());
+
+        if (metadata instanceof JpegImageMetadata) {
+            JpegImageMetadata jpegMetadata = (JpegImageMetadata) metadata;
+            StringBuilder exifInfo = new StringBuilder();
+
+            // 모든 EXIF 필드를 가져옵니다.
+            List<TiffField> fields = jpegMetadata.getExif().getAllFields();
+
+            for (TiffField field : fields) {
+                String tagName = field.getTagName();
+                String tagValue = field.getValueDescription();
+                exifInfo.append(tagName).append(": ").append(tagValue).append("\n");
+            }
+        }
     }
 
     /**
