@@ -72,6 +72,7 @@
     </select>
     <button id="rotateButton" class="ioClass" style="left:270px;" value="start">Rotate Start</button>
     <button id="flyButton" class="ioClass" style="left:360px;" value="flyStart">Fly Start</button>
+    <span id="timer" class="ioClass" style="left:450px;color:white">00:00:00</span>
     <!--
     <button id="startButton" class="ioClass" style="left:430px;">Start Recording</button>
     <button id="stopButton" disabled class="ioClass" style="left:545px;">Stop Recording</button>
@@ -93,6 +94,7 @@
     let fly = true;
     let flyLine;
     let labelsData;
+    let timerInterval;
 
     let mediaRecorder;
     let recordedChunks = [];
@@ -110,6 +112,17 @@
 
         map = new vw.Map("vmap", mapOptions);
         //map.setLogoVisible(false);
+    }
+
+    function formatTime(seconds) {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+        return [
+            hours.toString().padStart(2, '0'),
+            minutes.toString().padStart(2, '0'),
+            secs.toString().padStart(2, '0')
+        ].join(':');
     }
 
     function sleep(ms) {
@@ -180,14 +193,23 @@
             }
         });
         $('#flyButton').click(function() {
-            flyAlongPath();
+            let timer = 0;
             if($('#flyButton').val() == 'flyStart') {
                 $('#flyButton').text('Fly Stop').val('flyStop');
                 fly = true;
                 flyAlongPath();
+
+                timerInterval = setInterval(function() {
+                    timer++;
+                    $('#timer').text(formatTime(timer));
+                }, 1000); // 1초마다 타이머 업데이트
+
             } else {
                 $('#flyButton').text('Fly Start').val('flyStart');
                 fly = false;
+
+                clearInterval(timerInterval);
+                timerInterval = null;
             }
         });
 
