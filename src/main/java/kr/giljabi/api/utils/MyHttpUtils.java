@@ -129,6 +129,7 @@ public class MyHttpUtils {
         return result;
     }
 
+    //LZ string compress
     public static byte[] byteCompress(byte[] data) throws IOException {
         log.info("xml file size:          " + String.format("%, 9dbyte", data.length));
         ByteArrayOutputStream baos = new ByteArrayOutputStream(data.length);

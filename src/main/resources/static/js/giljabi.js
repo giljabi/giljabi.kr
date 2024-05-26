@@ -476,13 +476,9 @@ $(document).ready(function () {
             type: 'GET',
             success: function(response, status) {
                 if (response.status === 0) {
-                    const binaryString = atob(response.data.xmlData); // Decode Base64
-                    const charData = binaryString.split('').map(c => c.charCodeAt(0));
-                    const byteArray = new Uint8Array(charData);
-                    const decompressedData = pako.inflate(byteArray, {to: 'string'}); // Decompress
-                    //console.log('Decompressed Data:', decompressedData);
-                    //let loadFile = $($.parseXML(decompressedData.replace(/&/g, "&amp;")))
-                    _fileExt = 'tcx';
+                    const decompressedData = LZString.decompressFromUTF16(response.data.xmlData);
+
+                    _fileExt = response.data.fileExt;
                     fileLoadAndDraw(decompressedData);
                 } else {
                     alert('Failed to fetch data');

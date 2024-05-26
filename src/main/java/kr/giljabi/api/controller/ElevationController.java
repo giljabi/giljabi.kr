@@ -1,5 +1,6 @@
 package kr.giljabi.api.controller;
 
+import com.github.diogoduailibe.lzstring4j.LZString;
 import io.swagger.annotations.ApiOperation;
 import kr.giljabi.api.geo.*;
 import kr.giljabi.api.request.RequestElevationSaveData;
@@ -142,8 +143,9 @@ public class ElevationController {
     public Response getMountainList100Gpxfile(@PathVariable String filename) {
         try {
             Gpx100Response gpx100Response = new Gpx100Response();
-            byte[] xmlFile = readFileAsString(filename).getBytes();
-            String xmlData = Base64Utils.encodeToString(MyHttpUtils.byteCompress(xmlFile));
+
+            //compressToUTF16가 더 좋은 압축률을 보여주지만(compressToBase64), 송수신시 호환성문제가 있을 수 있음
+            String xmlData = LZString.compressToUTF16(readFileAsString(filename));
             gpx100Response.setTrackName(filename);
             gpx100Response.setXmlData(xmlData);
             return new Response(Optional.of(gpx100Response));

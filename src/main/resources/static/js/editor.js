@@ -26,12 +26,8 @@ function getGpxTrk(lat, lon, ele) {
 let eleFalg = false;	//고도정보를 받아온 경우 true
 
 function drawGpx(response) {
-    const binaryString = atob(response.data.xmlData); // Decode Base64
-    const charData = binaryString.split('').map(c => c.charCodeAt(0));
-    const byteArray = new Uint8Array(charData);
-    const decompressedData = pako.inflate(byteArray, {to: 'string'}); // Decompress
-
-    basePathLoadGpx(decompressedData, '#0037ff');
+    const decodedString = LZString.decompressFromUTF16(response.data.xmlData);
+    basePathLoadGpx(decodedString, '#0037ff');
 }
 
 /**
