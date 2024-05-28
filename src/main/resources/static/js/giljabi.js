@@ -1353,6 +1353,36 @@ TCX
             type: "application/vnd.garmin.tcx+xml"
         }), $('#gpx_metadata_name').val() + '.' + _filetype);
 
+        //서버 전송 추가
+        let requestBody = {
+            speed: Number($('#averageV').val()),
+            fileext: _filetype,
+            xmldata: LZString.compressToUTF16(saveData),
+            filename: _uploadFilename,
+            pathname: $('#gpx_metadata_name').val(),
+            wpt: waypointSortByDistance.length,
+            trkpt: _gpxTrkseqArray.length,
+            distance: _gpxTrkseqArray[_gpxTrkseqArray.length - 1].dist
+        };
+
+        $.ajax({
+            type: 'post',
+            url: '/api/1.0/gpsSave',
+            dataType: 'json',
+            contentType: 'application/json; charset=UTF-8;',
+            data: JSON.stringify(requestBody),
+            async: true,
+            complete: function () {
+                console.log('complete');
+            },
+            success: function (response, status) {
+                console.log(response);
+                if (response.status !== 0) {
+                    alert(response.status + ',' + response.message);
+                }
+            }
+        });
+
         $('#blockingAds').hide();
     });
 });

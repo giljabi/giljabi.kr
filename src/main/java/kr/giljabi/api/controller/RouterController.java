@@ -3,7 +3,6 @@ package kr.giljabi.api.controller;
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.exif.ExifIFD0Directory;
-import com.drew.metadata.exif.ExifImageDirectory;
 import com.drew.metadata.exif.ExifSubIFDDirectory;
 import com.drew.metadata.exif.GpsDirectory;
 import com.drew.metadata.jpeg.JpegDirectory;
@@ -39,9 +38,6 @@ import java.nio.file.*;
 @RequiredArgsConstructor
 public class RouterController {
 
-    @Value("${giljabi.image.physicalPath}")
-    private String physicalPath;
-
     private final RouteService geometryService;
 
     /**
@@ -68,55 +64,6 @@ public class RouterController {
             response = new Response(ErrorCode.STATUS_EXCEPTION.getStatus(), e.getMessage());
             return response;
         }
-    }
-
-    @PostMapping("/api/1.0/imageUpload")
-    public Response handleFileUpload(@RequestParam("file") MultipartFile file,
-                                     @RequestParam("uuid") String uuid) {
-        try {
-            String location = String.format("%s/%s/%s/%s",
-                    this.physicalPath,
-                    CommonUtils.getCurrentTime("YYYYMM"),
-                    uuid,
-                    file.getOriginalFilename());
-            Path filePath = Paths.get(location);
-            Files.createDirectories(filePath.getParent());
-            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-            getMetaData(filePath.toFile());
-
-            //db에 저장하는 코드
-
-            return new Response(ErrorCode.STATUS_SUCCESS.getStatus(),
-                    "Files uploaded successfully.");
-        } catch (Exception e) {
-            return new Response(ErrorCode.STATUS_FAILURE.getStatus(), e.getMessage());
-        }
-    }
-
-    private void getMetaData(File file) throws Exception {
-        Metadata metadata = ImageMetadataReader.readMetadata(file);
-
-        JpegMetaInfo jpegMetaInfo = new JpegMetaInfo();
-
-        ExifIFD0Directory  exifIFD0Directory = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
-        jpegMetaInfo.setDateTime(exifIFD0Directory.getString(ExifIFD0Directory.TAG_DATETIME));
-        jpegMetaInfo.setMake(exifIFD0Directory.getString(ExifIFD0Directory.TAG_MAKE));
-        jpegMetaInfo.setModel(exifIFD0Directory.getString(ExifIFD0Directory.TAG_MODEL));
-        jpegMetaInfo.setOrientation(exifIFD0Directory.getInteger(ExifIFD0Directory.TAG_ORIENTATION));
-
-        JpegDirectory jpegDirectory = metadata.getFirstDirectoryOfType(JpegDirectory.class);
-        jpegMetaInfo.setImageWidth(jpegDirectory.getInteger(JpegDirectory.TAG_IMAGE_WIDTH));
-        jpegMetaInfo.setImageLength(jpegDirectory.getInteger(JpegDirectory.TAG_IMAGE_HEIGHT));
-
-        ExifSubIFDDirectory exifSubIFDDirectory = metadata.getFirstDirectoryOfType(ExifSubIFDDirectory.class);
-        jpegMetaInfo.setExifVersion(exifSubIFDDirectory.getString(ExifSubIFDDirectory.TAG_EXIF_VERSION));
-
-        GpsDirectory gpsDirectory = metadata.getFirstDirectoryOfType(GpsDirectory.class);
-        jpegMetaInfo.setAltitude(gpsDirectory.getDouble(GpsDirectory.TAG_ALTITUDE));
-        jpegMetaInfo.setGeoLocation(gpsDirectory.getGeoLocation());
-
-        log.info(jpegMetaInfo.toString());
     }
 
     /**

@@ -1,6 +1,5 @@
 package kr.giljabi.api.controller;
 
-import com.github.diogoduailibe.lzstring4j.LZString;
 import lombok.Data;
 import lombok.Getter;
 import org.springframework.stereotype.Controller;

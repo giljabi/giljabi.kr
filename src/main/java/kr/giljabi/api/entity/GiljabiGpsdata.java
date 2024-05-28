@@ -1,5 +1,7 @@
 package kr.giljabi.api.entity;
 
+import lombok.Setter;
+
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
@@ -13,6 +15,7 @@ import java.util.List;
  */
 @Entity
 @Table(name = "gpsdata")
+@Setter
 public class GiljabiGpsdata {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
