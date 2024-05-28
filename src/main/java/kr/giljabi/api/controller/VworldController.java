@@ -20,12 +20,14 @@ public class VworldController {
     @PostMapping("/vworld")
     public String handlePostRequest(@RequestParam("gpxdata")  String gpxdata,
                                     @RequestParam("labelsData")  String labelsData,
+                                    @RequestParam("uuid") String uuid,
                                     Model model) {
         //String decompressed = LZString.decompressFromBase64(data);
         System.out.println("data length: " + gpxdata.length());
         System.out.println("labelsData: " + labelsData);
         model.addAttribute("gpxdata", gpxdata);
         model.addAttribute("labelsData", labelsData);
+        model.addAttribute("uuid", uuid);
         return "vworld";
     }
 

@@ -88,7 +88,7 @@
 -->
     <div id="fileuploadDiv" class="ioClass" style="top:40px;left:10px;height:24px;">
         <form id="uploadForm" enctype="multipart/form-data">
-            <input type="file" id="files" name="files" accept=".jpg,.jpeg,.png"
+            <input type="file" id="files" name="files" accept=".jpg,.jpeg"
                    style="width:60px;" multiple>
             <button type="submit">Upload</button>
         </form>
@@ -110,6 +110,9 @@
     let flyLine;
     let labelsData;
     let timerInterval;
+    let uuid;
+    let gpxdata;
+    let labels;
 
     let mediaRecorder;
     let recordedChunks = [];
@@ -150,8 +153,10 @@
             //console.log('wheel event:' + new Date());
         }, { passive: true });
 
-        let gpxdata = '[[${gpxdata}]]';
-        let labels = '[[${labelsData}]]';
+        gpxdata = '[[${gpxdata}]]';
+        labels = '[[${labelsData}]]';
+        uuid = '[[${uuid}]]';
+
         xmlData = $(LZString.decompressFromBase64(gpxdata));
         labelsData = JSON.parse(LZString.decompressFromBase64(labels));
 
@@ -290,6 +295,8 @@
         reader.onload = function(e) {
             let arrayBuffer = e.target.result;
             let exifData = ExifReader.load(arrayBuffer);
+            console.log(exifData);
+
             let orientation = exifData.Orientation ? exifData.Orientation.value : 1;
 
             let image = new Image();
@@ -356,28 +363,31 @@
                         let base64Data = reader.result.split(',')[1];
                         let newDataUrl = 'data:image/jpeg;base64,' + base64Data;
 
-                        let zeroth = {};
+                        let jpeg = {};
                         let exif = {};
                         let gps = {};
                         let thumbnail = {};
 
-                        zeroth[piexif.ImageIFD.Make] = exifData["Make"].value;
-                        zeroth[piexif.ImageIFD.Model] = exifData["Model"].value;
-                        zeroth[piexif.ImageIFD.Orientation] = exifData["Orientation"].value;
+                        jpeg[piexif.ImageIFD.Make]         = exifData["Make"].value;
+                        jpeg[piexif.ImageIFD.Model]        = exifData["Model"].value;
+                        jpeg[piexif.ImageIFD.Orientation]  = exifData["Orientation"].value;
+                        jpeg[piexif.ImageIFD.ImageWidth]   = [width, 1];
+                        jpeg[piexif.ImageIFD.ImageLength]  = [height, 1];
+                        jpeg[piexif.ImageIFD.DateTime]     = exifData["DateTime"].value;
 
-                        exif[piexif.ExifIFD.ExifVersion] = exifData["ExifVersion"].value;
-                        exif[piexif.ExifIFD.DateTimeOriginal] = exifData["DateTimeOriginal"].value;
-                        exif[piexif.ExifIFD.PixelXDimension] = [800, 1];
-                        exif[piexif.ExifIFD.PixelYDimension] = [600, 1];
+                        exif[piexif.ExifIFD.ExifVersion]       = exifData["ExifVersion"].value;
+                        //exif[piexif.ExifIFD.DateTimeOriginal]  = exifData["DateTimeOriginal"].value;
 
-                        gps[piexif.GPSIFD.GPSLatitudeRef] = exifData["GPSLatitudeRef"].value;
-                        gps[piexif.GPSIFD.GPSLatitude] = exifData["GPSLatitude"].value;
+                        gps[piexif.GPSIFD.GPSLatitudeRef]  = exifData["GPSLatitudeRef"].value;
+                        gps[piexif.GPSIFD.GPSLatitude]     = exifData["GPSLatitude"].value;
                         gps[piexif.GPSIFD.GPSLongitudeRef] = exifData["GPSLongitudeRef"].value;
-                        gps[piexif.GPSIFD.GPSLongitude] = exifData["GPSLongitude"].value;
-                        gps[piexif.GPSIFD.GPSAltitudeRef] = exifData["GPSAltitudeRef"].value;
-                        gps[piexif.GPSIFD.GPSAltitude] = exifData["GPSAltitude"].value;
+                        gps[piexif.GPSIFD.GPSLongitude]    = exifData["GPSLongitude"].value;
+                        gps[piexif.GPSIFD.GPSAltitudeRef]  = exifData["GPSAltitudeRef"].value;
+                        gps[piexif.GPSIFD.GPSAltitude]     = exifData["GPSAltitude"].value;
 
-                        let exifObj = {"0th": zeroth, "Exif": exif, "GPS": gps, "1st": thumbnail};
+                        let exifObj = {"0th": jpeg, "Exif": exif, "GPS": gps}; //이해가 안되네...
+                        console.log(exifObj);
+
                         let exifStr = piexif.dump(exifObj);
 
                         let newDataUrlWithExif = piexif.insert(exifStr, newDataUrl);
@@ -386,6 +396,7 @@
                         // 서버로 POST 요청 전송
                         let formData = new FormData();
                         formData.append('file', newBlob, file.name);
+                        formData.append('uuid', uuid);
 
                         $.ajax({
                             url: '/api/1.0/imageUpload',

@@ -64,6 +64,10 @@ let minAlti = 0;
 let MYSPEED = 6;
 
 let labelsData = {};    //MAX HR, MIN HR, MAX ATEMP, MIN ATEMP
+
+//UUID, file 저장시 메인키로 사용
+let uuid;
+
 //POI마커를 모두 제거
 function removeCategryMarker() {
     poiCategoryMarkers.forEach(function (marker) {
@@ -874,7 +878,11 @@ TCX
         }
     }
 
+    //uuid는 3D 지도에 이미지를 첨부할때 메인키로 사용
     $('#viewVworld').click(function () {
+        uuid = crypto.randomUUID();
+        console.log(uuid);
+
         let gpxData = saveGpx(_uploadFilename, Number($('#averageV').val()),
             waypointSortByDistance, _gpxTrkseqArray);
         //let newWindow = window.open('', 'vworldWindow', 'width=800,height=600');
@@ -905,6 +913,11 @@ TCX
         $('<input>', {
             name: 'labelsData',
             value: LZString.compressToBase64(JSON.stringify(labelsData)),
+            style: 'display:none'
+        }).appendTo(form);
+        $('<input>', {
+            name: 'uuid',
+            value: uuid,
             style: 'display:none'
         }).appendTo(form);
 

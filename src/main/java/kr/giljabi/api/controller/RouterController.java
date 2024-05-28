@@ -1,31 +1,29 @@
 package kr.giljabi.api.controller;
 
+import com.drew.imaging.ImageMetadataReader;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.exif.ExifIFD0Directory;
+import com.drew.metadata.exif.ExifImageDirectory;
+import com.drew.metadata.exif.ExifSubIFDDirectory;
+import com.drew.metadata.exif.GpsDirectory;
+import com.drew.metadata.jpeg.JpegDirectory;
 import io.swagger.annotations.ApiOperation;
-import kr.giljabi.api.entity.ShareCourses;
 import kr.giljabi.api.geo.Geometry3DPoint;
+import kr.giljabi.api.geo.JpegMetaInfo;
 import kr.giljabi.api.request.RequestRouteData;
 import kr.giljabi.api.response.Response;
 import kr.giljabi.api.service.RouteService;
-import kr.giljabi.api.service.ShareCoursesService;
+import kr.giljabi.api.utils.CommonUtils;
 import kr.giljabi.api.utils.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.imaging.Imaging;
-import org.apache.commons.imaging.common.ImageMetadata;
-import org.apache.commons.imaging.formats.jpeg.JpegImageMetadata;
-import org.apache.commons.imaging.formats.tiff.TiffField;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.io.File;
+import java.util.*;
 import java.nio.file.*;
 
 /**
@@ -41,8 +39,8 @@ import java.nio.file.*;
 @RequiredArgsConstructor
 public class RouterController {
 
-    @Value("${giljabi.image.path}")
-    private String imagePath;
+    @Value("${giljabi.image.physicalPath}")
+    private String physicalPath;
 
     private final RouteService geometryService;
 
@@ -73,15 +71,22 @@ public class RouterController {
     }
 
     @PostMapping("/api/1.0/imageUpload")
-    public Response handleFileUpload(@RequestParam("file") MultipartFile file) {
+    public Response handleFileUpload(@RequestParam("file") MultipartFile file,
+                                     @RequestParam("uuid") String uuid) {
         try {
-            //for (MultipartFile file : files) {
-                Path filePath = Paths.get(imagePath + "/" + file.getOriginalFilename());
-                Files.createDirectories(filePath.getParent());
-                Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            String location = String.format("%s/%s/%s/%s",
+                    this.physicalPath,
+                    CommonUtils.getCurrentTime("YYYYMM"),
+                    uuid,
+                    file.getOriginalFilename());
+            Path filePath = Paths.get(location);
+            Files.createDirectories(filePath.getParent());
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-                getMetaData(file);
-                //}
+            getMetaData(filePath.toFile());
+
+            //db에 저장하는 코드
+
             return new Response(ErrorCode.STATUS_SUCCESS.getStatus(),
                     "Files uploaded successfully.");
         } catch (Exception e) {
@@ -89,22 +94,29 @@ public class RouterController {
         }
     }
 
-    private void getMetaData(MultipartFile file) throws Exception {
-        ImageMetadata metadata = Imaging.getMetadata(file.getInputStream(), file.getOriginalFilename());
+    private void getMetaData(File file) throws Exception {
+        Metadata metadata = ImageMetadataReader.readMetadata(file);
 
-        if (metadata instanceof JpegImageMetadata) {
-            JpegImageMetadata jpegMetadata = (JpegImageMetadata) metadata;
-            StringBuilder exifInfo = new StringBuilder();
+        JpegMetaInfo jpegMetaInfo = new JpegMetaInfo();
 
-            // 모든 EXIF 필드를 가져옵니다.
-            List<TiffField> fields = jpegMetadata.getExif().getAllFields();
+        ExifIFD0Directory  exifIFD0Directory = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
+        jpegMetaInfo.setDateTime(exifIFD0Directory.getString(ExifIFD0Directory.TAG_DATETIME));
+        jpegMetaInfo.setMake(exifIFD0Directory.getString(ExifIFD0Directory.TAG_MAKE));
+        jpegMetaInfo.setModel(exifIFD0Directory.getString(ExifIFD0Directory.TAG_MODEL));
+        jpegMetaInfo.setOrientation(exifIFD0Directory.getInteger(ExifIFD0Directory.TAG_ORIENTATION));
 
-            for (TiffField field : fields) {
-                String tagName = field.getTagName();
-                String tagValue = field.getValueDescription();
-                exifInfo.append(tagName).append(": ").append(tagValue).append("\n");
-            }
-        }
+        JpegDirectory jpegDirectory = metadata.getFirstDirectoryOfType(JpegDirectory.class);
+        jpegMetaInfo.setImageWidth(jpegDirectory.getInteger(JpegDirectory.TAG_IMAGE_WIDTH));
+        jpegMetaInfo.setImageLength(jpegDirectory.getInteger(JpegDirectory.TAG_IMAGE_HEIGHT));
+
+        ExifSubIFDDirectory exifSubIFDDirectory = metadata.getFirstDirectoryOfType(ExifSubIFDDirectory.class);
+        jpegMetaInfo.setExifVersion(exifSubIFDDirectory.getString(ExifSubIFDDirectory.TAG_EXIF_VERSION));
+
+        GpsDirectory gpsDirectory = metadata.getFirstDirectoryOfType(GpsDirectory.class);
+        jpegMetaInfo.setAltitude(gpsDirectory.getDouble(GpsDirectory.TAG_ALTITUDE));
+        jpegMetaInfo.setGeoLocation(gpsDirectory.getGeoLocation());
+
+        log.info(jpegMetaInfo.toString());
     }
 
     /**
