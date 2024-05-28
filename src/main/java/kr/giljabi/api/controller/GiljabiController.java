@@ -14,6 +14,7 @@ import kr.giljabi.api.request.RequestGpsDataDTO;
 import kr.giljabi.api.request.RequestRouteData;
 import kr.giljabi.api.response.Response;
 import kr.giljabi.api.service.GiljabiService;
+import kr.giljabi.api.service.MinioService;
 import kr.giljabi.api.service.RouteService;
 import kr.giljabi.api.utils.CommonUtils;
 import kr.giljabi.api.utils.ErrorCode;
@@ -47,31 +48,36 @@ import com.github.diogoduailibe.lzstring4j.LZString;
 @RequiredArgsConstructor
 public class GiljabiController {
 
-    private final GiljabiService giljabiService;
+    //private final GiljabiService giljabiService;
 
-    @Value("${giljabi.image.physicalPath}")
-    private String physicalPath;
+    private final MinioService minioService;
+
+//    @Value("${giljabi.image.physicalPath}")
+//    private String physicalPath;
 
     @PostMapping("/api/1.0/gpsSave")
     public Response gpsSave(final @Valid @RequestBody RequestGpsDataDTO gpsDataDTO) {
-        gpsDataDTO.setXmldata(LZString.decompressFromUTF16(gpsDataDTO.getXmldata()));
+        String xmlData = LZString.decompressFromUTF16(gpsDataDTO.getXmldata());
+        //minioService.uploadFile(xmlData, gpsDataDTO.getFilename() + "." + gpsDataDTO.getFileext());
+
+        gpsDataDTO.setXmldata(xmlData);
+        //giljabiService.save();
         log.info(gpsDataDTO.toString());
         return new Response(ErrorCode.STATUS_SUCCESS.getStatus(), "Files uploaded successfully.");
     }
 
     @PostMapping("/api/1.0/imageUpload")
     public Response handleFileUpload(@RequestParam("file") MultipartFile file,
-                                     @RequestParam("uuid") String uuid) {
+                                     @RequestParam("uuid") String uuidKey) {
         try {
-            String location = String.format("%s/%s/%s/%s",
-                    this.physicalPath,
+            String bucketName = "images";
+            String extension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
+            String filename = String.format("%s/%s/%s",
                     CommonUtils.getCurrentTime("YYYYMM"),
-                    uuid,
-                    file.getOriginalFilename());
-            Path filePath = Paths.get(location);
-            Files.createDirectories(filePath.getParent());
-            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-//
+                    uuidKey,
+                    CommonUtils.generateUUIDFilename(extension));
+            String imageUrl = minioService.uploadFileImage(bucketName, filename, file);
+            log.info("imageUrl: " + imageUrl);
 //            Metadata metadata = getMetaData(filePath.toFile());
 //
 //            GiljabiGpsdata gpsdata = new GiljabiGpsdata();

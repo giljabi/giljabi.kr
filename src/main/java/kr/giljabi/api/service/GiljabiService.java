@@ -9,7 +9,10 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 public class GiljabiService {
-    private final GiljabiRepository giljabiRepository;
+    private GiljabiRepository giljabiRepository;
+
+    @Autowired
+    private MinioService minioService;
 
     @Autowired
     public GiljabiService(GiljabiRepository giljabiRepository) {

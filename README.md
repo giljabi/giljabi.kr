@@ -1,6 +1,29 @@
 
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fparknamjun%2Fgiljabi&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 
+## 2024.05.28
+* gpx, tcx 파일을 업로드하면 경로정보를 DB에 저장
+* vworld 3d view 기능추가
+* minio(aws s3) 사용하여 파일 저장
+  * yml 추가
+```yaml
+minio:
+  url: http://localhost:9000
+  accessKey: 
+  secretKey: 
+  bucketName: was
+```
+  * MAC
+```text
+server
+brew install minio/stable/minio
+MINIO_ROOT_USER=admin MINIO_ROOT_PASSWORD=password minio server /mnt/data --console-address ":9001"
+
+client
+brew install minio/stable/mc
+mc alias set myminio/ http://MINIO-SERVER MYUSER MYPASSWO
+```
+
 ## 2024.04.30
 * 깔딱고개: 심박이 있는 경우 최고점 표기
 * ![img.png](src/main/resources/static/images/extenstion-hr-max.png)

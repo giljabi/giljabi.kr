@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.UUID;
 
 public class CommonUtils {
     public static String DEFAULT_TIMESTAMP_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS";
@@ -38,4 +39,9 @@ public class CommonUtils {
         Date date = new Date();
         return new Timestamp(date.getTime());
     }
+
+    public static String generateUUIDFilename(String fileExt) {
+        return UUID.randomUUID() + fileExt;
+    }
+
 }
