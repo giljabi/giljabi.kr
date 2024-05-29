@@ -12,6 +12,7 @@ import kr.giljabi.api.geo.Geometry3DPoint;
 import kr.giljabi.api.geo.JpegMetaInfo;
 import kr.giljabi.api.request.RequestGpsDataDTO;
 import kr.giljabi.api.request.RequestRouteData;
+import kr.giljabi.api.response.GiljabiResponse;
 import kr.giljabi.api.response.Response;
 import kr.giljabi.api.service.GiljabiService;
 import kr.giljabi.api.service.MinioService;
@@ -28,11 +29,14 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.File;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Optional;
+
 import com.github.diogoduailibe.lzstring4j.LZString;
 
 /**
@@ -52,8 +56,11 @@ public class GiljabiController {
 
     private final MinioService minioService;
 
-//    @Value("${giljabi.image.physicalPath}")
-//    private String physicalPath;
+    @Value("${minio.bucketName}")
+    private String bucketName;
+
+    @Value("${minio.url}")
+    private String s3url;
 
     @PostMapping("/api/1.0/gpsSave")
     public Response gpsSave(final @Valid @RequestBody RequestGpsDataDTO gpsDataDTO) {
@@ -70,7 +77,6 @@ public class GiljabiController {
     public Response handleFileUpload(@RequestParam("file") MultipartFile file,
                                      @RequestParam("uuid") String uuidKey) {
         try {
-            String bucketName = "images";
             String extension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
             String filename = String.format("%s/%s/%s",
                     CommonUtils.getCurrentTime("YYYYMM"),
@@ -78,12 +84,13 @@ public class GiljabiController {
                     CommonUtils.generateUUIDFilename(extension));
             String imageUrl = minioService.uploadFileImage(bucketName, filename, file);
             log.info("imageUrl: " + imageUrl);
-//            Metadata metadata = getMetaData(filePath.toFile());
-//
-//            GiljabiGpsdata gpsdata = new GiljabiGpsdata();
-//            gpsdata.setUuid(uuid);
+
+            JpegMetaInfo metadata = minioService.getMetaData(bucketName, imageUrl);
+
+            GiljabiGpsdata gpsdata = new GiljabiGpsdata();
+//            gpsdata.setUuid(uuidKey);
 //            gpsdata.setFilename(file.getOriginalFilename());
-//            gpsdata.setFileext("jpg");
+//            gpsdata.setFileext(extension.substring(1));
 //            gpsdata.setGpxname(file.getOriginalFilename());
 //            gpsdata.setWpt(0);
 //            gpsdata.setTrkpt(0);
@@ -91,38 +98,18 @@ public class GiljabiController {
 //            gpsdata.setDistance(0);
 
             //db에 저장하는 코드
-
-            return new Response(ErrorCode.STATUS_SUCCESS.getStatus(),
-                    "Files uploaded successfully.");
+            GiljabiResponse giljabiResponse = new GiljabiResponse();
+            giljabiResponse.setFilePath(s3url + "/" + imageUrl);
+            giljabiResponse.setFileKey(uuidKey);
+            giljabiResponse.setGeoLocation(metadata.getGeoLocation());
+            giljabiResponse.setAltitude(metadata.getAltitude());
+            return new Response(giljabiResponse);
         } catch (Exception e) {
             return new Response(ErrorCode.STATUS_FAILURE.getStatus(), e.getMessage());
         }
     }
 
-    private Metadata getMetaData(File file) throws Exception {
-        Metadata metadata = ImageMetadataReader.readMetadata(file);
 
-        JpegMetaInfo jpegMetaInfo = new JpegMetaInfo();
 
-        ExifIFD0Directory  exifIFD0Directory = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
-        jpegMetaInfo.setDateTime(exifIFD0Directory.getString(ExifIFD0Directory.TAG_DATETIME));
-        jpegMetaInfo.setMake(exifIFD0Directory.getString(ExifIFD0Directory.TAG_MAKE));
-        jpegMetaInfo.setModel(exifIFD0Directory.getString(ExifIFD0Directory.TAG_MODEL));
-        jpegMetaInfo.setOrientation(exifIFD0Directory.getInteger(ExifIFD0Directory.TAG_ORIENTATION));
-
-        JpegDirectory jpegDirectory = metadata.getFirstDirectoryOfType(JpegDirectory.class);
-        jpegMetaInfo.setImageWidth(jpegDirectory.getInteger(JpegDirectory.TAG_IMAGE_WIDTH));
-        jpegMetaInfo.setImageLength(jpegDirectory.getInteger(JpegDirectory.TAG_IMAGE_HEIGHT));
-
-        ExifSubIFDDirectory exifSubIFDDirectory = metadata.getFirstDirectoryOfType(ExifSubIFDDirectory.class);
-        jpegMetaInfo.setExifVersion(exifSubIFDDirectory.getString(ExifSubIFDDirectory.TAG_EXIF_VERSION));
-
-        GpsDirectory gpsDirectory = metadata.getFirstDirectoryOfType(GpsDirectory.class);
-        jpegMetaInfo.setAltitude(gpsDirectory.getDouble(GpsDirectory.TAG_ALTITUDE));
-        jpegMetaInfo.setGeoLocation(gpsDirectory.getGeoLocation());
-
-        log.info(jpegMetaInfo.toString());
-        return metadata;
-    }
 
 }

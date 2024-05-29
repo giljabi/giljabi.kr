@@ -405,6 +405,7 @@
                             contentType: false,
                             processData: false,
                             success: function(response) {
+                                drawUserMarkImage(response.data.filePath, response.data.geoLocation);
                                 console.log('File uploaded successfully.');
                             },
                             error: function(jqXHR, textStatus, errorThrown) {
@@ -696,10 +697,11 @@
 
     function makeSummitMark() {
         let markImage = 'https://map.vworld.kr/images/v2map/spotmarker.png';
-        //let markImage = '/images/summit.png';
 
         let labelOptions = {
             showBackground : true // 라벨 백그라운드 적용유무
+            , width : 100
+            , height : 100
             , backgroundColor : ws3d.common.Color.fromCssColorString('#FFFFFF').withAlpha(1) // 백그라운드 css색상으로 부터 color생성하기
             , text: '정상 높이: ' + labelsData.summitHeight // 라벨 적용.
             , font: '12px Gothic, sans-serif'// 글자폰트
@@ -709,6 +711,23 @@
             , pixelOffset : new ws3d.common.Cartesian2(0, -2) // 생략가능. 생략시 마커 위에 표시됨. x : 0 - 가운데, (음수)-50 - 왼쪽방향, (양수)50 - 오른쪽방향, y : 0 - 아이콘 바로 위, (음수)-50 : 위쪽 방향, (양수) 50 : 아래쪽방향
         };
         map.createMarker('', labelsData.summitCoord.lng, labelsData.summitCoord.lat, '', markImage, 0, 0, 0, labelOptions);
+    }
+
+    function drawUserMarkImage(markImage, geoLocation) {
+/*
+        let labelOptions = {
+            showBackground : true // 라벨 백그라운드 적용유무
+            , backgroundColor : ws3d.common.Color.fromCssColorString('#FFFFFF').withAlpha(1) // 백그라운드 css색상으로 부터 color생성하기
+            , text: ''
+            , font: ''
+            , fillColor: ''
+            , disableDepthTestDistance: Number.POSITIVE_INFINITY // 라벨이 지형에 파뭍히지 않도록 설정.
+            , style : ''
+            , pixelOffset : new ws3d.common.Cartesian2(0, 0)
+            , scale: 0.5
+        };
+        map.createMarker('', geoLocation.longitude, geoLocation.latitude, '', markImage, 0, 0, 0, labelOptions);
+*/
     }
 </script>
 
