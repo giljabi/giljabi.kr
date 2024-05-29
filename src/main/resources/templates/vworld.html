@@ -307,8 +307,8 @@
                 let canvas = document.createElement('canvas');
                 let ctx = canvas.getContext('2d');
 
-                let maxWidth = 1024;
-                let maxHeight = 1024;
+                let maxWidth = 100;
+                let maxHeight = 100;
                 let width = image.width;
                 let height = image.height;
 
@@ -714,7 +714,6 @@
     }
 
     function drawUserMarkImage(markImage, geoLocation) {
-/*
         let labelOptions = {
             showBackground : true // 라벨 백그라운드 적용유무
             , backgroundColor : ws3d.common.Color.fromCssColorString('#FFFFFF').withAlpha(1) // 백그라운드 css색상으로 부터 color생성하기
@@ -727,7 +726,6 @@
             , scale: 0.5
         };
         map.createMarker('', geoLocation.longitude, geoLocation.latitude, '', markImage, 0, 0, 0, labelOptions);
-*/
     }
 </script>
 
