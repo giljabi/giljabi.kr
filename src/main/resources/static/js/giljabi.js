@@ -1383,6 +1383,7 @@ TCX
             complete: function (response, status) {
             },
             success: function (response, status) {
+
                 console.log(response);
                 if (response.status !== 0) {
                     alert(response.status + ',' + response.message);
@@ -1399,8 +1400,20 @@ TCX
 
         if (files.length > 0) {
             for (let i = 0; i < files.length; i++) {
-                let savedFile = processFile(uuid, files[i]);
-                console.log(savedFile);
+                processFile(uuid, files[i]).then(savedFileInfo => {
+                    console.log('File info:', savedFileInfo);
+                    let imageSize = new kakao.maps.Size(44, 44);  // 마커 이미지의 크기
+                    let markerImage = new kakao.maps.MarkerImage(savedFileInfo.filePath, imageSize);
+                    let marker = new kakao.maps.Marker({
+                        position: new kakao.maps.LatLng(
+                            savedFileInfo.geoLocation.latitude,
+                            savedFileInfo.geoLocation.longitude), // 마커의 위치
+                        image: markerImage
+                    });
+                    marker.setMap(_map); // 지도 위에 마커를 표출합니다
+                }).catch(error => {
+                    console.error('Error:', error);
+                });
             }
         }
     });

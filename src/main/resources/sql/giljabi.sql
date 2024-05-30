@@ -56,7 +56,7 @@ CREATE TABLE gpsdataimage (
                               ele DOUBLE NOT NULL,
                               make VARCHAR(255),
                               model VARCHAR(255),
-                              originaldatetime VARCHAR(36),
+                              originaldatetime DATETIME,
                               fileurl VARCHAR(255) NOT NULL,
                               fileext VARCHAR(8) NOT NULL,
                               FOREIGN KEY (gpsdata_id) REFERENCES gpsdata(id) ON DELETE CASCADE
