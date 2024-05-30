@@ -414,16 +414,16 @@ $(document).ready(function () {
     // 커스텀 오버레이 컨텐츠를 설정합니다
     placeOverlay.setContent(contentNode);
 
-     kakao.maps.event.addListener(_map, 'dragend', function() {
-         removeCategryMarker()
-         searchPlaces();
-	});
-
-     kakao.maps.event.addListener(_map, 'zoom_changed', function() {
-	    let level = _map.getLevel();
-	    //console.log('현재 지도 레벨은 ' + level + '입니다');
+    kakao.maps.event.addListener(_map, 'dragend', function() {
+        removeCategryMarker()
         searchPlaces();
-	});
+    });
+
+    kakao.maps.event.addListener(_map, 'zoom_changed', function() {
+        let level = _map.getLevel();
+        //console.log('현재 지도 레벨은 ' + level + '입니다');
+        searchPlaces();
+    });
 
     let route = [];	//route api에서 사용하는 시작과 끝 위치정보
     kakao.maps.event.addListener(_map, 'click', function (mouseEvent) {
@@ -597,7 +597,7 @@ $(document).ready(function () {
                 Number(hr),
                 atemp,
                 0//gpx 파일에 slope 정보는 없는상태
-        );
+            );
             _gpxTrkseqArray.push(trackPoint);
             _trkPoly.push(new kakao.maps.LatLng(trackPoint.lat, trackPoint.lng));
         });
@@ -746,8 +746,8 @@ TCX
                 data: _eleArray,
                 color: 'green',
                 shadowSize: 0,
-                        //lines: {show: true},
-                        //points: {show: false},
+                //lines: {show: true},
+                //points: {show: false},
                 label: plotLabel,
             }]
             , {
@@ -770,7 +770,7 @@ TCX
                 yaxis: {
                     min: minAlti * 0.7,
                     max: maxAlti * 1.2,
-                    } //위/아래 여백
+                } //위/아래 여백
             });
 
         //
@@ -824,12 +824,12 @@ TCX
             if (!pos.x || !pos.y) {
                 return;
             }
-/*
-            console.log('pos.pageX:' + pos.pageX +
-                ',plot.getData()[0].data.length:' + plot.getData()[0].data.length +
-                ', _gpxTrkseqArray.length:' + _gpxTrkseqArray.length
-            ); // + ', item.dataIndex:' + item.dataIndex);
-*/
+            /*
+                        console.log('pos.pageX:' + pos.pageX +
+                            ',plot.getData()[0].data.length:' + plot.getData()[0].data.length +
+                            ', _gpxTrkseqArray.length:' + _gpxTrkseqArray.length
+                        ); // + ', item.dataIndex:' + item.dataIndex);
+            */
             latestPosition = pos;
             if (!updateLegendTimeout) {
                 setTimeout(function() {
@@ -844,20 +844,20 @@ TCX
         });
 
         // zoom을 사용하려는데...잘 안되네..
-/*        $("#elevationImage").bind("plotselected", function (event, ranges) {
-            makeSlope();
-            plot = $.plot("#elevationImage", [_eleArray],
-                $.extend(true, {}, options, {
-                xaxis: { min: ranges.xaxis.from, max: ranges.xaxis.to },
-                yaxis: { min: ranges.yaxis.from, max: ranges.yaxis.to }
-            }));
-            plot.setupGrid(); // 그리드 업데이트
-            plot.draw(); // 차트 다시 그리기
-            //drawPlot();
-        });
-        $("#elevationImage").bind("plotunselected", function (event) {
-            $("#selection").text("");
-        });*/
+        /*        $("#elevationImage").bind("plotselected", function (event, ranges) {
+                    makeSlope();
+                    plot = $.plot("#elevationImage", [_eleArray],
+                        $.extend(true, {}, options, {
+                        xaxis: { min: ranges.xaxis.from, max: ranges.xaxis.to },
+                        yaxis: { min: ranges.yaxis.from, max: ranges.yaxis.to }
+                    }));
+                    plot.setupGrid(); // 그리드 업데이트
+                    plot.draw(); // 차트 다시 그리기
+                    //drawPlot();
+                });
+                $("#elevationImage").bind("plotunselected", function (event) {
+                    $("#selection").text("");
+                });*/
 
         //웨이포인트 클릭과 같은 위치로 이동기능 추가, item.dataIndex를 사용할 수 있음
         $("#elevationImage").bind("plotclick", function (event, pos, item) {
@@ -870,9 +870,9 @@ TCX
             _markings.forEach(function (marking) {
                 let img = new Image();
                 img.onload = function() {
-                        let o = plot.pointOffset({x: marking.x, y: maxAlti * 1.2});
-                        canvascontext.drawImage(img, o.left - img.width / 2, o.top, 15, 15);
-                    }
+                    let o = plot.pointOffset({x: marking.x, y: maxAlti * 1.2});
+                    canvascontext.drawImage(img, o.left - img.width / 2, o.top, 15, 15);
+                }
                 img.src = '/images/'+ marking.sym.toLowerCase() +'.png'; // 이미지 경로
             });
         }
@@ -929,7 +929,7 @@ TCX
 
     $('#reset').click(function () {
         if (confirm('초기화 할까요?'))
-            location.href = '/giljabi.html';
+            location.reload();
     });
 
     $('#waypointinfo').click(function () {
@@ -1282,10 +1282,10 @@ TCX
         drawPlot();
 
         let gridMarkings = plot.getOptions().grid.markings;
-/*        _markings.forEach(function (mark) {
-            //아이콘의 세로선은 필요하지 않을 듯....
-            gridMarkings.push({color: '#f00', lineWidth: 1, xaxis: {from: mark.x, to: mark.x}, yaxis: {from: 0, to: mark.y}});
-        });*/
+        /*        _markings.forEach(function (mark) {
+                    //아이콘의 세로선은 필요하지 않을 듯....
+                    gridMarkings.push({color: '#f00', lineWidth: 1, xaxis: {from: mark.x, to: mark.x}, yaxis: {from: 0, to: mark.y}});
+                });*/
 
         //경사도에 따른 색상을 표시
         _eleArray.forEach(function (mark) {
@@ -1301,8 +1301,8 @@ TCX
             //let y = mark[1] - yaxis * 40;
             //console.log('mark[1]:'+ mark[1] +', yaxis:' + yaxis + ', y:' + y);
             gridMarkings.push({color: colorInfo.backgroundColor, lineWidth: 1,
-                    xaxis: {from: mark[0], to: mark[0]},
-                    yaxis: {from: 0, to: colorInfo.yPos}});
+                xaxis: {from: mark[0], to: mark[0]},
+                yaxis: {from: 0, to: colorInfo.yPos}});
         });
 
         plot.setupGrid(); // 사용하지 않아도 되나, grid 정보가 변경될것을 대비해서 미리 추가해둠
@@ -1343,7 +1343,7 @@ TCX
         let saveData;
         if (_filetype === 'gpx') {
             saveData = saveGpx(_uploadFilename, Number($('#averageV').val()),
-                 waypointSortByDistance, _gpxTrkseqArray);
+                waypointSortByDistance, _gpxTrkseqArray);
         } else {
             saveData = saveTcx(_uploadFilename, Number($('#averageV').val()),
                 waypointSortByDistance, _gpxTrkseqArray);
