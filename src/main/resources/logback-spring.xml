@@ -4,22 +4,21 @@
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
     <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
 
-    <property name="LOG_PATTERN" value="[%d{yyyy-MM-dd HH:mm:ss}:%-3relative]  %clr(%-5level) %clr(${PID:-}){magenta} %clr(%X{traceId}){red} %clr(---){faint} %clr([%15.15thread]){faint} %clr(%-40.40logger{36}){cyan} %clr(:){faint} %msg%n"/>
-    <property name="LOG_PATTERN_FILE" value="[%d{yyyy-MM-dd HH:mm:ss}:%-3relative]  %-5level ${PID:-} %X{traceId} --- [%15.15thread] %-40.40logger{36} : %msg%n"/>
+    <!--    <property name="LOG_PATTERN"      value="[%d{yyyy-MM-dd HH:mm:ss}.SSS] %clr(%-5level) %clr(${PID:-}){magenta} %clr(-){faint} %clr([%15.15thread]){faint} %clr(%logger{36}.%M)(%L) {cyan} %clr(:){faint} %msg%n"/>-->
+    <property name="LOG_PATTERN" value="[%d{yyyy-MM-dd HH:mm:ss}.%-3relative] %-5level ${PID:-}[%15.15thread] %logger{36}.%M : %msg%n"/>
 
     <!-- Local -->
     <springProfile name="local">
-        <logger name="kr.giljabi.api" level="debug"/>
+        <logger name="kr.giljabi.api" level="INFO"/>
         <logger name="org.springframework.web" level="OFF"/>
         <logger name="org.springframework.security" level="INFO"/>
         <logger name="com.zaxxer.hikari" level="INFO"/>
         <logger name="org.hibernate.SQL" level="INFO"/>
         <logger name="org.hibernate.type" level="INFO"/>
         <logger name="org.hibernate" level="INFO"/>
-
         <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
             <encoder>
-                <pattern>${LOG_PATTERN}</pattern>
+                <pattern>${LOG_PATTERN_FILE}</pattern>
             </encoder>
         </appender>
 
@@ -27,11 +26,11 @@
             <file>./logs/giljabi.log</file>
 
             <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-                <pattern>LOG_PATTERN_FILE</pattern>
+                <pattern>${LOG_PATTERN}</pattern>
             </encoder>
 
             <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-                <fileNamePattern>./logs/giljabi.%d{yyyy-MM-dd}_%i.log</fileNamePattern>
+                <fileNamePattern>./logs/giljabi.%d{yyyy-MM-dd}_%i.log.gz</fileNamePattern>
                 <maxHistory>30</maxHistory>
                 <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                     <maxFileSize>10MB</maxFileSize>
@@ -43,9 +42,8 @@
             <appender-ref ref="CONSOLE"/>
             <appender-ref ref="FILE"/>
         </root>
-
     </springProfile>
-
+<!--
     <springProfile name="real">
         <logger name="kr.giljabi.api" level="info"/>
         <logger name="org.springframework.web" level="INFO"/>
@@ -57,7 +55,7 @@
 
         <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
             <encoder>
-                <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{5} - %msg%n</pattern>
+                <pattern>${LOG_PATTERN}</pattern>
             </encoder>
         </appender>
 
@@ -65,11 +63,11 @@
             <file>./logs/giljabi.log</file>
 
             <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+                <pattern>${LOG_PATTERN}</pattern>
             </encoder>
 
             <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-                <fileNamePattern>./logs/giljabi.%d{yyyy-MM-dd}_%i.log</fileNamePattern>
+                <fileNamePattern>./logs/giljabi.%d{yyyy-MM-dd}_%i.log.gz</fileNamePattern>
                 <maxHistory>30</maxHistory>
                 <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                     <maxFileSize>100MB</maxFileSize>
@@ -84,5 +82,5 @@
         </root>
 
     </springProfile>
-
+-->
 </configuration>
