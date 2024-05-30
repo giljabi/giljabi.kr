@@ -12,10 +12,11 @@ public class RequestGpsDataDTO {
     private String xmldata;
     private String fileext;
     private String filename;
-    private String pathname;
+    private String trackName;
     private int wpt;
     private long trkpt;
     private double distance;
+    private String uuid;
 
 }
 

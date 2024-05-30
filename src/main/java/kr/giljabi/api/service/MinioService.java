@@ -27,7 +27,7 @@ public class MinioService {
     @Autowired
     private MinioClient minioClient;
 
-    public void uploadFile(String bucketName, String data, String filename) {
+    public String saveFile(String bucketName, String filename, String data) {
         try (InputStream inputStream = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8))) {
             minioClient.putObject(
                     PutObjectArgs.builder()
@@ -36,6 +36,8 @@ public class MinioService {
                             .stream(inputStream, data.length(), -1)
                             .contentType("application/octet-stream")
                             .build());
+            return bucketName + "/" + filename;
+
         } catch (Exception e) {
             throw new RuntimeException("Error occurred while uploading file to MinIO", e);
         }

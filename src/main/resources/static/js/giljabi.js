@@ -66,7 +66,7 @@ let MYSPEED = 6;
 let labelsData = {};    //MAX HR, MIN HR, MAX ATEMP, MIN ATEMP
 
 //UUID, file 저장시 메인키로 사용
-let uuid;
+let uuid = '';
 
 //POI마커를 모두 제거
 function removeCategryMarker() {
@@ -880,7 +880,11 @@ TCX
 
     //uuid는 3D 지도에 이미지를 첨부할때 메인키로 사용
     $('#viewVworld').click(function () {
-        uuid = crypto.randomUUID();
+        if(uuid == null) {
+            alert("gpx 저장 후 사용할 수 있습니다.");
+            return;
+        }
+
         console.log(uuid);
 
         let gpxData = saveGpx(_uploadFilename, Number($('#averageV').val()),
@@ -1353,16 +1357,20 @@ TCX
             type: "application/vnd.garmin.tcx+xml"
         }), $('#gpx_metadata_name').val() + '.' + _filetype);
 
+        //파일의 메인키로 사용
+        uuid = crypto.randomUUID();
+
         //서버 전송 추가
         let requestBody = {
             speed: Number($('#averageV').val()),
             fileext: _filetype,
             xmldata: LZString.compressToUTF16(saveData),
             filename: _uploadFilename,
-            pathname: $('#gpx_metadata_name').val(),
+            trackName: $('#gpx_metadata_name').val(),
             wpt: waypointSortByDistance.length,
             trkpt: _gpxTrkseqArray.length,
-            distance: _gpxTrkseqArray[_gpxTrkseqArray.length - 1].dist
+            distance: _gpxTrkseqArray[_gpxTrkseqArray.length - 1].dist,
+            uuid: uuid,
         };
 
         $.ajax({
@@ -1372,8 +1380,7 @@ TCX
             contentType: 'application/json; charset=UTF-8;',
             data: JSON.stringify(requestBody),
             async: true,
-            complete: function () {
-                console.log('complete');
+            complete: function (response, status) {
             },
             success: function (response, status) {
                 console.log(response);
@@ -1385,6 +1392,19 @@ TCX
 
         $('#blockingAds').hide();
     });
+
+    $('#uploadForm').on('submit', function(event) {
+        event.preventDefault(); // 기본 폼 제출 동작 막기
+        let files = $('#files')[0].files;
+
+        if (files.length > 0) {
+            for (let i = 0; i < files.length; i++) {
+                let savedFile = processFile(uuid, files[i]);
+                console.log(savedFile);
+            }
+        }
+    });
+
 });
 
 /**

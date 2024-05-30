@@ -1,11 +1,9 @@
 package kr.giljabi.api.controller;
 
-import lombok.Data;
-import lombok.Getter;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /**
@@ -30,9 +28,17 @@ public class VworldController {
         return "vworld";
     }
 
-    @Data
-    @Getter
-    public class GpxData {
-        public String gpxdata;
+    @GetMapping("/googlemap")
+    public String googleMap(Model model) {
+//        System.out.println("data length: " + gpxdata.length());
+//        System.out.println("labelsData: " + labelsData);
+//        model.addAttribute("gpxdata", gpxdata);
+//        model.addAttribute("labelsData", labelsData);
+//        model.addAttribute("uuid", uuid);
+
+        return "googlemap";
     }
+
+
 }
+

@@ -1,10 +1,12 @@
 package kr.giljabi.api.entity;
 
+import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -16,21 +18,31 @@ import java.util.List;
 @Entity
 @Table(name = "gpsdata")
 @Setter
-public class GiljabiGpsdata {
+@Getter
+public class GiljabiGpsdata implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private long id;
 
     @Column(nullable = false, length = 36)
     private String uuid;
 
+    @CreationTimestamp
     @Column(nullable = false)
-    private LocalDateTime datetime;
+    private LocalDateTime createat;
+
+    @UpdateTimestamp
+    @Column(nullable = false)
+    private LocalDateTime changeat;
 
     @Column(nullable = false, length = 255)
-    @Email(message = "이메일 형식이 올바르지 않습니다")
-    @NotNull(message = "이메일은 필수 입력 항목입니다")
-    private String email;
+    //@Email(message = "이메일 형식이 올바르지 않습니다")
+    //@NotNull(message = "이메일은 필수 입력 항목입니다")
+    private String user;
+
     @Column(nullable = false)
     private int wpt;
 
@@ -38,21 +50,26 @@ public class GiljabiGpsdata {
     private long trkpt;
 
     @Column(nullable = false, length = 255)
-    private String gpxname;
+    private String trackname;
 
     @Column(nullable = false)
-    private float speed;
+    private double speed;
 
     @Column(nullable = false)
-    private float distance;
+    private double distance;
 
-    @Column(nullable = true, length = 255)
-    private String filename;
+    @Column(nullable = true, length = 512)
+    private String fileurl;
 
     //gpx, tcx
     @Column(nullable = true, length = 16)
     private String fileext;
 
     @OneToMany(mappedBy = "gpsdata", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<GiljabiGpsdataimg> gpsdataimgs;
+    private List<GiljabiGpsdataImage> gpsdataimages;
+    public void addGpsImage(GiljabiGpsdataImage gpsImage) {
+        gpsdataimages.add(gpsImage);
+        gpsImage.setGpsdata(this);
+    }
+
 }
