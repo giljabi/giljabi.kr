@@ -13,6 +13,8 @@ minio:
   secretKey: 
   bucketName: was
 ```
+  * Windows
+  * minio server X:\home\mnt
   * MAC
 ```text
 server
@@ -388,4 +390,70 @@ xsi:schemaLocation="http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2 h
 	</Course>
 </Courses>
 </TrainingCenterDatabase>
+```
+### 로그설정(local)
+```text
+server:
+  port: 9090
+
+#mysql 설정,
+spring:
+  datasource:
+#    url: 
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    username: 
+#    password: 
+    url: 
+    #driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+    driver-class-name: com.mysql.cj.jdbc.Driver #p6spy start를 사용
+    username: 
+    password: 
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+        ddl-auto: none #create, update
+        #format_sql: true
+        #show_sql: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  devtools:
+    restart:
+      enabled: false
+  thymeleaf:
+    cache: false
+
+jwt:
+  #accessTokenSecret: 4RT/2hAAJmC6i2FzmezBbaCVMD9FtsuExyjaVWJ5xRA=
+  accessTokenSecret: accessTokenSecret
+  accessTokenExpiration: 604800000
+
+giljabi:
+  openrouteservice:
+    apikey: 
+    directionUrl: https://api.openrouteservice.org/v2/directions/%s/json
+  google:
+    elevation:
+      #google elevation get api는 요청된 좌표 적절히 잘라서 8192를 넘지 않아야 한다. 400이 적당
+      #400은 소스 코드에 추가하자.
+      googleGetCount: 400
+      apikey: 
+      elevationUrl: https://maps.googleapis.com/maps/api/elevation/json
+  mountain100:
+    path: ./forest100
+  image:
+    physicalPath: /temp/giljabi/images
+    urlPath: /hello/images
+
+  xmlshare: #gpx, tcx 공유파일 경로, 삭제하지 않는 파일들...
+    #path: /home/bitnami/apps/tomcat7/wasfiles/share
+    path: /temp/giljabi/wasfiles/share
+
+minio:
+  url: http://localhost:9000
+  accessKey: 
+  secretKey: 
+  bucketName: service
 ```
