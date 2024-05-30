@@ -26,3 +26,38 @@ CREATE TABLE tcxsharecourses (
                                    flag char(1) DEFAULT NULL,
                                    PRIMARY KEY (fileid), UNIQUE(filehash)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 COMMENT='경로공유정보';
+
+drop table gpsdata;
+CREATE TABLE gpsdata (
+                         id INT AUTO_INCREMENT PRIMARY KEY,
+                         uuid VARCHAR(36) NOT null unique,
+                         user VARCHAR(36) NOT null,
+                         createat DATETIME NOT null DEFAULT now(),
+                         changeat DATETIME NOT null DEFAULT now(),
+                         wpt INT NOT NULL,
+                         trkpt BIGINT NOT NULL,
+                         trackname VARCHAR(255) NOT NULL,
+                         speed double NOT NULL,
+                         distance double NOT NULL,
+                         fileurl varchar(255),
+                         fileext varchar(3)
+);
+
+drop table gpsdataimage;
+CREATE TABLE gpsdataimage (
+                              id INT AUTO_INCREMENT PRIMARY KEY,
+                              gpsdata_id INT NOT NULL,
+                              createat DATETIME NOT NULL DEFAULT now(),
+                              changeat DATETIME NOT NULL DEFAULT now(),
+                              width INT NOT NULL,
+                              height INT NOT NULL,
+                              lat DOUBLE NOT NULL,
+                              lng DOUBLE NOT NULL,
+                              ele DOUBLE NOT NULL,
+                              make VARCHAR(255),
+                              model VARCHAR(255),
+                              originaldatetime VARCHAR(36),
+                              fileurl VARCHAR(255) NOT NULL,
+                              fileext VARCHAR(8) NOT NULL,
+                              FOREIGN KEY (gpsdata_id) REFERENCES gpsdata(id) ON DELETE CASCADE
+);
