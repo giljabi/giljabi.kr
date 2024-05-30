@@ -1,5 +1,10 @@
 package kr.giljabi.api.entity;
 
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
@@ -9,9 +14,11 @@ import java.time.LocalDateTime;
  * @Description
  * gps 정보가 없으면 저장하지 않음
  */
+@Setter
+@Getter
 @Entity
-@Table(name = "gpsdata")
-public class GiljabiGpsdataimg {
+@Table(name = "gpsdataimage")
+public class GiljabiGpsdataImage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -20,20 +27,22 @@ public class GiljabiGpsdataimg {
     @JoinColumn(name = "gpsdata_id", nullable = false)
     private GiljabiGpsdata gpsdata;
 
+    @CreationTimestamp
     @Column(nullable = false)
-    private LocalDateTime datetime;
+    private LocalDateTime createat;
 
-    @Column(nullable = false, length = 255)
-    private String filename; //uuid
+    @UpdateTimestamp
+    @Column(nullable = false)
+    private LocalDateTime changeat;
 
-    @Column(nullable = false, length = 10)
-    private String fileext;
+    @Column(nullable = true)
+    private String originaldatetime;
 
     @Column(nullable = false)
     private int width;
 
     @Column(nullable = false)
-    private int length;
+    private int height;
 
     @Column(nullable = false)
     private double lat;
@@ -50,6 +59,9 @@ public class GiljabiGpsdataimg {
     @Column(length = 255)
     private String model;//카메라 모델
 
-    @Column(length = 16)
-    private String exif;    //exif 버전
+    @Column(nullable = false, length = 255)
+    private String fileurl; //uuid
+
+    @Column(nullable = false, length = 3)
+    private String fileext;
 }
