@@ -1,22 +1,19 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
-      lang="ko">
-
+<html lang="en">
 <head>
-
-    <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
     <title>대한민국의 모든 경로</title>
-    <link rel="icon" type="image/png" sizes="32x32" href="/images/giljabi-logo.png">
-    <link rel="icon" type="image/png" sizes="144x144" href="/images/giljabi-logo.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-
     <meta name="description" content="tcx, gpx 경로만들기">
     <meta name="keyword" content="가민 tcx, garmin tcx, gpx, tcx,웨이포인트,waypoint,그란폰도,메디오폰도">
 
     <meta http-equiv="Expires" content="-1">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Cache-Control" content="no-cache">
+
+    <link type="text/css" href="/js/jquery-ui.css" rel="stylesheet"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
 
     <script type="text/javascript"
             src="//dapi.kakao.com/v2/maps/sdk.js?appkey=27f606d8edf497ab495f16d1d983047f&libraries=services"></script>
@@ -40,118 +37,403 @@
     <script type="text/javascript" src="/js/waypoint.js"></script>
     <script type="text/javascript" src="/js/xmlwriter.js"></script>
     <script type="text/javascript" src="/js/giljabi.js"></script>
-    <link type="text/css" href="/js/jquery-ui.css" rel="stylesheet"/>
-    <link type="text/css" href="/js/giljabi.css" rel="stylesheet"/>
+
+
+    <style>
+        body, p, tr, th, td, ul, li, select, input {
+            color: #000000;
+            font-family: AppleGotihc, "Malgun Gothic", dotum;
+            font-size: 12px
+        }
+        #map {
+            position: relative; /* 또는 absolute */
+            z-index: 999; /* 높은 z-index 값 */
+            width: 100%;
+            height: 100%;
+        }
+        .container {
+            display: table;
+            width: 100%;
+            min-width: 1170px;
+            height: 90vh;
+            position: relative;
+            border-collapse: collapse;
+        }
+        .modes {
+            position: absolute;
+            align-content: center;
+            top: -10px;
+            left: 0px;
+            z-index: 1;
+            background-color: white;
+        }
+
+        .row {
+            display: table-row;
+        }
+        .cell {
+            display: table-cell;
+            /*border: 1px solid black;*/
+            width: 100%;
+            min-width: 210px;
+            overflow-y: auto;
+            vertical-align: top;
+        }
+        .cell.wide {
+            width: 960px;
+        }
+
+        .containerPlot {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 0;
+            vertical-align: top;
+            height: 120px;
+            width: 99%;
+            /*background-image: url('/images/charter-ad.png');*/
+        }
+
+        .containerPlot.elevation {
+            min-margin: 950px;
+            width: 100%;
+            /*height: 115px;*/
+            /*font-size: 14px;*/
+            /*line-height: 1.2em;*/
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            border-bottom: 1px dotted black;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 100%;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 0;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -60px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #555 transparent transparent transparent;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* 메뉴 스타일 설정 */
+        #topMenu {
+            height: 30px; /* 메인 메뉴의 높이 */
+            width: 100%;
+        }
+
+        #topMenu ul { /* 메인 메뉴 안의 ul을 설정함: 상위메뉴의 ul+하위 메뉴의 ul */
+            list-style-type: none; /* 메인 메뉴 안의 ul 내부의 목록 표시를 없애줌 */
+            margin: 0px; /* 메인 메뉴 안의 ul의 margin을 없앰 */
+            padding: 0px; /* 메인 메뉴 안의 ul의 padding을 없앰 */
+        }
+
+        #topMenu ul li { /* 메인 메뉴 안에 ul 태그 안에 있는 li 태그의 스타일 적용(상위/하위메뉴 모두) */
+            color: white; /* 글씨 색을 흰색으로 설정 */
+            background-color: #2d2d2d; /* 배경 색을 RGB(2D2D2D)로 설정 */
+            float: left; /* 왼쪽으로 나열되도록 설정 */
+            line-height: 30px; /* 텍스트 한 줄의 높이를 30px로 설정 */
+            vertical-align: middle; /* 세로 정렬을 가운데로 설정 */
+            text-align: center; /* 텍스트를 가운데로 정렬 */
+            position: relative; /* 해당 li 태그 내부의 top/left 포지션 초기화 */
+        }
+
+        .menuLink, .submenuLink { /* 상위 메뉴와 하위 메뉴의 a 태그에 공통으로 설정할 스타일 */
+            text-decoration: none; /* a 태그의 꾸밈 효과 제거 */
+            display: block; /* a 태그의 클릭 범위를 넓힘 */
+            width: 150px; /* 기본 넓이를 150px로 설정 */
+            font-size: 12px; /* 폰트 사이즈를 12px로 설정 */
+            font-weight: bold; /* 폰트를 굵게 설정 */
+            font-family: "Trebuchet MS", Dotum; /* 기본 폰트를 영어/한글 순서대로 설정 */
+        }
+
+        .menuLink { /* 상위 메뉴의 글씨색을 흰색으로 설정 */
+            color: white;
+        }
+
+        .topMenuLi:hover .menuLink { /* 상위 메뉴의 li에 마우스오버 되었을 때 스타일 설정 */
+            color: red; /* 글씨 색 빨간색 */
+            background-color: #4d4d4d; /* 배경색을 밝은 회색으로 설정 */
+        }
+
+        .submenuLink { /* 하위 메뉴의 a 태그 스타일 설정 */
+            color: #2d2d2d; /* 글씨 색을 RGB(2D2D2D)로 설정 */
+            background-color: white; /* 배경색을 흰색으로 설정 */
+            border: solid 1px black; /* 테두리를 설정 */
+            margin-top: -1px; /* 위 칸의 하단 테두리와 아래칸의 상단 테두리가 겹쳐지도록 설덩 */
+        }
+
+        .longLink { /* 좀 더 긴 메뉴 스타일 설정 */
+            width: 210px; /* 넓이는 190px로 설정 */
+        }
+
+        .submenu { /* 하위 메뉴 스타일 설정 */
+            position: absolute; /* html의 flow에 영향을 미치지 않게 absolute 설정 */
+            height: 0px; /* 초기 높이는 0px로 설정 */
+            overflow: hidden; /* 실 내용이 높이보다 커지면 해당 내용 감춤 */
+            transition: height .2s; /* height를 변화 시켰을 때 0.2초간 변화 되도록 설정(기본) */
+            -webkit-transition: height .2s; /* height를 변화 시켰을 때 0.2초간 변화 되도록 설정(구버전 크롬/사파라ㅣ) */
+            -moz-transition: height .2s; /* height를 변화 시켰을 때 0.2초간 변화 되도록 설정(구버전 파폭) */
+            -o-transition: height .2s; /* height를 변화 시켰을 때 0.2초간 변화 되도록 설정(구버전 오페라) */
+        }
+
+        .topMenuLi:hover .submenu { /* 상위 메뉴에 마우스 모버한 경우 그 안의 하위 메뉴 스타일 설정 */
+            height: 100px; /* 높이를 93px로 설정 */
+            position: absolute;
+            z-index: 100;
+        }
+
+        .submenuLink:hover { /* 하위 메뉴의 a 태그의 마우스 오버 스타일 설정 */
+            color: red; /* 글씨색을 빨간색으로 설정 */
+            background-color: #dddddd; /* 배경을 RGB(DDDDDD)로 설정 */
+        }
+
+        /* 광고 영역 스타일 설정 */
+        .adsense-container {
+            width: 20%;
+        }
+
+        /* plot 그래프 스타일 설정 */
+        .slopeinfobox {
+            position: absolute;
+            display: none;
+            border: 1px solid #fdd;
+            padding: 2px;
+            background-color: #fee;
+            color: white;
+            opacity: 1.0;
+            font-size: 10px;
+        }
+        .timeClass {
+            font-family: "Lucida Console", Monaco, monospace;
+        }
+        .blockingAds {
+            z-index: 1011;
+            position: absolute;
+            padding: 0px;
+            margin: 0px;
+            height: 120px;
+            width: 920px;
+            top: 30%;
+            left: 150px;
+            text-align: center;
+            color: rgb(0, 0, 0);
+            border: 3px solid rgb(170, 0, 0);
+            background-color: rgb(255, 255, 255);
+            cursor: wait;
+        }
+        .ui-tooltip {
+            padding: 2px 3px;
+            color: blue;
+            border-radius: 5px;
+            box-shadow: 0 0 2px green;
+            font-size: 12px;
+        }
+
+        /* waypoint style */
+        .infowindow {
+            font-size: 10px;
+            border-spacing: 1px;
+        }
+
+        .pointImage {
+            position: absolute;
+            left: -8px;
+            top: -11px;
+            cursor: pointer;
+            background-color: #11ffee00;
+        }
+
+        .pointText {
+            position: absolute;
+            left: 9px;
+            top: -11px;
+            height: 10px;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 5px;
+            font-size: 12px;
+            text-align: left;
+            white-space: pre;
+            word-wrap: break-word;
+        }
+        .pointText {
+            position: absolute;
+            left: 9px;
+            top: -11px;
+            height: 10px;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 5px;
+            font-size: 12px;
+            text-align: left;
+            white-space: pre;
+            word-wrap: break-word;
+        }
+
+        .waypointStyle {
+            border-collapse: collapse;
+            border-style: Solid;
+            border: 1px solid #4F81A2;
+            rules: all;
+            table-layout: fixed;
+            padding-left: 0px;
+            vertical-align: middle;
+        }
+    </style>
 
 </head>
 
 <body>
-<div w3-include-html="/menu.html"></div>
+
+<div id="topMenu" w3-include-html="/menu.html"></div>
 <div class="container">
-    <div class="left-div">
-        <div id="map" style="width:100%;height:100%;"></div>
-        <p class="modes">기능선택:
-            <select id="direction" style="width: 150px;">
-                <option value="waypoint">waypoint 만들기</option>
-                <option value="cycling-road">cycling-road 경로탐색</option>
-                <option value="cycling-mountain">cycling-mountain 경로탐색</option>
-                <option value="foot-hiking">foot-hiking 경로탐색</option>
-            </select>
-            <input class='mapType' type="checkbox" id="chkTerrain"/><label for="chkTerrain">지형정보</label>
-            <input type="radio" name="daumpoi" value="CS2">편의점
-            <input type="radio" name="daumpoi" value="AD5">숙박
-            <input type="radio" name="daumpoi" value="CE7">카페
-            <input type="radio" name="daumpoi" value="FD6">음식점
-            <input type="radio" name="daumpoi" value="" checked>없음
-            <br>
-        </p>
-
+    <div class="row">
+        <div class="cell wide" style="width:100%;height:100%;">
+            <div id="map" style="z-index: auto"></div>
+            <p class="modes">기능선택:
+                <select id="direction" style="width: 150px;">
+                    <option value="waypoint">waypoint 만들기</option>
+                    <option value="cycling-road">cycling-road 경로탐색</option>
+                    <option value="cycling-mountain">cycling-mountain 경로탐색</option>
+                    <option value="foot-hiking">foot-hiking 경로탐색</option>
+                </select>
+                <input class='mapType' type="checkbox" id="chkTerrain"/><label for="chkTerrain">지형정보</label>
+                <input type="radio" name="daumpoi" value="CS2">편의점
+                <input type="radio" name="daumpoi" value="AD5">숙박
+                <input type="radio" name="daumpoi" value="CE7">카페
+                <input type="radio" name="daumpoi" value="FD6">음식점
+                <input type="radio" name="daumpoi" value="" checked>없음
+                <br>
+        </div>
+        <div class="cell" style="width:210px;border: 1px solid #ddd;">
+            <table style="border: 2px">
+                <tr>
+                    <td style="width: 10px; align:center">I</td>
+                    <td style="width: 100px;">Name</td>
+                    <td style="width: 40px; align: right;">km</td>
+                    <td style="width: 50px; align: right;">Time</td>
+                </tr>
+                <tbody id="waypointinfoViewTable"></tbody>
+            </table>
+        </div>
     </div>
-    <div class="right-div">
-        <table style="border: 2px">
-            <tr>
-                <td style="width: 10px; align:center">I</td>
-                <td style="width: 100px;">Name</td>
-                <td style="width: 40px; align: right;">km</td>
-                <td style="width: 50px; align: right;">Time</td>
-            </tr>
-            <tbody id="waypointinfoViewTable"></tbody>
-        </table>
+    <div class="row" >
+        <div class="cell" style="height: 30px;vertical-align: middle">
+            <input type="button" id="reset"
+                   title="초기화 버튼을 누르면 모든 정보가 삭제됩니다."
+                   value="초기화"/>
+            <input type="file" id="fileInput" style="width:150px;"
+                   accept=".gpx,.tcx">
+            <input type="text" id="gpx_metadata_name"
+                   title="gpx/tcx 파일내부에 저장되는 이름과 파일명이 동일하게 저장됩니다."
+                   style="width:80px;"
+                   placeholder="경로명">
+            평속(Km/H) : <input type="text" id="averageV" value="2"
+                              title="속도 6km 기준으로 기울기 정보가 다르게 표현됩니다. 속도 변경 후 이정표 정보를 클릭하면됩니다."
+                              style="width:15px;">
+            <input type="radio" name="filetype" value="gpx" checked="checked">gpx
+            <input type="radio" name="filetype" value="tcx">tcx
+            <input type="button" id="saveas" value="저장"/>
+            <input type="button" id="reverse" value="반대방향"/>
+            <input type="button" id="waypointinfo"
+                   title="들머리/날머리를 양끝에 넣어주면 보기가 편합니다."
+                   value="이정표 정보"/>
+            <input type="button" id="waypointexcelsave" value="이정표 엑셀저장"/>
+            <input type="button" id="viewVworld" value="3D View"/>
+            <!--
+            파일병합: <input type="file" id="mergeInput" accept=".gpx,.tcx" size="0" disabled>
+            --->
+        </div>
+
+        <div class="cell">
+            <div id="fileuploadDiv">
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <input type="file" id="files" name="files" accept=".jpg,.jpeg"
+                           style="width:90px;" multiple>
+                    <button type="submit">Upload</button>
+                </form>
+            </div>
+        </div>
     </div>
-    <!--
-    <div class="right-div-ad"></div>
-    -->
-</div>
-
-<div class="containerLine">
-    <p>
-        <input type="button" id="reset"
-               title="초기화 버튼을 누르면 모든 정보가 삭제됩니다."
-               value="초기화"/>
-        <input type="file" id="fileInput" style="width:150px;"
-               accept=".gpx,.tcx">
-        <input type="text" id="gpx_metadata_name"
-               title="gpx/tcx 파일내부에 저장되는 이름과 파일명이 동일하게 저장됩니다."
-               style="width:80px;"
-               placeholder="경로명">
-        평속(Km/H) : <input type="text" id="averageV" value="2"
-                          title="속도 6km 기준으로 기울기 정보가 다르게 표현됩니다. 속도 변경 후 이정표 정보를 클릭하면됩니다."
-                          style="width:15px;">
-        <input type="radio" name="filetype" value="gpx" checked="checked">gpx
-        <input type="radio" name="filetype" value="tcx">tcx
-        <input type="button" id="saveas" value="저장"/>
-        <input type="button" id="reverse" value="반대방향"/>
-        <input type="button" id="waypointinfo"
-               title="들머리/날머리를 양끝에 넣어주면 보기가 편합니다."
-               value="이정표 정보"/>
-        <input type="button" id="waypointexcelsave" value="이정표 엑셀저장"/>
-        <input type="button" id="viewVworld" value="3D View"/>
-        <!--
-        파일병합: <input type="file" id="mergeInput" accept=".gpx,.tcx" size="0" disabled>
-        -->
-    </p>
-</div>
-
-<div class="containerPlot">
-    <div id="elevationImage" class="elevation"></div>
+    <div class="row">
+        <div class="cell">
+            <div class="containerPlot" style="border: 1px solid #ddd;">
+                <div id="elevationImage" class="containerPlot elevation"></div>
+            </div>
+        </div>
+        <div class="cell">
+            <div style="height: 120px;">
+                asd<br>asd<br>asd<br>asd<br>asd<br>asd<br>asd<br>asd<br>asd<br>asd<br>asd<br>asd<br>asd<br>asd<br>asd<br>asd<br>asd<br>asd<br>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div style="display: none;" id="viewWaypoint" class='waypointStyle'>
-	<div style='width:150px;'>
-		<img src="images/waypoint.png" id="selectWaypointIcon">
-		<input type='text' id="waypointName" size='11'>
-	</div>
-	<div style='margin-left:20px;layout:fixed;'>
-		<table>
-			<tr>
-				<td><img class='waypointIcon' src="images/left.png" height="33" width="26" id="left"></td>
-				<td><img class='waypointIcon' src="images/straight.png" height="33" width="26" id="straight"></td>
-				<td><img class='waypointIcon' src="images/right.png" height="33" width="26" id="right"></td>
-			</tr>
-			<tr>
-				<td><img class='waypointIcon' src="images/sprint.png" height="33" width="26" id="sprint"></td>
-				<td><img class='waypointIcon' src="images/generic.png" height="33" width="26" id="generic"></td>
-				<td><img class='waypointIcon' src="images/summit.png" height="33" width="26" id="summit"></td>
-			</tr>
-			<tr>
-				<td><img class='waypointIcon' src="images/water.png" height="33" width="26" id="water"></td>
-				<td><img class='waypointIcon' src="images/danger.png" height="33" width="26" id="danger"></td>
-				<td><img class='waypointIcon' src="images/food.png" height="33" width="26" id="food"></td>
-			</tr>
-		</table>
-	</div>
+    <div style='width:150px;'>
+        <img src="images/waypoint.png" id="selectWaypointIcon">
+        <input type='text' id="waypointName" size='11'>
+    </div>
+    <div style='margin-left:20px;layout:fixed;'>
+        <table>
+            <tr>
+                <td><img class='waypointIcon' src="images/left.png" height="44" width="44" id="left"></td>
+                <td><img class='waypointIcon' src="images/straight.png" height="44" width="44" id="straight"></td>
+                <td><img class='waypointIcon' src="images/right.png" height="44" width="44" id="right"></td>
+            </tr>
+            <tr>
+                <td><img class='waypointIcon' src="images/sprint.png" height="44" width="44" id="sprint"></td>
+                <td><img class='waypointIcon' src="images/generic.png" height="44" width="44" id="generic"></td>
+                <td><img class='waypointIcon' src="images/summit.png" height="44" width="44" id="summit"></td>
+            </tr>
+            <tr>
+                <td><img class='waypointIcon' src="images/water.png" height="44" width="44" id="water"></td>
+                <td><img class='waypointIcon' src="images/danger.png" height="44" width="44" id="danger"></td>
+                <td><img class='waypointIcon' src="images/food.png" height="44" width="44" id="food"></td>
+            </tr>
+        </table>
+    </div>
 </div>
 
 <!-- 서버에 정보 요청 후 기다리는 UI-->
 <div id="blockingAds" class="blockUI" style="display:none">
-	<div class="blockUI blockMsg blockElement blockingAds">
-		<div>
-			<br><br>
-			<img src="/images/ajax-loader.gif" width="200px" height="20px">
-			&nbsp;&nbsp;&nbsp;&nbsp;잠시만 기다려 주세요....
-		</div>
-	</div>
+    <div class="blockUI blockMsg blockElement blockingAds">
+        <div>
+            <br><br>
+            <img src="/images/ajax-loader.gif" width="200px" height="20px">
+            &nbsp;&nbsp;&nbsp;&nbsp;잠시만 기다려 주세요....
+        </div>
+    </div>
 </div>
+</body>
 
 <script type="text/javascript">
     includeHTML();
@@ -159,5 +441,5 @@
         alert('이 웹사이트는 Chrome 브라우저에서 최적으로 작동됩니다. Chrome 브라우저를 사용해 주세요.');
     }
 </script>
-</body>
+
 </html>
