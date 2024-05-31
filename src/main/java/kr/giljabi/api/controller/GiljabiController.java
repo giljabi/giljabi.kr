@@ -6,7 +6,8 @@ import kr.giljabi.api.geo.JpegMetaInfo;
 import kr.giljabi.api.request.RequestGpsDataDTO;
 import kr.giljabi.api.response.GiljabiResponse;
 import kr.giljabi.api.response.Response;
-import kr.giljabi.api.service.GiljabiService;
+import kr.giljabi.api.service.GiljabiGpsDataImageService;
+import kr.giljabi.api.service.GiljabiGpsDataService;
 import kr.giljabi.api.service.MinioService;
 import kr.giljabi.api.utils.CommonUtils;
 import kr.giljabi.api.utils.ErrorCode;
@@ -19,8 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.validation.Valid;
 
 import com.github.diogoduailibe.lzstring4j.LZString;
-
-import java.util.Optional;
 
 /**
  * Open Route Service를 이용한 경로탐색
@@ -35,7 +34,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class GiljabiController {
 
-    private final GiljabiService giljabiService;
+    private final GiljabiGpsDataService gpsService;
+    private final GiljabiGpsDataImageService imageService;
 
     private final MinioService minioService;
 
@@ -74,7 +74,7 @@ public class GiljabiController {
 
             log.info("savedFilename: " + savedFilename);
 
-            giljabiService.saveGpsdata(gpsdata);
+            gpsService.saveGpsdata(gpsdata);
 
             GiljabiResponse giljabiResponse = new GiljabiResponse();
             giljabiResponse.setFileKey(gpsDataDTO.getUuid());
@@ -98,7 +98,7 @@ public class GiljabiController {
             String imageUrl = minioService.uploadFileImage(bucketName, filename, file);
             log.info("imageUrl: " + imageUrl);
 
-            GiljabiGpsdata gpsdata = giljabiService.findByGpsdataUuid(uuidKey);
+            GiljabiGpsdata gpsdata = gpsService.findByUuid(uuidKey);
 
             JpegMetaInfo metadata = minioService.getMetaData(bucketName, imageUrl);
 
@@ -116,7 +116,7 @@ public class GiljabiController {
             gpsImage.setModel(metadata.getModel());
             gpsImage.setOriginaldatetime(metadata.getDateTime());
             gpsImage.setOriginalfname(file.getOriginalFilename());
-            giljabiService.saveGpsImage(gpsImage, gpsdata);
+            imageService.saveGpsImage(gpsImage, gpsdata);
 
             GiljabiResponse giljabiResponse = new GiljabiResponse();
             giljabiResponse.setFilePath(s3url + "/" + imageUrl);
