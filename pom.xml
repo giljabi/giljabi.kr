@@ -156,12 +156,6 @@
             <version>8.2.2</version>
         </dependency>
 
-        <!-- ava 8 date/time type `java.time.LocalDateTime` not supported by default: -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>2.12.3</version>
-        </dependency>
     </dependencies>
 
     <build>

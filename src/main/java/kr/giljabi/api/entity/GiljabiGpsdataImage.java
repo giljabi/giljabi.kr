@@ -1,12 +1,10 @@
 package kr.giljabi.api.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
 
 /**
  * @Author : njpark@hyosung.com
@@ -18,22 +16,21 @@ import java.time.LocalDateTime;
 @Getter
 @Entity
 @Table(name = "gpsdataimage")
-public class GiljabiGpsdataImage {
+public class GiljabiGpsdataImage implements java.io.Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "gpsdata_id", nullable = false)
+    @JsonIgnore
     private GiljabiGpsdata gpsdata;
 
-    @CreationTimestamp
-    @Column(nullable = false)
-    private LocalDateTime createat;
+    @Column(nullable = false, length = 36)
+    private String createat;
 
-    @UpdateTimestamp
-    @Column(nullable = false)
-    private LocalDateTime changeat;
+    @Column(nullable = false, length = 36)
+    private String changeat;
 
     @Column(nullable = true)
     private String originaldatetime;
@@ -64,6 +61,9 @@ public class GiljabiGpsdataImage {
 
     @Column(nullable = false, length = 3)
     private String fileext;
+
+    @Column(nullable = false)
+    private long filesize;
 
     @Column(nullable = false, length = 255)
     private String originalfname;

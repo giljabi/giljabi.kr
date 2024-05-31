@@ -2,12 +2,8 @@ package kr.giljabi.api.entity;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
-import java.io.Serializable;
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -19,9 +15,8 @@ import java.util.List;
 @Table(name = "gpsdata")
 @Setter
 @Getter
-public class GiljabiGpsdata implements Serializable {
+public class GiljabiGpsdata implements java.io.Serializable {
     private static final long serialVersionUID = 1L;
-
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,13 +25,11 @@ public class GiljabiGpsdata implements Serializable {
     @Column(nullable = false, length = 36)
     private String uuid;
 
-    @CreationTimestamp
-    @Column(nullable = false)
-    private LocalDateTime createat;
+    @Column(nullable = false, length = 36)
+    private String createat;
 
-    @UpdateTimestamp
-    @Column(nullable = false)
-    private LocalDateTime changeat;
+    @Column(nullable = false, length = 36)
+    private String changeat;
 
     @Column(nullable = false, length = 255)
     //@Email(message = "이메일 형식이 올바르지 않습니다")
@@ -64,6 +57,12 @@ public class GiljabiGpsdata implements Serializable {
     //gpx, tcx
     @Column(nullable = true, length = 16)
     private String fileext;
+
+    @Column(nullable = true)
+    private int filesize;
+
+    @Column(nullable = true)
+    private int filesizecompress;
 
     @OneToMany(mappedBy = "gpsdata", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GiljabiGpsdataImage> gpsdataimages;

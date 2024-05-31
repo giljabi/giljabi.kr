@@ -21,6 +21,8 @@ import javax.validation.Valid;
 
 import com.github.diogoduailibe.lzstring4j.LZString;
 
+import java.util.ArrayList;
+
 /**
  * Open Route Service를 이용한 경로탐색
  * @author eahn.park@gmail.com
@@ -64,13 +66,16 @@ public class GiljabiController {
             gpsdata.setDistance(gpsDataDTO.getDistance());
             gpsdata.setFileext(gpsDataDTO.getFileext());
             gpsdata.setFileurl(savedFilename);
-            //gpsdata.setSavedatetime(LocalDateTime.now());
+            gpsdata.setCreateat(CommonUtils.getCurrentTime("yyyy-MM-dd'T'HH:mm:ss"));
+            gpsdata.setChangeat(CommonUtils.getCurrentTime("yyyy-MM-dd'T'HH:mm:ss"));
             gpsdata.setSpeed(gpsDataDTO.getSpeed());
             gpsdata.setTrackname(gpsDataDTO.getTrackName());
             gpsdata.setTrkpt(gpsDataDTO.getTrkpt());
             gpsdata.setUser("sonnim");
             gpsdata.setUuid(gpsDataDTO.getUuid()); //filename
             gpsdata.setWpt(gpsDataDTO.getWpt());
+            gpsdata.setFilesize(xmlData.length());
+            gpsdata.setFilesizecompress(gpsDataDTO.getXmldata().length());
 
             log.info("savedFilename: " + savedFilename);
 
@@ -114,8 +119,11 @@ public class GiljabiController {
             gpsImage.setHeight(metadata.getImageLength());
             gpsImage.setMake(metadata.getMake());
             gpsImage.setModel(metadata.getModel());
+            gpsImage.setCreateat(CommonUtils.getCurrentTime("yyyy-MM-dd'T'HH:mm:ss"));
+            gpsImage.setChangeat(CommonUtils.getCurrentTime("yyyy-MM-dd'T'HH:mm:ss"));
             gpsImage.setOriginaldatetime(metadata.getDateTime());
             gpsImage.setOriginalfname(file.getOriginalFilename());
+            gpsImage.setFilesize(file.getSize());
             imageService.saveGpsImage(gpsImage, gpsdata);
 
             GiljabiResponse giljabiResponse = new GiljabiResponse();
@@ -146,6 +154,18 @@ public class GiljabiController {
         }
     }
 
+    @GetMapping("/api/1.0/getImageList/{uuidkey}")
+    public Response getImageList(@PathVariable String uuidkey) {
+        try {
+            GiljabiGpsdata gpsdata = gpsService.findByUuid(uuidkey);
+            //ArrayList<GiljabiGpsdataImage> images = imageService.findAllByGpsdata(gpsdata);
+            log.info("gpsdata: " + gpsdata);
+
+            return new Response(gpsdata);
+        } catch (Exception e) {
+            return new Response(ErrorCode.STATUS_FAILURE.getStatus(), e.getMessage());
+        }
+    }
 
     private String getFileLocation(String uuidKey) {
         return String.format("%s/%s", CommonUtils.getCurrentTime("YYYYMM"), uuidKey);

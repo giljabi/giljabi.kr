@@ -32,23 +32,25 @@ CREATE TABLE gpsdata (
                          id INT AUTO_INCREMENT PRIMARY KEY,
                          uuid VARCHAR(36) NOT null unique,
                          user VARCHAR(36) NOT null,
-                         createat DATETIME NOT null DEFAULT now(),
-                         changeat DATETIME NOT null DEFAULT now(),
+                         createat VARCHAR(36),
+                         changeat VARCHAR(36),
                          wpt INT NOT NULL,
                          trkpt BIGINT NOT NULL,
                          trackname VARCHAR(255) NOT NULL,
                          speed double NOT NULL,
                          distance double NOT NULL,
                          fileurl varchar(255),
-                         fileext varchar(3)
+                         fileext varchar(3),
+                         filesize long,
+                        filesizecompress long
 );
 
 drop table gpsdataimage;
 CREATE TABLE gpsdataimage (
                               id INT AUTO_INCREMENT PRIMARY KEY,
                               gpsdata_id INT NOT NULL,
-                              createat DATETIME NOT NULL DEFAULT now(),
-                              changeat DATETIME NOT NULL DEFAULT now(),
+                              createat VARCHAR(36),
+                              changeat VARCHAR(36),
                               width INT NOT NULL,
                               height INT NOT NULL,
                               lat DOUBLE NOT NULL,
@@ -56,8 +58,10 @@ CREATE TABLE gpsdataimage (
                               ele DOUBLE NOT NULL,
                               make VARCHAR(255),
                               model VARCHAR(255),
-                              originaldatetime DATETIME,
+                              originaldatetime VARCHAR(36),
                               fileurl VARCHAR(255) NOT NULL,
                               fileext VARCHAR(8) NOT NULL,
+                              filesize long,
+                              originalfname VARCHAR(255) NOT NULL,
                               FOREIGN KEY (gpsdata_id) REFERENCES gpsdata(id) ON DELETE CASCADE
 );
