@@ -1,10 +1,13 @@
 package kr.giljabi.api.controller;
 
+import com.drew.lang.GeoLocation;
 import kr.giljabi.api.entity.GiljabiGpsdataImage;
 import kr.giljabi.api.entity.GiljabiGpsdata;
 import kr.giljabi.api.geo.JpegMetaInfo;
 import kr.giljabi.api.request.RequestGpsDataDTO;
 import kr.giljabi.api.response.GiljabiResponse;
+import kr.giljabi.api.response.GiljabiResponseGpsdataDTO;
+import kr.giljabi.api.response.GiljabiResponseGpsdataImageDTO;
 import kr.giljabi.api.response.Response;
 import kr.giljabi.api.service.GiljabiGpsDataImageService;
 import kr.giljabi.api.service.GiljabiGpsDataService;
@@ -66,8 +69,8 @@ public class GiljabiController {
             gpsdata.setDistance(gpsDataDTO.getDistance());
             gpsdata.setFileext(gpsDataDTO.getFileext());
             gpsdata.setFileurl(savedFilename);
-            gpsdata.setCreateat(CommonUtils.getCurrentTime("yyyy-MM-dd'T'HH:mm:ss"));
-            gpsdata.setChangeat(CommonUtils.getCurrentTime("yyyy-MM-dd'T'HH:mm:ss"));
+//            gpsdata.setCreateat(CommonUtils.getCurrentTime("yyyy-MM-dd'T'HH:mm:ss"));
+//            gpsdata.setChangeat(CommonUtils.getCurrentTime("yyyy-MM-dd'T'HH:mm:ss"));
             gpsdata.setSpeed(gpsDataDTO.getSpeed());
             gpsdata.setTrackname(gpsDataDTO.getTrackName());
             gpsdata.setTrkpt(gpsDataDTO.getTrkpt());
@@ -119,8 +122,8 @@ public class GiljabiController {
             gpsImage.setHeight(metadata.getImageLength());
             gpsImage.setMake(metadata.getMake());
             gpsImage.setModel(metadata.getModel());
-            gpsImage.setCreateat(CommonUtils.getCurrentTime("yyyy-MM-dd'T'HH:mm:ss"));
-            gpsImage.setChangeat(CommonUtils.getCurrentTime("yyyy-MM-dd'T'HH:mm:ss"));
+//            gpsImage.setCreateat(CommonUtils.getCurrentTime("yyyy-MM-dd'T'HH:mm:ss"));
+//            gpsImage.setChangeat(CommonUtils.getCurrentTime("yyyy-MM-dd'T'HH:mm:ss"));
             gpsImage.setOriginaldatetime(metadata.getDateTime());
             gpsImage.setOriginalfname(file.getOriginalFilename());
             gpsImage.setFilesize(file.getSize());
@@ -158,10 +161,33 @@ public class GiljabiController {
     public Response getImageList(@PathVariable String uuidkey) {
         try {
             GiljabiGpsdata gpsdata = gpsService.findByUuid(uuidkey);
+            //GiljabiGpsdata에 addGpsImage을 사용하는 경우는 조인되는 테이블이 많고 중첩되면 쿼리가 매우 위험해질 수 있음
+            //이런 경우 addGpsImage을         //gpsdata.addGpsImage(gpsImage); 사용하는 것도 검토할 수 있음
             //ArrayList<GiljabiGpsdataImage> images = imageService.findAllByGpsdata(gpsdata);
-            log.info("gpsdata: " + gpsdata);
 
-            return new Response(gpsdata);
+            GiljabiResponseGpsdataDTO dto = new GiljabiResponseGpsdataDTO();
+            dto.setFileurl(gpsdata.getFileurl());
+            dto.setTrackname(gpsdata.getTrackname());
+            dto.setUuid(gpsdata.getUuid());
+            dto.setId((int)gpsdata.getId());
+            ArrayList<GiljabiResponseGpsdataImageDTO> imagesDTOList = new ArrayList<>();
+            gpsdata.getGpsdataimages().forEach(gpsImage -> {
+                GiljabiResponseGpsdataImageDTO gpsImageDTO = new GiljabiResponseGpsdataImageDTO();
+                gpsImageDTO.setId(gpsImage.getId());
+                GeoLocation geoLocation = new GeoLocation(gpsImage.getLat(), gpsImage.getLng());
+                gpsImageDTO.setGeoLocation(geoLocation);
+                gpsImageDTO.setAltitude(gpsImage.getEle());
+                gpsImageDTO.setOriginaldatetime(gpsImage.getOriginaldatetime());
+                gpsImageDTO.setEle(gpsImage.getEle());
+                gpsImageDTO.setFileurl(gpsImage.getFileurl());
+                gpsImageDTO.setOriginalfname(gpsImage.getOriginalfname());
+                imagesDTOList.add(gpsImageDTO);
+            });
+            dto.setGpsdataimages(imagesDTOList);
+
+            log.info("dto: " + dto);
+
+            return new Response(dto);
         } catch (Exception e) {
             return new Response(ErrorCode.STATUS_FAILURE.getStatus(), e.getMessage());
         }

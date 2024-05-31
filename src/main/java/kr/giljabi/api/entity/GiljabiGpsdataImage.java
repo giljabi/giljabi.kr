@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
 
 /**
  * @Author : njpark@hyosung.com
@@ -26,12 +27,14 @@ public class GiljabiGpsdataImage implements java.io.Serializable {
     @JsonIgnore
     private GiljabiGpsdata gpsdata;
 
-    @Column(nullable = false, length = 36)
-    private String createat;
+    //@Column(nullable = false, length = 36)
+    @Column(nullable = false)
+    private Timestamp createat;
 
-    @Column(nullable = false, length = 36)
-    private String changeat;
-
+    //@Column(nullable = false, length = 36)
+    @Column(nullable = false)
+    private Timestamp changeat;
+    
     @Column(nullable = true)
     private String originaldatetime;
 
