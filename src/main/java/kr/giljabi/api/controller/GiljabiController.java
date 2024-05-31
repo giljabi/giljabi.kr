@@ -47,7 +47,7 @@ public class GiljabiController {
 
     //bucketName: service
     //file pth: service/yyyyMM/uuid_filename
-    @PostMapping("/api/1.0/gpsSave")
+    @PostMapping("/api/1.0/saveGpsdata")
     public Response gpsSave(final @Valid @RequestBody RequestGpsDataDTO gpsDataDTO) {
         try {
             String xmlData = LZString.decompressFromUTF16(gpsDataDTO.getXmldata());
@@ -86,7 +86,7 @@ public class GiljabiController {
         }
     }
 
-    @PostMapping("/api/1.0/imageUpload")
+    @PostMapping("/api/1.0/uploadImage")
     public Response handleFileUpload(@RequestParam("file") MultipartFile file,
                                      @RequestParam("uuid") String uuidKey) {
         try {
@@ -115,6 +115,7 @@ public class GiljabiController {
             gpsImage.setMake(metadata.getMake());
             gpsImage.setModel(metadata.getModel());
             gpsImage.setOriginaldatetime(metadata.getDateTime());
+            gpsImage.setOriginalfname(file.getOriginalFilename());
             giljabiService.saveGpsImage(gpsImage, gpsdata);
 
             GiljabiResponse giljabiResponse = new GiljabiResponse();
@@ -122,15 +123,29 @@ public class GiljabiController {
             giljabiResponse.setFileKey(uuidKey);
             giljabiResponse.setGeoLocation(metadata.getGeoLocation());
             giljabiResponse.setAltitude(metadata.getAltitude());
-
-            Optional<GiljabiGpsdata> selectGpsdata =  giljabiService.findById(gpsdata.getId());
-            log.info("selectGpsdata: " + selectGpsdata.toString());
+            giljabiResponse.setOriginalFileName(file.getOriginalFilename());
 
             return new Response(giljabiResponse);
         } catch (Exception e) {
             return new Response(ErrorCode.STATUS_FAILURE.getStatus(), e.getMessage());
         }
     }
+
+    @DeleteMapping("/api/1.0/deleteImage/{bucketName}/{yearmonth}/{uuidkey}/{filename:.+}")
+    public Response deleteImage(@PathVariable String bucketName,
+                                     @PathVariable String yearmonth,
+                                     @PathVariable String uuidkey,
+                                     @PathVariable String filename) {
+        try {
+            String objectPath = String.format("%s/%s/%s", yearmonth, uuidkey, filename);
+            //파일을 삭제하기전 본인것인지....확인해야 함
+            minioService.deleteObject(bucketName, objectPath);
+            return new Response(ErrorCode.STATUS_SUCCESS.getStatus());
+        } catch (Exception e) {
+            return new Response(ErrorCode.STATUS_FAILURE.getStatus(), e.getMessage());
+        }
+    }
+
 
     private String getFileLocation(String uuidKey) {
         return String.format("%s/%s", CommonUtils.getCurrentTime("YYYYMM"), uuidKey);

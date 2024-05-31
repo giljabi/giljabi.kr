@@ -127,7 +127,7 @@ function processFile(uuid, file) {
                         formData.append('uuid', uuid);
 
                         $.ajax({
-                            url: '/api/1.0/imageUpload',
+                            url: '/api/1.0/uploadImage',
                             type: 'POST',
                             data: formData,
                             contentType: false,

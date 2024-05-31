@@ -64,4 +64,7 @@ public class GiljabiGpsdataImage {
 
     @Column(nullable = false, length = 3)
     private String fileext;
+
+    @Column(nullable = false, length = 255)
+    private String originalfname;
 }

@@ -1375,7 +1375,7 @@ TCX
 
         $.ajax({
             type: 'post',
-            url: '/api/1.0/gpsSave',
+            url: '/api/1.0/saveGpsdata',
             dataType: 'json',
             contentType: 'application/json; charset=UTF-8;',
             data: JSON.stringify(requestBody),
@@ -1394,9 +1394,29 @@ TCX
         $('#blockingAds').hide();
     });
 
+    const canvas = document.getElementById('progressCanvas');
+    const ctx = canvas.getContext('2d');
+    const progressBarContainer = document.getElementById('progressBarContainer');
+    // Set canvas size to match container size
+    canvas.width = progressBarContainer.clientWidth;
+    canvas.height = progressBarContainer.clientHeight;
+
     $('#uploadForm').on('submit', function(event) {
         event.preventDefault(); // 기본 폼 제출 동작 막기
+
+        if(uuid == null || uuid == '') {
+            alert("gpx/tcx 저장 후 사용할 수 있습니다.");
+            return;
+        }
+
         let files = $('#files')[0].files;
+        let totalFiles = files.length;
+        let processedFiles = 0;
+
+        // Reset the progress bar
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // progressBarContainer.textContent = '';
+        // progressBarContainer.appendChild(canvas);
 
         if (files.length > 0) {
             for (let i = 0; i < files.length; i++) {
@@ -1410,15 +1430,60 @@ TCX
                             savedFileInfo.geoLocation.longitude), // 마커의 위치
                         image: markerImage
                     });
-                    marker.setMap(_map); // 지도 위에 마커를 표출합니다
+                    marker.setMap(_map);
+
+                    let imageLink = `<tr>`;
+                    imageLink += `<td style="width:5px;" onclick="javascript:deleteImage('${savedFileInfo.filePath}');">X</td>`;
+                    imageLink += `<td class="timeClass" onclick="javascript:goCenter(${savedFileInfo.geoLocation.latitude},`;
+                    imageLink += ` ${savedFileInfo.geoLocation.longitude}, 5);">${savedFileInfo.originalFileName}</td>`;
+                    imageLink += `<td ></td>`;
+                    imageLink += `</tr>`;
+
+                    $('#imageFileTbody').append(imageLink);
+
+                    processedFiles++;
+                    updateProgressGraph(ctx, processedFiles, totalFiles);
                 }).catch(error => {
                     console.error('Error:', error);
                 });
             }
         }
     });
-
 });
+
+
+function deleteImage(fileurl) {
+    const parts = fileurl.split('/');
+    const thirdSlashPart = parts.slice(3).join('/');
+/*
+    //let apiUrl = `/api/1.0/deleteImage/${parts[3]}/${parts[4]}/${parts[5]}/${parts[6]}`;
+    let apiUrl = `/api/1.0/deleteImage/${thirdSlashPart}`;
+    $.ajax({
+        type: 'DELETE',
+        url: apiUrl,
+        async: true,
+        success: function (response, status) {
+            console.log(response);
+        },
+        error: function (response, status) {
+            console.info('Error deleting file');
+        }
+    });
+ */
+}
+
+function updateProgressGraph(ctx, processedFiles, totalFiles) {
+    const width = ctx.canvas.width;
+    const height = ctx.canvas.height;
+    const progress = (processedFiles / totalFiles) * width;
+
+    // Clear the canvas
+    ctx.clearRect(0, 0, width, height);
+
+    // Draw the progress bar
+    ctx.fillStyle = '#4caf50';
+    ctx.fillRect(0, 0, progress, height);
+}
 
 /**
  * 전후 1개만 비교해도 될것 같은데....

@@ -6,10 +6,7 @@ import com.drew.metadata.exif.ExifIFD0Directory;
 import com.drew.metadata.exif.ExifSubIFDDirectory;
 import com.drew.metadata.exif.GpsDirectory;
 import com.drew.metadata.jpeg.JpegDirectory;
-import io.minio.GetObjectArgs;
-import io.minio.GetPresignedObjectUrlArgs;
-import io.minio.MinioClient;
-import io.minio.PutObjectArgs;
+import io.minio.*;
 import io.minio.errors.MinioException;
 import io.minio.http.Method;
 import kr.giljabi.api.geo.JpegMetaInfo;
@@ -20,6 +17,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 
 @Service
 public class MinioService {
@@ -89,6 +88,31 @@ public class MinioService {
         return jpegMetaInfo;
     }
 
+    /**
+     * 로그인이 있으면 본인것만 지울 수 있어야 함
+     * @param bucketName
+     * @param objectName
+     * @throws Exception
+     */
+    public void deleteObject(String bucketName, String objectName) throws Exception {
+        try {
+            if(doesObjectExist(bucketName, objectName)) {
+                minioClient.removeObject(
+                        RemoveObjectArgs.builder().bucket(bucketName).object(objectName).build());
+            }
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+    public boolean doesObjectExist(String bucketName, String objectName) {
+        try {
+            StatObjectResponse stat = minioClient.statObject(
+                    StatObjectArgs.builder().bucket(bucketName).object(objectName).build());
+            return stat != null;
+        } catch (MinioException | IOException | InvalidKeyException | NoSuchAlgorithmException e) {
+            return false;
+        }
+    }
 
     private String getUrl(String bucketName, String fileName) {
         try {

@@ -1,23 +1,16 @@
 body, p, tr, th, td, ul, li, select, input {
     color: #000000;
     font-family: AppleGotihc, "Malgun Gothic", dotum;
-    font-size: 12px
+    font-size: 12px;
 }
+
 #map {
     position: relative; /* 또는 absolute */
     z-index: 999; /* 높은 z-index 값 */
     width: 100%;
     height: 100%;
 }
-.container {
-    display: table;
-    width: 100%;
-    min-width: 1170px;
-    height: 90vh;
-    position: relative;
-    border-collapse: collapse;
-}
-.modes {
+.modes { /* 지도 POU선택*/
     position: absolute;
     align-content: center;
     top: -10px;
@@ -26,19 +19,32 @@ body, p, tr, th, td, ul, li, select, input {
     background-color: white;
 }
 
-.row {
-    display: table-row;
-}
-.cell {
-    display: table-cell;
-    /*border: 1px solid black;*/
+.container {
+    display: grid;
     width: 100%;
-    min-width: 210px;
-    overflow-y: auto;
-    vertical-align: top;
+    min-width: 1170px;
+    height: 95vh;
+    position: relative;
+    grid-template-columns: 1fr 210px;
 }
-.cell.wide {
-    width: 960px;
+/*.container {*/
+/*    display: table;*/
+
+/*    border-collapse: collapse;*/
+/*}*/
+.row {
+    display: flex;
+    /*flex-direction: column;*/
+    gap: 0px;
+}
+
+.cell {
+    display: flex;
+    flex-direction: column;
+}
+
+.wide {
+    grid-column: 1 / 2;
 }
 
 .containerPlot {
@@ -47,7 +53,7 @@ body, p, tr, th, td, ul, li, select, input {
     flex-direction: column;
     margin-bottom: 0;
     vertical-align: top;
-    height: 120px;
+    height: 150px;
     width: 960px;
     /*background-image: url('/images/charter-ad.png');*/
 }
@@ -60,49 +66,85 @@ body, p, tr, th, td, ul, li, select, input {
     /*line-height: 1.2em;*/
 }
 
-.tooltip {
-    position: relative;
-    display: inline-block;
-    border-bottom: 1px dotted black;
+/* waypoint style */
+.infowindow {
+    font-size: 10px;
+    border-spacing: 1px;
 }
 
-.tooltip .tooltiptext {
-    visibility: hidden;
-    width: 100%;
-    background-color: #555;
-    color: #fff;
+.pointImage {
+    position: absolute;
+    left: -8px;
+    top: -11px;
+    cursor: pointer;
+    background-color: #11ffee00;
+}
+
+.pointText {
+    position: absolute;
+    left: 9px;
+    top: -11px;
+    height: 10px;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 5px;
+    font-size: 12px;
+    text-align: left;
+    white-space: pre;
+    word-wrap: break-word;
+}
+.waypointStyle {
+    border-collapse: collapse;
+    border-style: Solid;
+    border: 1px solid #4F81A2;
+    rules: all;
+    padding-left: 0px;
+    vertical-align: middle;
+}
+.blockingAds {
+    z-index: 1011;
+    position: absolute;
+    padding: 0px;
+    margin: 0px;
+    height: 120px;
+    width: 920px;
+    top: 30%;
+    left: 150px;
     text-align: center;
-    border-radius: 6px;
-    padding: 5px 0;
-    position: absolute;
-    z-index: 1;
-    bottom: 125%;
-    left: 50%;
-    margin-left: -60px;
-    opacity: 0;
-    transition: opacity 0.3s;
+    color: rgb(0, 0, 0);
+    border: 3px solid rgb(170, 0, 0);
+    background-color: rgb(255, 255, 255);
+    cursor: wait;
+}
+.ui-tooltip {
+    padding: 2px 3px;
+    color: blue;
+    border-radius: 5px;
+    box-shadow: 0 0 2px green;
+    font-size: 12px;
 }
 
-.tooltip .tooltiptext::after {
-    content: "";
+/* plot 그래프 스타일 설정 */
+.slopeinfobox {
     position: absolute;
-    top: 100%;
-    left: 50%;
-    margin-left: -5px;
-    border-width: 5px;
-    border-style: solid;
-    border-color: #555 transparent transparent transparent;
+    display: none;
+    border: 1px solid #fdd;
+    padding: 2px;
+    background-color: #fee;
+    color: white;
+    opacity: 1.0;
+    font-size: 10px;
 }
-
-.tooltip:hover .tooltiptext {
-    visibility: visible;
-    opacity: 1;
+.timeClass {
+    font-family: "Lucida Console", Monaco, monospace;
 }
 
 /* 메뉴 스타일 설정 */
 #topMenu {
     height: 30px; /* 메인 메뉴의 높이 */
     width: 100%;
+    background-color: #2b2b2b;
 }
 
 #topMenu ul { /* 메인 메뉴 안의 ul을 설정함: 상위메뉴의 ul+하위 메뉴의 ul */
@@ -176,92 +218,61 @@ body, p, tr, th, td, ul, li, select, input {
     width: 20%;
 }
 
-/* plot 그래프 스타일 설정 */
-.slopeinfobox {
-    position: absolute;
-    display: none;
-    border: 1px solid #fdd;
-    padding: 2px;
-    background-color: #fee;
-    color: white;
-    opacity: 1.0;
-    font-size: 10px;
+
+
+.tooltip {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted black;
 }
-.timeClass {
-    font-family: "Lucida Console", Monaco, monospace;
-}
-.blockingAds {
-    z-index: 1011;
-    position: absolute;
-    padding: 0px;
-    margin: 0px;
-    height: 120px;
-    width: 920px;
-    top: 30%;
-    left: 150px;
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 100%;
+    background-color: #555;
+    color: #fff;
     text-align: center;
-    color: rgb(0, 0, 0);
-    border: 3px solid rgb(170, 0, 0);
-    background-color: rgb(255, 255, 255);
-    cursor: wait;
-}
-.ui-tooltip {
-    padding: 2px 3px;
-    color: blue;
-    border-radius: 5px;
-    box-shadow: 0 0 2px green;
-    font-size: 12px;
-}
-
-/* waypoint style */
-.infowindow {
-    font-size: 10px;
-    border-spacing: 1px;
-}
-
-.pointImage {
+    border-radius: 6px;
+    padding: 5px 0;
     position: absolute;
-    left: -8px;
-    top: -11px;
-    cursor: pointer;
-    background-color: #11ffee00;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -60px;
+    opacity: 0;
+    transition: opacity 0.3s;
 }
 
-.pointText {
+.tooltip .tooltiptext::after {
+    content: "";
     position: absolute;
-    left: 9px;
-    top: -11px;
-    height: 10px;
-    background: #fff;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 5px;
-    font-size: 12px;
-    text-align: left;
-    white-space: pre;
-    word-wrap: break-word;
-}
-.pointText {
-    position: absolute;
-    left: 9px;
-    top: -11px;
-    height: 10px;
-    background: #fff;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 5px;
-    font-size: 12px;
-    text-align: left;
-    white-space: pre;
-    word-wrap: break-word;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
 }
 
-.waypointStyle {
-    border-collapse: collapse;
-    border-style: Solid;
-    border: 1px solid #4F81A2;
-    rules: all;
-    table-layout: fixed;
-    padding-left: 0px;
-    vertical-align: middle;
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+
+#progressBarContainer {
+    align-items: start;
+    width: 100%;
+    height: 5px;
+}
+
+#progressCanvas {
+    width: 100%;
+    height: 100%;
+}
+
+.fileContainer {
+    flex: 1;
+    width: 210px;
+    overflow-y: auto;
+    max-height: 350px;
 }

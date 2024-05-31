@@ -42,9 +42,10 @@ body {
 
 .fileContainer {
     width: 210px;
-    height: 120px;
     color: white;
     border: 1px solid #ddd;
+    max-height: 200px;
+    overflow-y: auto;
 }
 
 .waypoint {
