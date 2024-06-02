@@ -114,7 +114,7 @@ function saveGpxToServer(saveData) {
 $(document).ready(function () {
     BASETIME = setBaseTimeToToday(BASETIME);
 
-    //$(document).tooltip();
+    $(document).tooltip();
 
     let options = {
         center: getLocation(), //Seoul city hall
@@ -226,30 +226,12 @@ $(document).ready(function () {
 
         reader.readAsText(file);
     });
-/*
-    $('#moutain').click(function () {
-        let mountainList = [];
-        $.ajax({
-            type: 'get',
-            url: '/api/1.0/mountain',
-            contentType: 'application/json',
-            dataType: 'json',
-            async: false,
-            complete: function () {
-            },
-            success: function (response, status) {
-                if (response.status === 0) {
-                    mountainList = response.data;
-                } else {
-                    alert(response.message);
-                }
-            },
-        });
-        //console.log(mountainList);
-        $.each(mountainList, function (index, ele) {
+    /*
+        $('#moutain').click(function () {
+            let mountainList = [];
             $.ajax({
                 type: 'get',
-                url: '/api/1.0/mountain/' + mountainList[index],
+                url: '/api/1.0/mountain',
                 contentType: 'application/json',
                 dataType: 'json',
                 async: false,
@@ -257,15 +239,33 @@ $(document).ready(function () {
                 },
                 success: function (response, status) {
                     if (response.status === 0) {
-                        basePathLoadGpx(response.data, '#0037ff');
+                        mountainList = response.data;
                     } else {
                         alert(response.message);
                     }
                 },
             });
+            //console.log(mountainList);
+            $.each(mountainList, function (index, ele) {
+                $.ajax({
+                    type: 'get',
+                    url: '/api/1.0/mountain/' + mountainList[index],
+                    contentType: 'application/json',
+                    dataType: 'json',
+                    async: false,
+                    complete: function () {
+                    },
+                    success: function (response, status) {
+                        if (response.status === 0) {
+                            basePathLoadGpx(response.data, '#0037ff');
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                });
+            });
         });
-    });
-*/
+    */
     $('#all100').click(function () {
         //산목록
         let mountain100Select = $('#mountain100Select option').map(function() {
@@ -347,7 +347,7 @@ $(document).ready(function () {
         let curAlti = 0;
         for (let i = 1; i < _gpxTrkseqArray.length; i++) {
             distance = getDistance(_gpxTrkseqArray[i - 1], _gpxTrkseqArray[i]);
-            odometer += distance;
+            odometer += distance / 1000;
 
             curAlti = _gpxTrkseqArray[i - 1].ele;	//고도
 
@@ -465,9 +465,9 @@ $(document).ready(function () {
             alert('경로정보가 없습니다."Track" 기능으로 경로를 그린 후 저장합니다.');
             return;
         }
-/*        if(!confirm("고도(높이) 정보를 처리하지 않고 경로를 저장할까요?")) {
-            return;
-        }*/
+        /*        if(!confirm("고도(높이) 정보를 처리하지 않고 경로를 저장할까요?")) {
+                    return;
+                }*/
         //구글 높이를 받아오지 않은 경우에도 경로를 저장하기 위한 정보처리
         if(eleFalg == false) {
             _gpxTrkseqArray = [];
@@ -526,6 +526,63 @@ $(document).ready(function () {
         }
     });
 */
+
+    //uuid는 3D 지도에 이미지를 첨부할때 메인키로 사용
+    $('#viewVworld').click(function () {
+        let data = _drawingManager.getData();
+        let len = data[kakao.maps.drawing.OverlayType.POLYLINE].length;
+        if(len == 0) {
+            alert('경로정보가 없습니다."경로만들기 시작하기" 기능으로 경로를 그린 후 사용하세요.');
+            return;
+        }
+
+        let trkseq = new Array();	//servlet에 요청하기 위한 배열 object를 string으로 변환
+        for (let i = 0; i < len; i++) {
+            let line = pointsToPath(data.polyline[i].points);
+            for (let j = 0; j < line.length; j++) {
+                let trackPoint = new Point3D(
+                    Number(line[j].getLat()), Number(line[j].getLng()),
+                    Number(0), Number(0), '', 0, 0, 0//gpx 파일에 slope 정보는 없는상태
+                );
+                trkseq.push(trackPoint);
+            }
+        }
+
+        //파일의 메인키로 사용
+        uuid = crypto.randomUUID();
+
+        console.log(uuid);
+
+        let gpxData = saveGpx(uuid, Number($('#averageV').val()),
+            [], trkseq);
+        let form = $('<form>', {
+            action: '/vworld',
+            method: 'POST',
+            target: 'vworldWindow'
+        }).appendTo('body');
+
+        $('<input>', {
+            name: 'gpxdata',
+            value: LZString.compressToBase64(gpxData),
+            style: 'display:none'
+        }).appendTo(form);
+        $('<input>', {
+            name: 'labelsData',
+            value: LZString.compressToBase64(JSON.stringify({})),
+            style: 'display:none'
+        }).appendTo(form);
+        $('<input>', {
+            name: 'uuid',
+            value: uuid,
+            style: 'display:none'
+        }).appendTo(form);
+
+        window.open('', 'vworldWindow', 'width=800,height=700');
+
+        form.submit();
+        form.remove();
+    });
+
 });
 
 
@@ -545,16 +602,24 @@ function makeObject(xml) {
     let _xmlData = $($.parseXML(xml));
 
     if (_fileExt.toLowerCase() == 'gpx') {
-        $.each(_xmlData.find('gpx').find('trk').find('trkseg').find('trkpt'), function () {
-            let trkpt = getGpxTrk(Number($(this).attr('lat')),
-                Number($(this).attr('lon')),
-                Number($(this).find('ele').text()));
+        $.each(_xmlData.find('gpx > trk > trkseg > trkpt'), function (index, value) {
+            let trkpt = {
+                lat: Number($(value).attr('lat')),
+                lng: Number($(value).attr('lon')),
+                ele: Number($(value).find('ele').text())
+            };
+//      $.each(_xmlData.find('gpx').find('trk').find('trkseg').find('trkpt'), function () {
+//             let trkpt = getGpxTrk(Number($(this).attr('lat')),
+//                 Number($(this).attr('lon')),
+//                 Number($(this).find('ele').text()));
             _gpxTrkseqArray.push(trkpt);    //gpx 경로정보
             _trkPoly.push(new kakao.maps.LatLng($(this).attr('lat'), $(this).attr('lon'))); //polyline을 그리기 위한 정보
         });
     } else if (_fileExt.toLowerCase() == 'tcx') {
         //loadTcx(_xmlData);
     }
+
+
 
     //시작과 끝 표시
     makeMarkerPoint(_globalMap, 'start', _gpxTrkseqArray[0]);
@@ -570,7 +635,7 @@ function makeObject(xml) {
 function moveCenterList(pointList) {
     let midPoint = pointList[parseInt(pointList.length / 2)];
     _globalMap.setCenter(new kakao.maps.LatLng(midPoint.lat, midPoint.lng)); //중심점을 경로상의 중간을 설정한다.
-    _globalMap.setLevel(7);
+    //_globalMap.setLevel(7);
 }
 
 function moveCenterPoint(kakaoPoint) {
@@ -593,7 +658,7 @@ function loadTcx(x) {
 
 /*
 function getDataFromDrawingMap() {
-    // Drawing Manager에서 그려진 데이터 정보를 가져옵니다 
+    // Drawing Manager에서 그려진 데이터 정보를 가져옵니다
     var data = _drawingManager.getData();
 
     // 아래 지도에 그려진 도형이 있다면 모두 지웁니다
@@ -681,6 +746,12 @@ function basePathLoadGpx(gpxfile, strokeColor) {
 function WaypointMark(wayPosition, waypointName, uniqueId, waypointIcon) {
     let iconId;
     let content = document.createElement('div');
+    let symbols = ['left', 'straight', 'right', 'sprint', 'generic', 'summit', 'water', 'danger', 'food'];
+
+    if(symbols.includes(waypointIcon))
+        waypointIcon = waypointIcon;
+    else
+        waypointIcon = 'generic';
 
     content.innerHTML = '<img src=\"images/' + waypointIcon.toLowerCase() + '.png\" class=\"pointImage\"><span class=\"pointText\">' + waypointName + '</span>';
     // 커스텀 오버레이를 생성합니다
