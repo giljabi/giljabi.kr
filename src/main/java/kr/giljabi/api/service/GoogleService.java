@@ -74,7 +74,6 @@ public class GoogleService {
                     buffer.append(String.format("%s,%s|"
                             , trackPoint.get(index).getLat(), trackPoint.get(index).getLng()));
                 }
-
                 String jsonElevation = requestElevationService(buffer.substring(0, buffer.length() - 1), googleApikey);
                 GoogleElevationData googleElevation = gson.fromJson(jsonElevation, GoogleElevationData.class);
                 List<GoogleElevationData.Results> results = googleElevation.getResults();
@@ -88,6 +87,7 @@ public class GoogleService {
                     );
                     returnPoint.add(point);
                 }
+                buffer.setLength(0);
                 //너물 짧은 간격으로 호출하면 문제가 있을 수 있다...1초 지연
                 TimeUnit.SECONDS.sleep(1);
             }
