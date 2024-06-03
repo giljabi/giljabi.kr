@@ -62,9 +62,9 @@ public class ElevationController {
             //tcp socket exception 방지, 개발초기에 간혹 발생했었는데 이제는 이런 문제는 없는듯...
             //googleService.checkGoogle();
 
-//            list = googleService.getElevation(request);
-//            return new Response(list);
-            return getMountainData();
+            list = googleService.getElevation(request);
+            return new Response(list);
+//            return getMountainData();
         } catch (Exception e) {
             return new Response(ErrorCode.STATUS_EXCEPTION.getStatus(), e.getMessage());
         }

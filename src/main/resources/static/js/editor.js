@@ -114,7 +114,7 @@ function saveGpxToServer(saveData) {
 $(document).ready(function () {
     BASETIME = setBaseTimeToToday(BASETIME);
 
-    $(document).tooltip();
+    //$(document).tooltip();
 
     let options = {
         center: getLocation(), //Seoul city hall
@@ -634,7 +634,7 @@ function makeObject(xml) {
 
 function moveCenterList(pointList) {
     let midPoint = pointList[parseInt(pointList.length / 2)];
-    _globalMap.setCenter(new kakao.maps.LatLng(midPoint.lat, midPoint.lng)); //중심점을 경로상의 중간을 설정한다.
+    //_globalMap.setCenter(new kakao.maps.LatLng(midPoint.lat, midPoint.lng)); //중심점을 경로상의 중간을 설정한다.
     //_globalMap.setLevel(7);
 }
 

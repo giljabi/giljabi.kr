@@ -32,7 +32,7 @@ body {
     box-sizing: border-box;
     align-content: center;
     width: 950px;
-    height: 140px;
+    height: 120px;
     border: 1px solid #ddd;
     justify-content: center;
 }
@@ -78,4 +78,17 @@ body {
     text-align: left;
     white-space: pre;
     word-wrap: break-word;
+}
+.editorcontainer {
+    width: 100%;
+    display: flex; /* This will arrange the child divs in a row */
+    height: 74vh;
+    position: relative;
+}
+#elevationImage .legendLabel {
+    font-size: 10px; /* Set your desired font size */
+    font-family: 'Arial', sans-serif;
+    /*padding: 0px;
+    margin: 0px;
+    line-height: 1;*/ /* 상하 공백 최소화 */
 }
