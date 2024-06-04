@@ -40,8 +40,16 @@ public class CommonUtils {
         return new Timestamp(date.getTime());
     }
 
+    public static UUID generateUUID() {
+        return UUID.randomUUID();
+    }
+
     public static String generateUUIDFilename(String fileExt) {
         return UUID.randomUUID() + fileExt;
+    }
+
+    public static String getFileLocation(String uuidKey) {
+        return String.format("%s/%s", CommonUtils.getCurrentTime("YYYYMM"), uuidKey);
     }
 
 }

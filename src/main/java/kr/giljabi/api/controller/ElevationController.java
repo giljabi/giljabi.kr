@@ -8,6 +8,8 @@ import kr.giljabi.api.response.Gpx100Response;
 import kr.giljabi.api.service.GoogleService;
 import kr.giljabi.api.request.RequestElevationData;
 import kr.giljabi.api.response.Response;
+import kr.giljabi.api.service.MinioService;
+import kr.giljabi.api.utils.CommonUtils;
 import kr.giljabi.api.utils.ErrorCode;
 import kr.giljabi.api.utils.MyHttpUtils;
 import lombok.Data;
@@ -44,11 +46,19 @@ public class ElevationController {
     private final GoogleService googleService;
     private final ResourceLoader resourceLoader;
 
+    private final MinioService minioService;
+
     @Value("${giljabi.mountain100.path}")
     private String mountain100Path;
 
     @Value("${giljabi.xmlshare.path}")
     private String xmlSharePath;
+
+    @Value("${minio.bucketNameElevation}")
+    private String bucketNameElevation;
+
+    @Value("${minio.url}")
+    private String s3url;
 
     @PostMapping("/api/1.0/elevation")
     @ApiOperation(value = "고도정보", notes = "google elevation api 이용하여 고도정보를 받아오는 api")
@@ -62,9 +72,9 @@ public class ElevationController {
             //tcp socket exception 방지, 개발초기에 간혹 발생했었는데 이제는 이런 문제는 없는듯...
             //googleService.checkGoogle();
 
-            list = googleService.getElevation(request);
-            return new Response(list);
-//            return getMountainData();
+//            list = googleService.getElevation(request);
+//            return new Response(list);
+            return getMountainData();
         } catch (Exception e) {
             return new Response(ErrorCode.STATUS_EXCEPTION.getStatus(), e.getMessage());
         }
@@ -159,7 +169,9 @@ public class ElevationController {
     @ApiOperation(value = "GPX정보", notes = "GPX정보를 저장한다.")
     public Response saveElevation(final @Valid @RequestBody RequestElevationSaveData request) {
         try {
-            MyHttpUtils.saveXmlFile(request, xmlSharePath);
+            String uuid = CommonUtils.generateUUID().toString();
+            String filename = String.format("%s.%s", CommonUtils.getFileLocation(uuid), request.getFileExt());
+            String savedFilename = minioService.saveFile(bucketNameElevation, filename, request.getXmlData());
             return new Response(ErrorCode.STATUS_SUCCESS.getStatus(), ErrorCode.STATUS_SUCCESS.getMessage());
         } catch (Exception e) {
             return new Response(ErrorCode.STATUS_EXCEPTION.getStatus(), e.getMessage());

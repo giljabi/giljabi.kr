@@ -20,8 +20,7 @@
     <script type="text/javascript" src="/js/jquery-plugin/jquery.blockUI.js"></script>
     <script type="text/javascript" src="/js/jquery-plugin/jquery.cookie.js"></script>
     <script type="text/javascript" src="/js/FileSaver.min.js"></script>
-    <!--script type="text/javascript" src="/js/pako-2.1.0.js"></script -->
-    <script type="text/javascript" src="/js/lz-string-1.4.4-min.js"></script>
+    <script type="text/javascript" src="/js/lz-string-1.4.4.js"></script>
     <script type="text/javascript" src="/js/common.js"></script>
     <script type="text/javascript" src="/js/routeutil.js"></script>
     <script type="text/javascript" src="/js/xmlwriter.js"></script>
@@ -68,29 +67,23 @@
             웨이포인트 포함: <input type="checkbox" id="wptIcon" name="wptIcon" value="true"
                              title="배경으로 사용할 gpx 파일에 웨이포인트를 볼 경우 사용하세요."
                              style="width:20px;">
-        </p>
-    </div>
-</div>
-
-<div>
-    <div id='editinfo' style="vertical-align:top; height:20px; gap:0px;">
-        <p>
+            <br>
             <input type="button" id="reset" value="초기화"/>
             배경 GPX: <input type="file" id="baseInput" accept=".gpx" style="width:200px;"
                            title="밑바탕 경로는 여러개를 중첩할 수 있습니다.">
             경로파일: <input type="file" id="fileInput" accept=".gpx" style="width:200px;"
                          title="편집/높이 정보를 얻을 경로를 선택하세요">
             평속(km/h):<input type="text" id="averageV" value="2" style="width:20px;">
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             <input type="button" id="gpxsave" value="GPX 저장"/>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             <input type="button" id="getElevation" value="높이정보">
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             <input type="button" id="viewVworld" value="3D View"/>&nbsp;
 
         </p>
+
     </div>
+</div>
+
+<div>
     <div class="elevationContainer">
         <div id="elevationImage" class="elevation"></div>
     </div>

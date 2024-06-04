@@ -2,12 +2,9 @@ body, p, tr, th, td, ul, li, select, input {
     color: #000000;
     font-family: AppleGotihc, "Malgun Gothic", dotum;
     font-size: 12px;
+    overflow: hidden;
 }
-body {
-    margin: 0;
-    /*recommend 1920 / 1080 max based on usage stats, use 100% to that point*/
-    height: 100%;
-}
+
 #map {
     position: relative; /* 또는 absolute */
     z-index: 999; /* 높은 z-index 값 */
@@ -17,8 +14,8 @@ body {
 .map_wrap {
     display: flex;
     width: 100%;
-    min-height: 400px;
-    height: 75vh;
+    /*min-height: 400px;*/
+    /*height: 90vh;*/
     position: relative;
 }
 .modes { /* 지도 POU선택*/
@@ -26,15 +23,48 @@ body {
     top: -10px;
     left: 0px;
     z-index: 1;
+    opacity: 0.8;
     background-color: white;
 }
+
+.infoView {
+    position: absolute; /* Positions the element relative to the nearest positioned ancestor */
+    bottom: 20%; /* Positions the element 10% above the bottom of the container */
+    left: 0; /* Aligns the element to the left */
+    right: 0; /* Ensures the element spans the full width */
+    transform: translateY(20%); /* Offsets the element upwards by 10% of its own height */
+    z-index: 1; /* Sets the stacking order */
+    opacity: 0.5;
+    background-color: white;
+}
+.editorcontainer {
+    width: 100%;
+    display: flex; /* This will arrange the child divs in a row */
+    height: 100vh;
+    position: relative;
+}
+
+/*.modes { !* 지도 POU선택*!*/
+/*    position: absolute;*/
+/*    top: -10px;*/
+/*    left: 0px;*/
+/*    z-index: 1;*/
+/*    background-color: white;*/
+/*}*/
 .elevationContainer {
     box-sizing: border-box;
     align-content: center;
-    width: 950px;
-    height: 120px;
+    width: 350px;
+    height: 100px;
     border: 1px solid #ddd;
     justify-content: center;
+    position: absolute;
+    /*top: 85%;*/
+    bottom: 10%; /* Positions the element 10% above the bottom of the container */
+    transform: translateY(10%); /* Offsets the element upwards by 10% of its own height */
+    z-index: 1;
+    opacity: 0.5;
+    background-color: white;
 }
 .elevation {
     width: 100%;
@@ -79,12 +109,7 @@ body {
     white-space: pre;
     word-wrap: break-word;
 }
-.editorcontainer {
-    width: 100%;
-    display: flex; /* This will arrange the child divs in a row */
-    height: 74vh;
-    position: relative;
-}
+
 #elevationImage .legendLabel {
     font-size: 10px; /* Set your desired font size */
     font-family: 'Arial', sans-serif;

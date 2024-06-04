@@ -40,7 +40,6 @@ function appendTime(time) {
 }
 
 let _microTime = Math.round(microtime(true) * 100);
-let _fileExt;	//_ft 파일종류 gpx, tcx
 
 //시작, 도착 마커
 function makeMarkerPoint(mymap, iconName, latlon) {
