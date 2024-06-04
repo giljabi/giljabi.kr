@@ -9,9 +9,10 @@ import com.drew.metadata.jpeg.JpegDirectory;
 import io.minio.*;
 import io.minio.errors.MinioException;
 import io.minio.http.Method;
+import io.minio.messages.Item;
 import kr.giljabi.api.geo.JpegMetaInfo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,8 +20,12 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
 
 @Service
+@Slf4j
 public class MinioService {
 
     @Autowired
@@ -128,4 +133,91 @@ public class MinioService {
         }
     }
 
+    /**
+     * String 반환
+     * @param bucketName
+     * @param fileName
+     * @return
+     * @throws IOException
+     */
+    public String readFileContentByString(String bucketName, String fileName) throws IOException {
+        try (var stream = minioClient.getObject(
+                GetObjectArgs.builder()
+                        .bucket(bucketName)
+                        .object(fileName)
+                        .build());
+             var reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
+
+            StringBuilder fileContent = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                fileContent.append(line).append("\n");
+            }
+            return fileContent.toString();
+        } catch (Exception e) {
+            throw new IOException("Error reading file from MinIO", e);
+        }
+    }
+
+    /**
+     * String을 List로 반환
+     * @param bucketName
+     * @param fileName
+     * @return
+     * @throws IOException
+     */
+    public List<String> readFileContentByList(String bucketName, String fileName) throws IOException {
+        List<String> lines = new ArrayList<>();
+
+        try (var stream = minioClient.getObject(
+                GetObjectArgs.builder()
+                        .bucket(bucketName)
+                        .object(fileName)
+                        .build());
+             var reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                lines.add(line);
+            }
+        } catch (Exception e) {
+            throw new IOException("Error reading file from MinIO", e);
+        }
+
+        return lines;
+    }
+
+    /**
+     * prefix로 시작하는 파일 목록 반환
+     * @param bucketName
+     * @param directory
+     * @param prefix
+     * @return
+     */
+    public List<String> listFiles(String bucketName, String directory, String prefix, String extension) {
+        List<String> fileList = new ArrayList<>();
+        String regex = prefix.replace("*", ".*");
+        //gariwangsan*\\.gpx$
+        String regexPattern = directory + regex + "\\." + extension+ "$";
+        Pattern pattern = Pattern.compile(regexPattern);
+        try {
+            Iterable<Result<Item>> results = minioClient.listObjects(
+                    ListObjectsArgs.builder()
+                            .bucket(bucketName)
+                            .prefix(directory)
+                            .recursive(false)
+                            .build());
+
+            for (Result<Item> result : results) {
+                Item item = result.get();
+                if (pattern.matcher(item.objectName()).matches()) {
+                    fileList.add(item.objectName());
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error listing files from MinIO", e);
+        }
+        log.info("fileList: {}", fileList);
+        return fileList;
+    }
 }
