@@ -58,7 +58,7 @@ public class GiljabiController {
             String xmlData = LZString.decompressFromUTF16(gpsDataDTO.getXmldata());
 
             String filename = String.format("%s/%s.%s",
-                    getFileLocation(gpsDataDTO.getUuid()), gpsDataDTO.getUuid(),
+                    CommonUtils.getFileLocation(gpsDataDTO.getUuid()), gpsDataDTO.getUuid(),
                     gpsDataDTO.getFileext());
 
             //압축된 상태로 저장하는것이 좋을까?
@@ -101,7 +101,7 @@ public class GiljabiController {
             String extension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
 
             String filename = String.format("%s/%s",
-                    getFileLocation(uuidKey),
+                    CommonUtils.getFileLocation(uuidKey),
                     CommonUtils.generateUUIDFilename(extension));
             String imageUrl = minioService.uploadFileImage(bucketName, filename, file);
             log.info("imageUrl: " + imageUrl);
@@ -192,10 +192,5 @@ public class GiljabiController {
             return new Response(ErrorCode.STATUS_FAILURE.getStatus(), e.getMessage());
         }
     }
-
-    private String getFileLocation(String uuidKey) {
-        return String.format("%s/%s", CommonUtils.getCurrentTime("YYYYMM"), uuidKey);
-    }
-
 
 }
