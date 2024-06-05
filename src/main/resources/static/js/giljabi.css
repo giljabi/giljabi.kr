@@ -23,7 +23,7 @@ body, p, tr, th, td, ul, li, select, input {
     display: grid;
     width: 100%;
     min-width: 1170px;
-    height: 95vh;
+    height: 90vh;
     position: relative;
     grid-template-columns: 1fr 210px;
 }
