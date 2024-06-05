@@ -267,33 +267,33 @@ function getMinMax() {
     minAlti = Math.min(...numbers);
 }
 
-let fileid = getParam('fileid', window.location.href);
-if(fileid != null) {
-    $('#blockingAds').show();
-    $.ajax({
-        type: 'post',
-        url : '/tcxshare.do',
-        data: { fileId : getParam('fileid', window.location.href)
-            , command : getParam('command', window.location.href)},
-        dataType:'json',
-        async : false,
-        complete: function() {
-
-        },
-        success:function(data, status) {
-            if(data.resultcode == 'success') {
-                _uf = data.gpxname;
-                _ft = data.filetype;
-                _fl = true;
-                //$('#gpx_metadata_name').val(_uf);
-                makeObject(data.tcxdata);
-            } else {
-                alert(data.resultMessage);
-            }
-            $('#blockingAds').hide();
-        }
-    });
-}
+// let fileid = getParam('fileid', window.location.href);
+// if(fileid != null) {
+//     $('#blockingAds').show();
+//     $.ajax({
+//         type: 'post',
+//         url : '/tcxshare.do',
+//         data: { fileId : getParam('fileid', window.location.href)
+//             , command : getParam('command', window.location.href)},
+//         dataType:'json',
+//         async : false,
+//         complete: function() {
+//
+//         },
+//         success:function(data, status) {
+//             if(data.resultcode == 'success') {
+//                 _uf = data.gpxname;
+//                 _ft = data.filetype;
+//                 _fl = true;
+//                 //$('#gpx_metadata_name').val(_uf);
+//                 makeObject(data.tcxdata);
+//             } else {
+//                 alert(data.resultMessage);
+//             }
+//             $('#blockingAds').hide();
+//         }
+//     });
+// }
 
 function getParam(name, url) {
     if (!url) url = location.href;
@@ -481,8 +481,8 @@ $(document).ready(function () {
             success: function(response, status) {
                 if (response.status === 0) {
                     const decompressedData = LZString.decompressFromUTF16(response.data.xmlData);
-
-                    _fileExt = response.data.fileExt;
+                    _fileExt = response.data.fileType;
+                    $('#gpx_metadata_name').val(response.data.trackName);
                     fileLoadAndDraw(decompressedData);
                 } else {
                     alert('Failed to fetch data');

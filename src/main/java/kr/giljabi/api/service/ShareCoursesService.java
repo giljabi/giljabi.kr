@@ -24,26 +24,34 @@ import java.util.Optional;
 @Service
 public class ShareCoursesService {
     private final ShareCoursesRepository shareCoursesRepository;
+    private final MinioService minioService;
 
     @Value("${giljabi.xmlshare.path}")
     private String xmlSharePath;
 
+    @Value("${minio.bucketNameData}")
+    private String bucketNameData;
+
     @Autowired
-    public ShareCoursesService(ShareCoursesRepository shareCoursesRepository) {
+    public ShareCoursesService(ShareCoursesRepository shareCoursesRepository,
+                               MinioService minioService) {
         this.shareCoursesRepository = shareCoursesRepository;
+        this.minioService = minioService;
     }
 
     public Optional<XmlShareResponse> findByFileHash(String fileHashId) {
-        Optional<ShareCourses> shareCourses = shareCoursesRepository.findByFileHash(fileHashId);
         try {
+            Optional<ShareCourses> shareCourses = shareCoursesRepository.findByFileHash(fileHashId);
             if (shareCourses.isPresent()) {
-                XmlShareResponse xmlShareResponse = new XmlShareResponse();
-
-                String xmlFile = readTcxFileAsString(shareCourses.get().getPathName(),
+                String filePath = String.format("/share/%s/%s.tcx",
+                        shareCourses.get().getPathName(),
                         shareCourses.get().getFileHash());
-                String xmlData = LZString.compressToUTF16(xmlFile);
+
+                XmlShareResponse xmlShareResponse = new XmlShareResponse();
+                String xmlData = LZString.compressToUTF16(
+                        minioService.readFileContentByString(bucketNameData, filePath));
                 xmlShareResponse.setXmlData(xmlData);
-                xmlShareResponse.setTrackName(shareCourses.get().getPathName());
+                xmlShareResponse.setTrackName(shareCourses.get().getPcFileName());
                 xmlShareResponse.setFileType("tcx");
                 return Optional.of(xmlShareResponse);
             } else {

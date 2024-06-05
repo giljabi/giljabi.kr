@@ -1,6 +1,18 @@
 
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fparknamjun%2Fgiljabi&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 
+## 2024.06.05
+* mysql mb4 설정, 맥에서 한글 풀어쓰기 문제 확인 필요
+```sql
+SHOW VARIABLES LIKE 'character_set%';
+SHOW VARIABLES LIKE 'collation%';
+alter database newdb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+ALTER TABLE mytable CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+String url = "jdbc:mysql://localhost:3306/your_database_name?useUnicode=true&characterEncoding=utf8mb4";
+
+```
+
 ## 2024.05.28
 * gpx, tcx 파일을 업로드하면 경로정보를 DB에 저장
 * vworld 3d view 기능추가

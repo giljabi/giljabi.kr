@@ -3,6 +3,7 @@ package kr.giljabi.api.controller;
 import io.swagger.annotations.ApiOperation;
 import kr.giljabi.api.response.Response;
 import kr.giljabi.api.response.XmlShareResponse;
+import kr.giljabi.api.service.MinioService;
 import kr.giljabi.api.service.ShareCoursesService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
