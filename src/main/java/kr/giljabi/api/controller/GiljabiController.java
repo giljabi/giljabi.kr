@@ -83,7 +83,7 @@ public class GiljabiController {
             GiljabiGpsdata gpsdata = new GiljabiGpsdata();
             gpsdata.setDistance(gpsDataDTO.getDistance());
             gpsdata.setFileext(gpsDataDTO.getFileext());
-            gpsdata.setFileurl(savedFilename);
+            gpsdata.setFileurl(s3url + "/" + savedFilename);
             gpsdata.setSpeed(gpsDataDTO.getSpeed());
             gpsdata.setTrackname(gpsDataDTO.getTrackName());
             gpsdata.setTrkpt(gpsDataDTO.getTrkpt());
