@@ -3,6 +3,7 @@ package kr.giljabi.api.auth;
 
 import kr.giljabi.api.entity.UserInfo;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;

@@ -1,7 +1,7 @@
 package kr.giljabi.api.service;
 
 import kr.giljabi.api.entity.UserInfo;
-import kr.giljabi.api.repository.UserRepository;
+import kr.giljabi.api.repository.UserInfoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -9,10 +9,10 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserService {
 
-    private final UserRepository userRepository;
+    private final UserInfoRepository userInfoRepository;
 
     public UserInfo selectOneByUserId(String userId){
-        return userRepository.findByUserid(userId);
+        return userInfoRepository.findByUserid(userId);
     }
 /*
     @Transactional

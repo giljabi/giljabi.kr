@@ -1,5 +1,12 @@
 package kr.giljabi.api.utils;
 
+import com.google.gson.Gson;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import kr.giljabi.api.entity.UserInfo;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -51,5 +58,26 @@ public class CommonUtils {
     public static String getFileLocation(String uuidKey) {
         return String.format("%s/%s", CommonUtils.getCurrentTime("YYYYMM"), uuidKey);
     }
+
+    /**
+     * session정보가 있거나 없거나 반드시 리턴해야 함
+     * @param request
+     * @return
+     */
+    public static UserInfo getSessionByUserinfo(HttpServletRequest request) {
+        JwtProvider jwtProvider = new JwtProvider();
+        UserInfo userInfo = new UserInfo();
+        try {
+            HttpSession session = request.getSession();
+            Jws<Claims> claims = jwtProvider.getClaims((String) session.getAttribute("token"));
+            userInfo = new Gson().fromJson((String) claims.getBody().get("userinfo"), UserInfo.class);
+        } catch(Exception e) {
+            userInfo.setLevel("00");
+            userInfo.setUserid("sonnim@giljabi.kr");
+            userInfo.setUsername("손님");
+        }
+        return userInfo;
+    }
+
 
 }

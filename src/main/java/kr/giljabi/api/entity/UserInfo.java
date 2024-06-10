@@ -22,4 +22,5 @@ public class UserInfo implements java.io.Serializable {
     private String userid;
     private String password;
     private String username;
+    private String level;
 }

@@ -1,8 +1,13 @@
 package kr.giljabi.api.controller;
 
 import com.drew.lang.GeoLocation;
+import com.google.gson.Gson;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import kr.giljabi.api.auth.UserPrincipal;
 import kr.giljabi.api.entity.GiljabiGpsdataImage;
 import kr.giljabi.api.entity.GiljabiGpsdata;
+import kr.giljabi.api.entity.UserInfo;
 import kr.giljabi.api.geo.JpegMetaInfo;
 import kr.giljabi.api.request.RequestGpsDataDTO;
 import kr.giljabi.api.response.GiljabiResponse;
@@ -14,15 +19,20 @@ import kr.giljabi.api.service.GiljabiGpsDataService;
 import kr.giljabi.api.service.MinioService;
 import kr.giljabi.api.utils.CommonUtils;
 import kr.giljabi.api.utils.ErrorCode;
+import kr.giljabi.api.utils.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import com.github.diogoduailibe.lzstring4j.LZString;
+import springfox.documentation.spring.web.json.Json;
 
 import java.util.ArrayList;
 
@@ -44,6 +54,8 @@ public class GiljabiController {
 
     private final MinioService minioService;
 
+    private UserInfo userInfo;
+
     @Value("${minio.bucketName}")
     private String bucketName;
 
@@ -53,8 +65,11 @@ public class GiljabiController {
     //bucketName: service
     //file pth: service/yyyyMM/uuid_filename
     @PostMapping("/api/1.0/saveGpsdata")
-    public Response gpsSave(final @Valid @RequestBody RequestGpsDataDTO gpsDataDTO) {
+    public Response gpsSave(HttpServletRequest request,
+                            final @Valid @RequestBody RequestGpsDataDTO gpsDataDTO) {
         try {
+            userInfo = CommonUtils.getSessionByUserinfo(request);
+
             String xmlData = LZString.decompressFromUTF16(gpsDataDTO.getXmldata());
 
             String filename = String.format("%s/%s.%s",
@@ -69,12 +84,10 @@ public class GiljabiController {
             gpsdata.setDistance(gpsDataDTO.getDistance());
             gpsdata.setFileext(gpsDataDTO.getFileext());
             gpsdata.setFileurl(savedFilename);
-//            gpsdata.setCreateat(CommonUtils.getCurrentTime("yyyy-MM-dd'T'HH:mm:ss"));
-//            gpsdata.setChangeat(CommonUtils.getCurrentTime("yyyy-MM-dd'T'HH:mm:ss"));
             gpsdata.setSpeed(gpsDataDTO.getSpeed());
             gpsdata.setTrackname(gpsDataDTO.getTrackName());
             gpsdata.setTrkpt(gpsDataDTO.getTrkpt());
-            gpsdata.setUser("sonnim");
+            gpsdata.setUser(userInfo.getUserid());
             gpsdata.setUuid(gpsDataDTO.getUuid()); //filename
             gpsdata.setWpt(gpsDataDTO.getWpt());
             gpsdata.setFilesize(xmlData.length());

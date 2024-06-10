@@ -14,13 +14,17 @@ import org.springframework.stereotype.Service;
 public class UserDetailsServiceImpl implements UserDetailsService {
 
 	private final UserService userService;
-
+	private UserInfo userInfo;
 	@Override
 	public UserDetails loadUserByUsername(String userid) throws UsernameNotFoundException {
-		UserInfo user = userService.selectOneByUserId(userid);
-		if(user == null) {
+		userInfo = userService.selectOneByUserId(userid);
+		if(userInfo == null) {
 			throw new UsernameNotFoundException("empty user");
 		}
-		return UserPrincipal.build(user);
+		return UserPrincipal.build(userInfo);
+	}
+
+	public UserInfo getUserInfo() {
+		return userInfo;
 	}
 }
