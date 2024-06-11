@@ -16,8 +16,12 @@
     <properties>
         <java.version>11</java.version>
 
-        <resourcePath>target/resources/main/resource</resourcePath>
-        <minifiedPath>target/minified</minifiedPath>
+<!--        <resourcePath>target/resources/main/resource</resourcePath>-->
+<!--        <minifiedPath>target/minified</minifiedPath>-->
+
+<!--        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>-->
+<!--        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>-->
+<!--        <encoding>UTF-8</encoding>-->
     </properties>
 
     <dependencies>
@@ -203,6 +207,16 @@
                 </configuration>
             </plugin>
 
+            <!-- Maven Resources Plugin Configuration -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -227,33 +241,53 @@
                     </execution>
                 </executions>
             </plugin>
-
+            <!-- Node and NPM Installation -->
             <plugin>
-                <groupId>net.alchim31.maven</groupId>
-                <artifactId>yuicompressor-maven-plugin</artifactId>
-                <version>1.5.1</version>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <version>1.11.3</version>
+                <executions>
+                    <!-- Install Node and NPM -->
+                    <execution>
+                        <id>install node and npm</id>
+                        <goals>
+                            <goal>install-node-and-npm</goal>
+                        </goals>
+                        <configuration>
+                            <nodeVersion>v14.17.0</nodeVersion>
+                            <npmVersion>6.14.13</npmVersion>
+                        </configuration>
+                    </execution>
+                    <!-- Install npm dependencies -->
+                    <execution>
+                        <id>npm install</id>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>install</arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Execute UglifyJS -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
                 <executions>
                     <execution>
                         <phase>prepare-package</phase>
                         <goals>
-                            <goal>compress</goal>
+                            <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <nomunge>true</nomunge>
-                            <encoding>utf-8</encoding>
-                            <nosuffix>false</nosuffix>
-                            <webappDirectory>${project.basedir}/src/main/resources/static/js</webappDirectory>
-                            <includes>
-                                <include>*.js</include>
-                            </includes>
-                            <excludes>
-                                <exclude>**/jquery*</exclude>
-                                <exclude>**/*-min.js</exclude>
-                                <exclude>**/images</exclude>
-                                <exclude>**/jquery-plugin/**</exclude>
-                                <exclude>**/sql</exclude>
-                                <exclude>**/sql</exclude>
-                            </excludes>
+                            <executable>npm</executable>
+                            <arguments>
+                                <argument>run</argument>
+                                <argument>minify</argument>
+                            </arguments>
                         </configuration>
                     </execution>
                 </executions>
@@ -268,7 +302,35 @@
                         <phase>prepare-package</phase>
                         <configuration>
                             <tasks>
-                                <replaceregexp file="src/main/resources/static/giljabi.html" match="giljabi.js" replace="giljabi-min.js" byline="true"/>
+                                <delete file="target/classes/static/js/common.js" />
+                                <delete file="target/classes/static/js/routeutil.js" />
+                                <delete file="target/classes/static/js/waypoint.js" />
+                                <delete file="target/classes/static/js/xmlwriter.js" />
+                                <delete file="target/classes/static/js/fileutils.js" />
+                                <delete file="target/classes/static/js/giljabi.js" />
+                                <delete file="target/classes/static/js/editor2.js" />
+
+                                <replaceregexp file="target/classes/static/giljabi.html"
+                                               match="common.js" replace="common.min.js" byline="true" encoding="UTF-8"/>
+                                <replaceregexp file="target/classes/static/giljabi.html"
+                                               match="routeutil.js" replace="routeutil.min.js" byline="true" encoding="UTF-8"/>
+                                <replaceregexp file="target/classes/static/giljabi.html"
+                                               match="waypoint.js" replace="waypoint.min.js" byline="true" encoding="UTF-8"/>
+                                <replaceregexp file="target/classes/static/giljabi.html"
+                                               match="xmlwriter.js" replace="xmlwriter.min.js" byline="true" encoding="UTF-8"/>
+                                <replaceregexp file="target/classes/static/giljabi.html"
+                                               match="fileutils.js" replace="fileutils.min.js" byline="true" encoding="UTF-8"/>
+                                <replaceregexp file="target/classes/static/giljabi.html"
+                                               match="giljabi.js" replace="giljabi.min.js" byline="true" encoding="UTF-8"/>
+
+                                <replaceregexp file="target/classes/static/editor2.html"
+                                               match="common.js" replace="common.min.js" byline="true" encoding="UTF-8"/>
+                                <replaceregexp file="target/classes/static/editor2.html"
+                                               match="routeutil.js" replace="routeutil.min.js" byline="true" encoding="UTF-8"/>
+                                <replaceregexp file="target/classes/static/editor2.html"
+                                               match="xmlwriter.js" replace="xmlwriter.min.js" byline="true" encoding="UTF-8"/>
+                                <replaceregexp file="target/classes/static/editor2.html"
+                                               match="editor2.js" replace="editor2.min.js" byline="true" encoding="UTF-8"/>
                             </tasks>
                         </configuration>
                         <goals>
@@ -277,7 +339,6 @@
                     </execution>
                 </executions>
             </plugin>
-
 
         </plugins>
     </build>
