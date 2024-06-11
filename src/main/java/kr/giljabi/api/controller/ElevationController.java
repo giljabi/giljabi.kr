@@ -51,9 +51,6 @@ public class ElevationController {
     @Value("${giljabi.mountain100.path}")
     private String mountain100Path;
 
-    @Value("${giljabi.xmlshare.path}")
-    private String xmlSharePath;
-
     @Value("${minio.bucketNameElevation}")
     private String bucketNameElevation;
 
@@ -75,9 +72,9 @@ public class ElevationController {
             //tcp socket exception 방지, 개발초기에 간혹 발생했었는데 이제는 이런 문제는 없는듯...
             //googleService.checkGoogle();
 
-//            list = googleService.getElevation(request);
-//            return new Response(list);
-            return getMountainData();
+            list = googleService.getElevation(request);
+            return new Response(list);
+//            return getMountainData();
         } catch (Exception e) {
             return new Response(ErrorCode.STATUS_EXCEPTION.getStatus(), e.getMessage());
         }
@@ -243,6 +240,9 @@ public class ElevationController {
             String uuid = CommonUtils.generateUUID().toString();
             String filename = String.format("%s.%s", CommonUtils.getFileLocation(uuid), request.getFileExt());
             String savedFilename = minioService.saveFile(bucketNameElevation, filename, request.getXmlData());
+
+            //DB에 저장 필요
+
             return new Response(ErrorCode.STATUS_SUCCESS.getStatus(), ErrorCode.STATUS_SUCCESS.getMessage());
         } catch (Exception e) {
             return new Response(ErrorCode.STATUS_EXCEPTION.getStatus(), e.getMessage());

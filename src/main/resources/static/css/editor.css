@@ -63,7 +63,7 @@ body, p, tr, th, td, ul, li, select, input {
     bottom: 10%; /* Positions the element 10% above the bottom of the container */
     transform: translateY(10%); /* Offsets the element upwards by 10% of its own height */
     z-index: 1;
-    opacity: 0.5;
+    opacity: 1.0;
     background-color: white;
 }
 .elevation {
