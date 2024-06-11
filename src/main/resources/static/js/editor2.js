@@ -274,6 +274,10 @@ function drawPlot() {
     });
 }
 
+function pointsToPath(points) {
+    return points.map(point => new kakao.maps.LatLng(point.y, point.x));
+}
+
 function onClickGetElevation() {
     $('#getElevation').click(function () {
         /*        $('#editinfo').block({
