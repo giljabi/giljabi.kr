@@ -39,6 +39,7 @@ CREATE TABLE gpsdata (
                          trackname VARCHAR(255) NOT NULL,
                          speed double NOT NULL,
                          distance double NOT NULL,
+                         apiname varchar(16),
                          fileurl varchar(255),
                          fileext varchar(3),
                          filesize long,

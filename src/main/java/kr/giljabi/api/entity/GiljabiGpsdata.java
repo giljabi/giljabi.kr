@@ -64,6 +64,9 @@ public class GiljabiGpsdata implements java.io.Serializable {
     @Column(nullable = true)
     private int filesize;
 
+    @Column(nullable = true, length = 16)
+    private String apiname;
+
     @Column(nullable = true)
     private int filesizecompress;
 
