@@ -14,7 +14,10 @@
     <name>giljabi</name>
     <description>giljabi</description>
     <properties>
-        <java.version>17</java.version>
+        <java.version>11</java.version>
+
+        <resourcePath>target/resources/main/resource</resourcePath>
+        <minifiedPath>target/minified</minifiedPath>
     </properties>
 
     <dependencies>
@@ -208,6 +211,73 @@
                     <skipTests>true</skipTests>
                 </configuration>
             </plugin>
+
+            <!-- js 및 css Minify, node 14.18.0 이상 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>default-clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>yuicompressor-maven-plugin</artifactId>
+                <version>1.5.1</version>
+                <executions>
+                    <execution>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>compress</goal>
+                        </goals>
+                        <configuration>
+                            <nomunge>true</nomunge>
+                            <encoding>utf-8</encoding>
+                            <nosuffix>false</nosuffix>
+                            <webappDirectory>${project.basedir}/src/main/resources/static/js</webappDirectory>
+                            <includes>
+                                <include>*.js</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/jquery*</exclude>
+                                <exclude>**/*-min.js</exclude>
+                                <exclude>**/images</exclude>
+                                <exclude>**/jquery-plugin/**</exclude>
+                                <exclude>**/sql</exclude>
+                                <exclude>**/sql</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <tasks>
+                                <replaceregexp file="src/main/resources/static/giljabi.html" match="giljabi.js" replace="giljabi-min.js" byline="true"/>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
 
         </plugins>
     </build>
