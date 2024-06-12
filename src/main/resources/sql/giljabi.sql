@@ -33,7 +33,8 @@ CREATE TABLE gpsdata (
                          fileurl VARCHAR(255),
                          fileext VARCHAR(3),
                          filesize BIGINT default 0,
-                         filesizecompress BIGINT default 0
+                         filesizecompress BIGINT default 0,
+                         shareflag bool NULL DEFAULT false
 );
 
 -- 트리거를 사용하여 changeat 컬럼을 업데이트

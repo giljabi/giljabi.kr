@@ -73,6 +73,9 @@ public class GiljabiGpsdata implements java.io.Serializable {
     @Column(nullable = true)
     private int filesizecompress;
 
+    @Column(nullable = false)
+    private boolean shareflag = false;
+
     @OneToMany(mappedBy = "gpsdata", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GiljabiGpsdataImage> gpsdataimages;
     public void addGpsImage(GiljabiGpsdataImage gpsImage) {
