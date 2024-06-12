@@ -209,4 +209,19 @@ public class GiljabiController {
         }
     }
 
+    @GetMapping("/api/1.0/getShareGpsdata/{uuidkey}")
+    public Response getShareGpsdata(@PathVariable String uuidkey) {
+        try {
+            GiljabiGpsdata gpsdata = gpsService.findByUuidAndShareflagTrue(uuidkey);
+            GiljabiResponseGpsdataDTO dto = new GiljabiResponseGpsdataDTO();
+            dto.setFileurl(gpsdata.getFileurl());
+            dto.setTrackname(gpsdata.getTrackname());
+            dto.setUuid(gpsdata.getUuid());
+            dto.setId((int)gpsdata.getId());
+            return new Response(dto);
+        } catch (Exception e) {
+            return new Response(ErrorCode.STATUS_FAILURE.getStatus(), e.getMessage());
+        }
+    }
+
 }

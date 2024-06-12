@@ -31,4 +31,8 @@ public class GiljabiGpsDataService {
         return giljabiGpsDataRepository.findByUuid(uuid);
     }
 
+    public GiljabiGpsdata findByUuidAndShareflagTrue(String uuid) {
+        return giljabiGpsDataRepository.findByUuidAndShareflagTrue(uuid);
+    }
+
 }
