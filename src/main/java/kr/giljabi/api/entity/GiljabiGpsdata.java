@@ -4,7 +4,10 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotNull;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -28,16 +31,16 @@ public class GiljabiGpsdata implements java.io.Serializable {
 
     //@Column(nullable = false, length = 36)
     @Column(nullable = false)
-    private Timestamp createat;
+    private Timestamp createat = Timestamp.from(Instant.now());
 
     //@Column(nullable = false, length = 36)
     @Column(nullable = false)
-    private Timestamp changeat;
+    private Timestamp changeat = Timestamp.from(Instant.now());
 
     @Column(nullable = false, length = 255)
-    //@Email(message = "이메일 형식이 올바르지 않습니다")
-    //@NotNull(message = "이메일은 필수 입력 항목입니다")
-    private String user;
+    @Email(message = "이메일 형식이 올바르지 않습니다")
+    @NotNull(message = "이메일은 필수 입력 항목입니다")
+    private String userid;
 
     @Column(nullable = false)
     private int wpt;

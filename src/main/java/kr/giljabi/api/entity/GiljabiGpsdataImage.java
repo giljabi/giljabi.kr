@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.time.Instant;
 
 /**
  * @Author : njpark@hyosung.com
@@ -29,11 +30,11 @@ public class GiljabiGpsdataImage implements java.io.Serializable {
 
     //@Column(nullable = false, length = 36)
     @Column(nullable = false)
-    private Timestamp createat;
+    private Timestamp createat = Timestamp.from(Instant.now());
 
     //@Column(nullable = false, length = 36)
     @Column(nullable = false)
-    private Timestamp changeat;
+    private Timestamp changeat = Timestamp.from(Instant.now());
     
     @Column(nullable = true)
     private String originaldatetime;

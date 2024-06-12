@@ -31,16 +31,16 @@ public class MinioService {
     @Autowired
     private MinioClient minioClient;
 
-    public String saveFile(String bucketName, String filename, String data) {
-        try (InputStream inputStream = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8))) {
+    public String saveFile(String bucketName, String filename, String xmlData) {
+        try (InputStream inputStream = new ByteArrayInputStream(xmlData.getBytes(StandardCharsets.UTF_8))) {
             minioClient.putObject(
                     PutObjectArgs.builder()
                             .bucket(bucketName)
                             .object(filename)
-                            .stream(inputStream, data.length(), -1)
+                            .stream(inputStream, xmlData.length(), -1)
                             .contentType("application/octet-stream")
                             .build());
-            return bucketName + "/" + filename;
+            return bucketName + filename;
 
         } catch (Exception e) {
             throw new RuntimeException("Error occurred while uploading file to MinIO", e);
@@ -56,7 +56,7 @@ public class MinioService {
                             .stream(file.getInputStream(), file.getSize(), -1)
                             .contentType(file.getContentType())
                             .build());
-            return bucketName + "/" + pathAndFilename;
+            return bucketName + pathAndFilename;
         } catch (Exception e) {
             throw new RuntimeException("Error occurred while uploading file to MinIO", e);
         }

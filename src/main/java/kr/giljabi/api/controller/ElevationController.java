@@ -51,14 +51,17 @@ public class ElevationController {
     @Value("${giljabi.mountain100.path}")
     private String mountain100Path;
 
-    @Value("${minio.bucketNameElevation}")
-    private String bucketNameElevation;
+    @Value("${giljabi.google.elevation.path}")
+    private String elevationPath;
 
-    @Value("${minio.bucketNameData}")
-    private String bucketNameData;
+    @Value("${minio.bucketData}")
+    private String bucketData;
 
     @Value("${minio.url}")
     private String s3url;
+
+    @Value("${minio.bucketService}")
+    private String bucketService;
 
     @PostMapping("/api/1.0/elevation")
     @ApiOperation(value = "고도정보", notes = "google elevation api 이용하여 고도정보를 받아오는 api")
@@ -93,7 +96,7 @@ public class ElevationController {
         try {
             String filename = String.format("%s/100.txt", mountain100Path);
             //bucketNameData
-            List<String> comboData = minioService.readFileContentByList(bucketNameData, filename);
+            List<String> comboData = minioService.readFileContentByList(bucketData, filename);
 
             List<Mountain100> fileList = new ArrayList<>();
             for (String line : comboData) {
@@ -106,28 +109,6 @@ public class ElevationController {
             return new Response(ErrorCode.STATUS_EXCEPTION.getStatus(), e.getMessage());
         }
     }
-
-    /**
-     *
-    public Response getMountainList100() {
-        try {
-            ClassPathResource resource = new ClassPathResource("etc/100.txt");
-            //jar 파일 내부에서 파일을 읽기 위해서는 InputStream을 사용해야 한다.
-            InputStream inputStream = resource.getInputStream();
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-            List<String> lines = bufferedReader.lines().collect(Collectors.toList());
-            List<Mountain100> fileList = new ArrayList<>();
-            for (String line : lines) {
-                if(line.charAt(0) == '#')
-                    continue;
-                fileList.add(new Mountain100(line));
-            }
-            return new Response(fileList);
-        } catch (Exception e) {
-            return new Response(ErrorCode.STATUS_EXCEPTION.getStatus(), e.getMessage());
-        }
-    }
-     */
 
     @Data
     private class Mountain100 {
@@ -154,7 +135,7 @@ public class ElevationController {
         List<String> fileList = new ArrayList<>();
         try {
             //abc-*.gpx, gariwangsan*\\.gpx$
-            fileList = minioService.listFiles(bucketNameData,
+            fileList = minioService.listFiles(bucketData,
                     mountain100Path.substring(1) + "/",
                     filename + "*", "gpx");
             return new Response(fileList);
@@ -163,48 +144,13 @@ public class ElevationController {
         }
     }
 
-    /**
-     *
-     * @param filename
-     * @return
-    public Response getMountainList100Files(@PathVariable String filename) {
-        List<String> fileList = new ArrayList<>();
-        try {
-            File fileDir = new File(mountain100Path);
-            String regex = filename + ".*\\.gpx$";
-
-            FileFilter filter = new FileFilter() {
-                @Override
-                public boolean accept(File pathname) {
-                    return pathname.getName().matches(regex);
-                }
-            };
-            File[] files = fileDir.listFiles(filter);
-
-            for (File file : files) {
-                fileList.add(file.getName());
-            }
-            return new Response(fileList);
-        } catch (Exception e) {
-            return new Response(ErrorCode.STATUS_EXCEPTION.getStatus(), e.getMessage());
-        }
-    }
-    */
-
-    public String readFileAsString(String filename) throws IOException {
-        String fileFullName = String.format("%s/%s", mountain100Path, filename);
-        File file = new File(fileFullName);
-        byte[] binaryData = FileCopyUtils.copyToByteArray(file);
-        return new String(binaryData, StandardCharsets.UTF_8);
-    }
-
     @GetMapping("/api/1.0/mountainGpx/{directory}/{filename}")
     @ApiOperation(value = "산림청 100대 명산 gpx 경로정보, gpx 파일로 관리하고 압축해서 전송한다 ")
     public Response getMountainList100Gpxfile(@PathVariable String directory,
                                               @PathVariable String filename) {
         try {
             Gpx100Response gpx100Response = new Gpx100Response();
-            String gpx = minioService.readFileContentByString(bucketNameData,
+            String gpx = minioService.readFileContentByString(bucketData,
                     directory + "/" + filename);
             String xmlData = LZString.compressToUTF16(gpx);
             gpx100Response.setTrackName(filename);
@@ -215,31 +161,16 @@ public class ElevationController {
         }
     }
 
-    /**
-     *
-     * @param request
-     * @return
-     *     public Response getMountainList100Gpxfile(@PathVariable String filename) {
-     *         try {
-     *             Gpx100Response gpx100Response = new Gpx100Response();
-     *
-     *             //compressToUTF16가 더 좋은 압축률을 보여주지만(compressToBase64), 송수신시 호환성문제가 있을 수 있음
-     *             String xmlData = LZString.compressToUTF16(readFileAsString(filename));
-     *             gpx100Response.setTrackName(filename);
-     *             gpx100Response.setXmlData(xmlData);
-     *             return new Response(Optional.of(gpx100Response));
-     *         } catch (Exception e) {
-     *             return new Response(ErrorCode.STATUS_EXCEPTION.getStatus(), e.getMessage());
-     *         }
-     *     }
-     */
     @PostMapping("/api/1.0/saveElevation")
     @ApiOperation(value = "GPX정보", notes = "GPX정보를 저장한다.")
     public Response saveElevation(final @Valid @RequestBody RequestElevationSaveData request) {
         try {
             String uuid = CommonUtils.generateUUID().toString();
-            String filename = String.format("%s.%s", CommonUtils.getFileLocation(uuid), request.getFileExt());
-            String savedFilename = minioService.saveFile(bucketNameElevation, filename, request.getXmlData());
+            String filename = String.format("%s/%s.%s",
+                    elevationPath,
+                    CommonUtils.getFileLocation(uuid),
+                    request.getFileExt());
+            String savedFilename = minioService.saveFile(bucketService, filename, request.getXmlData());
 
             //DB에 저장 필요
 

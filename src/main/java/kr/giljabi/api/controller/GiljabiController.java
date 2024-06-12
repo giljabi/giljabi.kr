@@ -56,8 +56,12 @@ public class GiljabiController {
 
     private UserInfo userInfo;
 
-    @Value("${minio.bucketName}")
-    private String bucketName;
+    @Value("${minio.bucketService}")
+    private String bucketService;
+    @Value("${giljabi.gpx.path}")
+    private String gpxPath;
+    @Value("${giljabi.gpximages.path}")
+    private String gpxImagesPath;
 
     @Value("${minio.url}")
     private String s3url;
@@ -72,12 +76,14 @@ public class GiljabiController {
 
             String xmlData = LZString.decompressFromUTF16(gpsDataDTO.getXmldata());
 
-            String filename = String.format("%s/%s.%s",
-                    CommonUtils.getFileLocation(gpsDataDTO.getUuid()), gpsDataDTO.getUuid(),
+            String filename = String.format("%s/%s/%s.%s",
+                    gpxPath,
+                    CommonUtils.getFileLocation(gpsDataDTO.getUuid()),
+                    gpsDataDTO.getUuid(),
                     gpsDataDTO.getFileext());
 
             //압축된 상태로 저장하는것이 좋을까?
-            String savedFilename = minioService.saveFile(bucketName, filename, gpsDataDTO.getXmldata());
+            String savedFilename = minioService.saveFile(bucketService, filename, gpsDataDTO.getXmldata());
 
             //db에 저장하는 코드
             GiljabiGpsdata gpsdata = new GiljabiGpsdata();
@@ -87,7 +93,7 @@ public class GiljabiController {
             gpsdata.setSpeed(gpsDataDTO.getSpeed());
             gpsdata.setTrackname(gpsDataDTO.getTrackName());
             gpsdata.setTrkpt(gpsDataDTO.getTrkpt());
-            gpsdata.setUser(userInfo.getUserid());
+            gpsdata.setUserid(userInfo.getUserid());
             gpsdata.setUuid(gpsDataDTO.getUuid()); //filename
             gpsdata.setWpt(gpsDataDTO.getWpt());
             gpsdata.setFilesize(xmlData.length());
@@ -114,15 +120,16 @@ public class GiljabiController {
         try {
             String extension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
 
-            String filename = String.format("%s/%s",
+            String filename = String.format("%s/%s/%s",
+                    gpxImagesPath,
                     CommonUtils.getFileLocation(uuidKey),
                     CommonUtils.generateUUIDFilename(extension));
-            String imageUrl = minioService.uploadFileImage(bucketName, filename, file);
+            String imageUrl = minioService.uploadFileImage(bucketService, filename, file);
             log.info("imageUrl: " + imageUrl);
 
             GiljabiGpsdata gpsdata = gpsService.findByUuid(uuidKey);
 
-            JpegMetaInfo metadata = minioService.getMetaData(bucketName, imageUrl);
+            JpegMetaInfo metadata = minioService.getMetaData(bucketService, imageUrl);
 
             //db에 저장하는 코드
             GiljabiGpsdataImage gpsImage = new GiljabiGpsdataImage();
@@ -136,8 +143,6 @@ public class GiljabiController {
             gpsImage.setHeight(metadata.getImageLength());
             gpsImage.setMake(metadata.getMake());
             gpsImage.setModel(metadata.getModel());
-//            gpsImage.setCreateat(CommonUtils.getCurrentTime("yyyy-MM-dd'T'HH:mm:ss"));
-//            gpsImage.setChangeat(CommonUtils.getCurrentTime("yyyy-MM-dd'T'HH:mm:ss"));
             gpsImage.setOriginaldatetime(metadata.getDateTime());
             gpsImage.setOriginalfname(file.getOriginalFilename());
             gpsImage.setFilesize(file.getSize());
@@ -198,9 +203,6 @@ public class GiljabiController {
                 imagesDTOList.add(gpsImageDTO);
             });
             dto.setGpsdataimages(imagesDTOList);
-
-            log.info("dto: " + dto);
-
             return new Response(dto);
         } catch (Exception e) {
             return new Response(ErrorCode.STATUS_FAILURE.getStatus(), e.getMessage());
