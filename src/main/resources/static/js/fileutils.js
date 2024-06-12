@@ -110,8 +110,14 @@ function processFile(uuid, file) {
                         gps[piexif.GPSIFD.GPSLatitude] = exifData["GPSLatitude"].value;
                         gps[piexif.GPSIFD.GPSLongitudeRef] = exifData["GPSLongitudeRef"].value;
                         gps[piexif.GPSIFD.GPSLongitude] = exifData["GPSLongitude"].value;
-                        gps[piexif.GPSIFD.GPSAltitudeRef] = exifData["GPSAltitudeRef"].value;
-                        gps[piexif.GPSIFD.GPSAltitude] = exifData["GPSAltitude"].value;
+                        //gps[piexif.GPSIFD.GPSAltitudeRef] = exifData["GPSAltitudeRef"].value;
+
+                        if (exifData["GPSLongitude"] !== undefined && exifData["GPSLongitude"] !== null) {
+                            gps[piexif.GPSIFD.GPSAltitude] = exifData["GPSAltitude"].value;
+                        } else {
+                            gps[piexif.GPSIFD.GPSAltitude] = [0, 1];
+                        }
+                        //gps[piexif.GPSIFD.GPSAltitude] = exifData["GPSAltitude"].value;
 
                         let exifObj = {"0th": jpeg, "Exif": exif, "GPS": gps}; //이해가 안되네...
                         console.log(exifObj);
