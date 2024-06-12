@@ -29,7 +29,7 @@ public class ShareCoursesService {
     @Value("${giljabi.xmlshare.path}")
     private String xmlSharePath;
 
-    @Value("${minio.bucketNameData}")
+    @Value("${minio.bucketData}")
     private String bucketNameData;
 
     @Autowired
