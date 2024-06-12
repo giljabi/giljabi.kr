@@ -14,8 +14,11 @@
     <name>giljabi</name>
     <description>giljabi</description>
     <properties>
+        <!-- export JAVA_HOME=$(/usr/libexec/java_home -v 11) -->
         <java.version>11</java.version>
-
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.release>11</maven.compiler.release>
 <!--        <resourcePath>target/resources/main/resource</resourcePath>-->
 <!--        <minifiedPath>target/minified</minifiedPath>-->
 
@@ -341,6 +344,9 @@
                                                match="xmlwriter.js" replace="xmlwriter.min.js" byline="true" encoding="UTF-8"/>
                                 <replaceregexp file="target/classes/static/editor2.html"
                                                match="editor2.js" replace="editor2.min.js" byline="true" encoding="UTF-8"/>
+
+                                <replaceregexp file="target/classes/templates/vworld.html"
+                                               match="routeutil.js" replace="routeutil.min.js" byline="true" encoding="UTF-8"/>
                             </tasks>
                         </configuration>
                         <goals>
