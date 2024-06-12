@@ -2,9 +2,13 @@ package kr.giljabi.api.controller;
 
 import com.github.diogoduailibe.lzstring4j.LZString;
 import io.swagger.annotations.ApiOperation;
+import kr.giljabi.api.entity.GiljabiGpsdata;
+import kr.giljabi.api.entity.UserInfo;
 import kr.giljabi.api.geo.*;
 import kr.giljabi.api.request.RequestElevationSaveData;
+import kr.giljabi.api.response.GiljabiResponse;
 import kr.giljabi.api.response.Gpx100Response;
+import kr.giljabi.api.service.GiljabiGpsDataService;
 import kr.giljabi.api.service.GoogleService;
 import kr.giljabi.api.request.RequestElevationData;
 import kr.giljabi.api.response.Response;
@@ -22,6 +26,7 @@ import org.springframework.util.Base64Utils;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -42,11 +47,13 @@ import java.util.stream.Collectors;
 @RestController
 @RequiredArgsConstructor
 public class ElevationController {
+    private final GiljabiGpsDataService gpsService;
 
     private final GoogleService googleService;
     private final ResourceLoader resourceLoader;
 
     private final MinioService minioService;
+    private UserInfo userInfo;
 
     @Value("${giljabi.mountain100.path}")
     private String mountain100Path;
@@ -163,18 +170,40 @@ public class ElevationController {
 
     @PostMapping("/api/1.0/saveElevation")
     @ApiOperation(value = "GPX정보", notes = "GPX정보를 저장한다.")
-    public Response saveElevation(final @Valid @RequestBody RequestElevationSaveData request) {
+    public Response saveElevation(final HttpServletRequest request,
+                                  final @Valid @RequestBody RequestElevationSaveData elevationSaveData) {
         try {
+            userInfo = CommonUtils.getSessionByUserinfo(request);
+            String xmlData = LZString.decompressFromUTF16(elevationSaveData.getXmlData());
+
             String uuid = CommonUtils.generateUUID().toString();
             String filename = String.format("%s/%s.%s",
                     elevationPath,
                     CommonUtils.getFileLocation(uuid),
-                    request.getFileExt());
-            String savedFilename = minioService.saveFile(bucketService, filename, request.getXmlData());
+                    elevationSaveData.getFileExt());
+            String savedFilename = minioService.saveFile(bucketService, filename, elevationSaveData.getXmlData());
 
             //DB에 저장 필요
+            GiljabiGpsdata gpsdata = new GiljabiGpsdata();
+            gpsdata.setTrackname(elevationSaveData.getGpxName());
+            gpsdata.setFileext(elevationSaveData.getFileExt());
+            gpsdata.setWpt(elevationSaveData.getWayPointCount());
+            gpsdata.setTrkpt(elevationSaveData.getTrackPointCount());
+            gpsdata.setDistance(elevationSaveData.getDistance());
+            gpsdata.setFilesize(xmlData.length());
+            gpsdata.setFilesizecompress(elevationSaveData.getXmlData().length());
+            gpsdata.setFileurl(s3url + "/" + savedFilename);
+            gpsdata.setSpeed(elevationSaveData.getSpeed());
+            gpsdata.setUserid(userInfo.getUserid());
+            gpsdata.setUuid(uuid); //filename
+            gpsdata.setApiname("saveElevation");
+            log.info("saveElevation: " + savedFilename);
+            gpsService.saveGpsdata(gpsdata);
 
-            return new Response(ErrorCode.STATUS_SUCCESS.getStatus(), ErrorCode.STATUS_SUCCESS.getMessage());
+            GiljabiResponse giljabiResponse = new GiljabiResponse();
+            giljabiResponse.setFileKey(gpsdata.getUuid());
+            giljabiResponse.setFilePath(savedFilename);
+            return new Response(giljabiResponse);
         } catch (Exception e) {
             return new Response(ErrorCode.STATUS_EXCEPTION.getStatus(), e.getMessage());
         }

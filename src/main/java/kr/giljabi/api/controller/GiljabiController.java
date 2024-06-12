@@ -100,7 +100,7 @@ public class GiljabiController {
             gpsdata.setFilesizecompress(gpsDataDTO.getXmldata().length());
             gpsdata.setApiname("saveGpsdata");
 
-            log.info("savedFilename: " + savedFilename);
+            log.info("saveGpsdata: " + savedFilename);
 
             gpsService.saveGpsdata(gpsdata);
 
