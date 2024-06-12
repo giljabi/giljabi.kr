@@ -1,7 +1,9 @@
 package kr.giljabi.api.repository;
 
 import kr.giljabi.api.entity.GiljabiGpsdata;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
@@ -13,4 +15,7 @@ import java.util.Optional;
 public interface GiljabiGpsDataRepository extends CrudRepository<GiljabiGpsdata, String> {
     GiljabiGpsdata findByUuid(String uuid);
     Optional<GiljabiGpsdata> findById(long id);
+
+    //@Query("SELECT g FROM GiljabiGpsdata g WHERE g.uuid = :uuid AND g.shareflag = false")
+    GiljabiGpsdata findByUuidAndShareflagTrue(@Param("uuid") String uuid);
 }
