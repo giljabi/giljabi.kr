@@ -130,12 +130,12 @@ public class GiljabiController {
             GiljabiGpsdata gpsdata = gpsService.findByUuid(uuidKey);
 
             JpegMetaInfo metadata = minioService.getMetaData(bucketService, imageUrl);
-
+            log.info("metadata: " + metadata.toString());
             //db에 저장하는 코드
             GiljabiGpsdataImage gpsImage = new GiljabiGpsdataImage();
             gpsImage.setFileext(extension.substring(extension.indexOf(".") + 1));
             gpsImage.setFileurl(s3url + "/" + imageUrl); //서버는 항상 다를 수 있음
-            gpsImage.setGpsdata(gpsdata);
+            gpsImage.setGpsdata(gpsdata);   //gpsdata에 대한 참조 키
             gpsImage.setEle(metadata.getAltitude());
             gpsImage.setLat(metadata.getGeoLocation().getLatitude());
             gpsImage.setLng(metadata.getGeoLocation().getLongitude());

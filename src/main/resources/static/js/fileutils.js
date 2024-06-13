@@ -1,3 +1,19 @@
+function checkExif(tag, exifData) {
+    if (exifData[tag] !== undefined && exifData[tag] !== null) {
+        return exifData[tag].value;
+    } else {
+        return [0, 1]; // default value 0
+    }
+}
+
+function checkExifString(tag, exifData) {
+    if (exifData[tag] !== undefined && exifData[tag] !== null) {
+        return exifData[tag].value;
+    } else {
+        return [''];
+    }
+}
+
 /**
  * @Date: 2024.05.30
  * 1. jpg 파일을 읽어서 exif 데이터를 확인한다.
@@ -23,7 +39,12 @@ function processFile(uuid, file) {
         reader.onload = function (e) {
             let arrayBuffer = e.target.result;
             let exifData = ExifReader.load(arrayBuffer);
-            console.log(exifData);
+            //console.log(exifData);
+
+            if (!exifData.GPSLatitude || !exifData.GPSLongitude || !exifData.GPSAltitude) {
+                resolve({status: -1, message:'GPS 정보가 없는 이미지는 등록할 수 없습니다', data:''});  // Promise 거부
+                return;
+            }
 
             let orientation = exifData.Orientation ? exifData.Orientation.value : 1;
 
@@ -96,31 +117,27 @@ function processFile(uuid, file) {
                         let gps = {};
                         let thumbnail = {};
 
-                        jpeg[piexif.ImageIFD.Make] = exifData["Make"].value;
-                        jpeg[piexif.ImageIFD.Model] = exifData["Model"].value;
-                        jpeg[piexif.ImageIFD.Orientation] = exifData["Orientation"].value;
+                        jpeg[piexif.ImageIFD.Make] = checkExifString('Make', exifData);
+                        jpeg[piexif.ImageIFD.Model] = checkExifString('Model', exifData);
+                        jpeg[piexif.ImageIFD.Orientation] = checkExif('Orientation', exifData);
                         jpeg[piexif.ImageIFD.ImageWidth] = [width, 1];
                         jpeg[piexif.ImageIFD.ImageLength] = [height, 1];
-                        jpeg[piexif.ImageIFD.DateTime] = exifData["DateTime"].value;
+                        jpeg[piexif.ImageIFD.DateTime] = checkExifString('DateTime', exifData);
 
-                        exif[piexif.ExifIFD.ExifVersion] = exifData["ExifVersion"].value;
+                        exif[piexif.ExifIFD.ExifVersion] = checkExifString('ExifVersion', exifData);
                         //exif[piexif.ExifIFD.DateTimeOriginal]  = exifData["DateTimeOriginal"].value;
 
-                        gps[piexif.GPSIFD.GPSLatitudeRef] = exifData["GPSLatitudeRef"].value;
-                        gps[piexif.GPSIFD.GPSLatitude] = exifData["GPSLatitude"].value;
-                        gps[piexif.GPSIFD.GPSLongitudeRef] = exifData["GPSLongitudeRef"].value;
-                        gps[piexif.GPSIFD.GPSLongitude] = exifData["GPSLongitude"].value;
+                        //Ref는 사용하지 않음
+                        gps[piexif.GPSIFD.GPSLatitudeRef] = checkExifString('GPSLatitudeRef', exifData);
+                        gps[piexif.GPSIFD.GPSLongitudeRef] = checkExifString('GPSLongitudeRef', exifData);
                         //gps[piexif.GPSIFD.GPSAltitudeRef] = exifData["GPSAltitudeRef"].value;
-
-                        if (exifData["GPSLongitude"] !== undefined && exifData["GPSLongitude"] !== null) {
-                            gps[piexif.GPSIFD.GPSAltitude] = exifData["GPSAltitude"].value;
-                        } else {
-                            gps[piexif.GPSIFD.GPSAltitude] = [0, 1];
-                        }
-                        //gps[piexif.GPSIFD.GPSAltitude] = exifData["GPSAltitude"].value;
+                        gps[piexif.GPSIFD.GPSLatitude] = checkExif('GPSLatitude', exifData);
+                        gps[piexif.GPSIFD.GPSLongitude] = checkExif('GPSLongitude', exifData);
+                        gps[piexif.GPSIFD.GPSAltitude] = checkExif('GPSAltitude', exifData);
+                        //console.log('exifData: ' + exifData);
 
                         let exifObj = {"0th": jpeg, "Exif": exif, "GPS": gps}; //이해가 안되네...
-                        console.log(exifObj);
+                        //console.log(exifObj);
 
                         let exifStr = piexif.dump(exifObj);
 
@@ -138,10 +155,11 @@ function processFile(uuid, file) {
                             data: formData,
                             contentType: false,
                             processData: false,
+                            async: false,
                             success: function (response) {
                                 savedFileInfo = response.data;
                                 //drawUserMarkImage(response.data.filePath, response.data.geoLocation);
-                                resolve(response.data);  // Promise 해결
+                                resolve(savedFileInfo);  // Promise 해결
                                 console.log('File uploaded successfully.');
                             },
                             error: function (jqXHR, textStatus, errorThrown) {

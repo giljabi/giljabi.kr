@@ -1421,7 +1421,11 @@ TCX
         if (files.length > 0) {
             for (let i = 0; i < files.length; i++) {
                 processFile(uuid, files[i]).then(savedFileInfo => {
-                    console.log('File info:', savedFileInfo);
+                    //console.log('File info:', savedFileInfo);
+                    if(savedFileInfo.status == -1) {
+                        alert(savedFileInfo.message);
+                        return;
+                    }
                     let imageSize = new kakao.maps.Size(44, 44);  // 마커 이미지의 크기
                     let markerImage = new kakao.maps.MarkerImage(savedFileInfo.filePath, imageSize);
                     let marker = new kakao.maps.Marker({
