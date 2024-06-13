@@ -58,10 +58,9 @@ public class GiljabiController {
 
     @Value("${minio.bucketService}")
     private String bucketService;
+
     @Value("${giljabi.gpx.path}")
     private String gpxPath;
-    @Value("${giljabi.gpximages.path}")
-    private String gpxImagesPath;
 
     @Value("${minio.url}")
     private String s3url;
@@ -114,6 +113,13 @@ public class GiljabiController {
         }
     }
 
+    /**
+     * bucketName: service
+     * path: service/gpx/yyyyMM/uuid_filename/uuid_filename.jpg
+     * @param file
+     * @param uuidKey
+     * @return
+     */
     @PostMapping("/api/1.0/uploadImage")
     public Response handleFileUpload(@RequestParam("file") MultipartFile file,
                                      @RequestParam("uuid") String uuidKey) {
@@ -121,7 +127,7 @@ public class GiljabiController {
             String extension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
 
             String filename = String.format("%s/%s/%s",
-                    gpxImagesPath,
+                    gpxPath,
                     CommonUtils.getFileLocation(uuidKey),
                     CommonUtils.generateUUIDFilename(extension));
             String imageUrl = minioService.uploadFileImage(bucketService, filename, file);
