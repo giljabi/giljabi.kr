@@ -22,7 +22,7 @@ CREATE TABLE gpsdata (
                          id SERIAL PRIMARY KEY,
                          apiname VARCHAR(16),
                          uuid VARCHAR(36) NOT NULL UNIQUE,
-                         userid VARCHAR(36) NOT NULL,
+                         userid VARCHAR(255) NOT NULL,
                          createat TIMESTAMP NOT NULL DEFAULT now(),
                          changeat TIMESTAMP NOT NULL DEFAULT now(),
                          wpt INT NOT NULL,
@@ -111,7 +111,7 @@ from gpsdataimage g;
 drop table userinfo;
 CREATE TABLE userinfo (
                           seqno SERIAL PRIMARY KEY,
-                          userid VARCHAR(64) NOT NULL UNIQUE,
+                          userid VARCHAR(255) NOT NULL UNIQUE,
                           password VARCHAR(128) NOT NULL,
                           username VARCHAR(32) DEFAULT NULL,
                           level CHAR(2) DEFAULT NULL
@@ -122,11 +122,11 @@ CREATE TABLE gpselevation (
                               id SERIAL PRIMARY KEY,
                               apiname VARCHAR(16),
                               uuid VARCHAR(36) NOT NULL UNIQUE,
-                              userid VARCHAR(36) DEFAULT NULL,
+                              userid VARCHAR(255) DEFAULT NULL,
                               userip VARCHAR(36) NOT NULL,
                               trackname VARCHAR(128) DEFAULT NULL,
-                              createat CHAR(14) NOT NULL,
-                              changeat CHAR(14) NOT NULL,
+                              createat TIMESTAMP NOT NULL DEFAULT now(),
+                              changeat TIMESTAMP NOT NULL DEFAULT now(),
                               transtime INTEGER NOT NULL,
                               wpt SMALLINT NOT NULL,
                               trkpt SMALLINT NOT NULL,
