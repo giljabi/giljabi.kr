@@ -35,7 +35,8 @@ CREATE TABLE gpsdata (
                          filesize BIGINT default 0,
                          filesizecompress BIGINT default 0,
                          shareflag bool NULL DEFAULT false,
-                         readcount int4 DEFAULT 0 NOT NULL
+                         readcount int4 DEFAULT 0 NOT NULL,
+                         userip VARCHAR(36)
 );
 
 -- 트리거를 사용하여 changeat 컬럼을 업데이트
@@ -115,6 +116,26 @@ CREATE TABLE userinfo (
                           username VARCHAR(32) DEFAULT NULL,
                           level CHAR(2) DEFAULT NULL
 );
+
+
+CREATE TABLE gpselevation (
+                              id SERIAL PRIMARY KEY,
+                              apiname VARCHAR(16),
+                              uuid VARCHAR(36) NOT NULL UNIQUE,
+                              userid VARCHAR(36) DEFAULT NULL,
+                              userip VARCHAR(36) NOT NULL,
+                              trackname VARCHAR(128) DEFAULT NULL,
+                              createat CHAR(14) NOT NULL,
+                              changeat CHAR(14) NOT NULL,
+                              transtime INTEGER NOT NULL,
+                              wpt SMALLINT NOT NULL,
+                              trkpt SMALLINT NOT NULL,
+                              reqcnt INTEGER DEFAULT NULL
+);
+CREATE TRIGGER update_changeat
+    BEFORE UPDATE ON gpselevation
+    FOR EACH ROW
+    EXECUTE PROCEDURE update_changeat_column(); --v11 이전 PROCEDURE, 이후는 function
 
 
 
