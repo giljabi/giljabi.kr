@@ -1372,16 +1372,11 @@ TCX
         //파일의 메인키로 사용
         uuid = crypto.randomUUID();
 
-
-        let xxx = LZString.compressToUTF16(saveData);
-        console.log('xxx:' + xxx.length);
-
         //서버 전송 추가
         let requestBody = {
             speed: Number($('#averageV').val()),
             fileext: _filetype,
             xmldata: LZString.compressToUTF16(saveData),
-            //xmldata: LZString.compressToBase64(saveData),
             filename: _uploadFilename,
             trackName: $('#gpx_metadata_name').val(),
             wpt: waypointSortByDistance.length,
