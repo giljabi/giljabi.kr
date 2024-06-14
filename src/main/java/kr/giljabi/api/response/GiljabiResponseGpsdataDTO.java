@@ -12,5 +12,7 @@ public class GiljabiResponseGpsdataDTO {
     private String uuid;
     private String trackname;
     private String fileurl;
+    private String fileext;
+    private String xmldata;
     private ArrayList<GiljabiResponseGpsdataImageDTO> gpsdataimages;
 }

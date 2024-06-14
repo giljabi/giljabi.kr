@@ -6,6 +6,7 @@ import com.drew.metadata.exif.ExifIFD0Directory;
 import com.drew.metadata.exif.ExifSubIFDDirectory;
 import com.drew.metadata.exif.GpsDirectory;
 import com.drew.metadata.jpeg.JpegDirectory;
+import com.github.diogoduailibe.lzstring4j.LZString;
 import io.minio.*;
 import io.minio.errors.MinioException;
 import io.minio.http.Method;
@@ -31,23 +32,22 @@ public class MinioService {
     @Autowired
     private MinioClient minioClient;
 
-    public String saveFile(String bucketName, String filename, String xmlData) {
-        try (InputStream inputStream = new ByteArrayInputStream(xmlData.getBytes(StandardCharsets.UTF_8))) {
+    public String saveFileToMinio(String bucketName, String objectName, String compressedContent) throws Exception {
+        try (InputStream inputStream = new ByteArrayInputStream(compressedContent.getBytes(StandardCharsets.UTF_8))) {
             minioClient.putObject(
                     PutObjectArgs.builder()
                             .bucket(bucketName)
-                            .object(filename)
-                            .stream(inputStream, xmlData.length(), -1)
+                            .object(objectName)
+                            .stream(inputStream, inputStream.available(), -1)
                             .contentType("application/octet-stream")
-                            .build());
-            return bucketName + filename;
-
-        } catch (Exception e) {
-            throw new RuntimeException("Error occurred while uploading file to MinIO", e);
+                            .build()
+            );
+            return bucketName + objectName;
+        } catch (MinioException e) {
+            throw new MinioException("Failed to save the compressed file to MinIO", e.toString());
         }
     }
-
-    public String uploadFileImage(String bucketName, String pathAndFilename, MultipartFile file) {
+    public String saveImageFileToMinio(String bucketName, String pathAndFilename, MultipartFile file) {
         try {
             minioClient.putObject(
                     PutObjectArgs.builder()
@@ -62,7 +62,7 @@ public class MinioService {
         }
     }
 
-    public JpegMetaInfo getMetaData(String bucketName, String objectName) throws Exception {
+    public JpegMetaInfo getMetaDataFromMinio(String bucketName, String objectName) throws Exception {
         String filaPath = objectName.substring(objectName.indexOf("/"));
         InputStream inputStream = minioClient.getObject(
                 GetObjectArgs.builder().bucket(bucketName).object(filaPath).build());
@@ -119,7 +119,7 @@ public class MinioService {
         }
     }
 
-    private String getUrl(String bucketName, String fileName) {
+    public String getUrl(String bucketName, String fileName) {
         try {
             return minioClient.getPresignedObjectUrl(
                     GetPresignedObjectUrlArgs.builder()
@@ -219,5 +219,43 @@ public class MinioService {
         }
         log.info("fileList: {}", fileList);
         return fileList;
+    }
+
+
+    public InputStream getFileInputStream(String bucketName, String objectName) throws Exception {
+        return minioClient.getObject(
+                GetObjectArgs.builder()
+                        .bucket(bucketName)
+                        .object(objectName)
+                        .build()
+        );
+    }
+
+    public String decompressFileFromMinio(String bucketName, String objectName) throws Exception {
+        try (InputStream inputStream = getFileInputStream(bucketName, objectName);
+             InputStreamReader isr = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+             BufferedReader reader = new BufferedReader(isr)) {
+
+            // Read the entire content into a StringBuilder
+            StringBuilder contentBuilder = new StringBuilder();
+            char[] buffer = new char[1024];
+            int bytesRead;
+            while ((bytesRead = reader.read(buffer)) != -1) {
+                contentBuilder.append(buffer, 0, bytesRead);
+            }
+            String compressedContent = contentBuilder.toString();
+            log.info("Compressed Content Length: " + compressedContent.length());
+
+            // Debug: Print the compressed content length and a portion of the content
+            log.info("Compressed Content Length: " + compressedContent.length());
+
+            // Decompress the content using LZString
+            String decompressedData = LZString.decompressFromUTF16(compressedContent);
+            if (decompressedData == null) {
+                throw new IOException("Decompression failed. The data may be corrupted or improperly formatted.");
+            }
+
+            return decompressedData;
+        }
     }
 }

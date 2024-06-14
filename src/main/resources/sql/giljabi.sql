@@ -34,7 +34,8 @@ CREATE TABLE gpsdata (
                          fileext VARCHAR(3),
                          filesize BIGINT default 0,
                          filesizecompress BIGINT default 0,
-                         shareflag bool NULL DEFAULT false
+                         shareflag bool NULL DEFAULT false,
+                         readcount int4 DEFAULT 0 NOT NULL
 );
 
 -- 트리거를 사용하여 changeat 컬럼을 업데이트
@@ -82,6 +83,7 @@ CREATE TABLE gpsdataimage (
                               filesize BIGINT default 0,
                               filesizecompress BIGINT default 0,
                               originalfname VARCHAR(255) NOT NULL,
+                              readcount int4 DEFAULT 0 NOT NULL,
                               FOREIGN KEY (gpsdata_id) REFERENCES gpsdata(id) ON DELETE CASCADE
 );
 

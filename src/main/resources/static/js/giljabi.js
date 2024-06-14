@@ -76,6 +76,14 @@ function removeCategryMarker() {
     poiCategoryMarkers = [];
 }
 
+function changeFileType(fileType) {
+    if (fileType === "gpx") {
+        $("input[type='radio'][name='filetype'][value='gpx']").prop("checked", true);
+    } else if (fileType === "tcx") {
+        $("input[type='radio'][name='filetype'][value='tcx']").prop("checked", true);
+    }
+}
+
 function displayPlaceInfo (place) {
     let address = place.road_address_name ? `
         <span title="${place.road_address_name}">${place.road_address_name}</span>
@@ -475,17 +483,20 @@ $(document).ready(function () {
         }
         $('#blockingAds').show();
         $.ajax({
-            url: '/api/1.0/gpxshare/' + fileid,
+            url: '/api/1.0/getShareGpsdata/' + fileid,
             async: false,
             type: 'GET',
             success: function(response, status) {
                 if (response.status === 0) {
-                    const decompressedData = LZString.decompressFromUTF16(response.data.xmlData);
-                    _fileExt = response.data.fileType;
+                    let decompressedData = LZString.decompressFromUTF16(response.data.xmldata);
+                    console.log('decompressedData:' + decompressedData);
+                    uuid = response.data.uuid;
+                    _fileExt = response.data.fileext;
+                    changeFileType(_fileExt);
                     $('#gpx_metadata_name').val(response.data.trackName);
                     fileLoadAndDraw(decompressedData);
                 } else {
-                    alert('Failed to fetch data');
+                    alert(response.message);
                 }
                 $('#blockingAds').hide();
             },
@@ -601,8 +612,8 @@ $(document).ready(function () {
             _gpxTrkseqArray.push(trackPoint);
             _trkPoly.push(new kakao.maps.LatLng(trackPoint.lat, trackPoint.lng));
         });
-        $("input[type='radio'][name='filetype'][value='gpx']").prop("checked", true);
-
+        //$("input[type='radio'][name='filetype'][value='gpx']").prop("checked", true);
+        changeFileType('gpx');
         //steepPoints = findSteepSlopes(_gpxTrkseqArray);
     }
 
@@ -657,7 +668,8 @@ $(document).ready(function () {
                 _trkPoly.push(new kakao.maps.LatLng(trackPoint.lat, trackPoint.lng));
             }
         });
-        $("input[type='radio'][name='filetype'][value='tcx']").prop("checked", true);
+        //$("input[type='radio'][name='filetype'][value='tcx']").prop("checked", true);
+        changeFileType('tcx');
     }
 
     /*
@@ -1360,11 +1372,16 @@ TCX
         //파일의 메인키로 사용
         uuid = crypto.randomUUID();
 
+
+        let xxx = LZString.compressToUTF16(saveData);
+        console.log('xxx:' + xxx.length);
+
         //서버 전송 추가
         let requestBody = {
             speed: Number($('#averageV').val()),
             fileext: _filetype,
             xmldata: LZString.compressToUTF16(saveData),
+            //xmldata: LZString.compressToBase64(saveData),
             filename: _uploadFilename,
             trackName: $('#gpx_metadata_name').val(),
             wpt: waypointSortByDistance.length,

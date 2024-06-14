@@ -185,3 +185,27 @@ function dataURLtoBlob(dataurl) {
     }
     return new Blob([u8arr], { type: mime });
 }
+
+/**
+ * URL로부터 텍스트 내용을 가져온다.
+ * @param url
+ * @returns {Promise<string>}
+ */
+async function fetchTextContent(url) {
+    const response = await fetch(url);
+    if (!response.ok) {
+        throw new Error('Network response was not ok ' + response.statusText);
+    }
+    const textContent = await response.text();
+    return textContent;
+}
+
+async function decompressUrlContent(url) {
+    try {
+        const textContent = await fetchTextContent(url);
+        const decompressedContent = LZString.decompressFromUTF16(textContent);
+        return decompressedContent;
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}

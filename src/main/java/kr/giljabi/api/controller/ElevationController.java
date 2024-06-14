@@ -181,7 +181,9 @@ public class ElevationController {
                     elevationPath,
                     CommonUtils.getFileLocation(uuid),
                     elevationSaveData.getFileExt());
-            String savedFilename = minioService.saveFile(bucketService, filename, elevationSaveData.getXmlData());
+
+            String compressedXml = LZString.compressToUTF16(xmlData);
+            String savedFilename = minioService.saveFileToMinio(bucketService, filename, compressedXml);
 
             //DB에 저장 필요
             GiljabiGpsdata gpsdata = new GiljabiGpsdata();
