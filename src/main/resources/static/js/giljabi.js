@@ -1443,6 +1443,10 @@ TCX
                         image: markerImage
                     });
                     marker.setMap(_map);
+                    kakao.maps.event.addListener(marker, 'click', function() {
+                        window.open(savedFileInfo.filePath, savedFileInfo.originalFileName);
+                    });
+                    marker.setDraggable(true);
 
                     let imageLink = `<tr>`;
                     imageLink += `<td style="width:5px;" onclick="javascript:deleteImage('${savedFileInfo.filePath}');">X</td>`;
