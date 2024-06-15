@@ -137,7 +137,8 @@ function processFile(uuid, file) {
                         gps[piexif.GPSIFD.GPSAltitude] = checkExif('GPSAltitude', exifData);
                         //console.log('exifData: ' + exifData);
 
-                        exif[piexif.ExifIFD.UserComment] = ['giljabi.kr']; //water mark
+                        //water mark: LZString.compressToBase64("giljabi.kr");
+                        exif[piexif.ExifIFD.UserComment] = ['OYSwNgVghgRiB0BrATkAAA=='];
                         let exifObj = {"0th": jpeg, "Exif": exif, "GPS": gps}; //이해가 안되네...
 
                         //console.log(exifObj);
