@@ -44,6 +44,7 @@ public class MinioService {
             );
             return bucketName + objectName;
         } catch (MinioException e) {
+            log.error("Failed to save the compressed file to MinIO\n{}", e.toString());
             throw new MinioException("Failed to save the compressed file to MinIO", e.toString());
         }
     }
@@ -58,10 +59,43 @@ public class MinioService {
                             .build());
             return bucketName + pathAndFilename;
         } catch (Exception e) {
+            log.error("Failed to save the compressed file to MinIO\n{}", e.toString());
             throw new RuntimeException("Error occurred while uploading file to MinIO", e);
         }
     }
 
+    public String saveTextFile(String bucketName, String filename, String data) {
+        try (InputStream inputStream = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8))) {
+            minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(filename)
+                            .stream(inputStream, data.length(), -1)
+                            .contentType("application/octet-stream")
+                            .build());
+            return bucketName + "/" + filename;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error occurred while uploading file to MinIO", e);
+        }
+    }
+    /*
+        public String uploadFileImage(String bucketName, String pathAndFilename, MultipartFile file) {
+            try {
+                minioClient.putObject(
+                        PutObjectArgs.builder()
+                                .bucket(bucketName)
+                                .object(pathAndFilename)
+                                .stream(file.getInputStream(), file.getSize(), -1)
+                                .contentType(file.getContentType())
+                                .build());
+                return bucketName + "/" + pathAndFilename;
+            } catch (Exception e) {
+                throw new RuntimeException("Error occurred while uploading file to MinIO", e);
+            }
+        }
+
+     */
     public JpegMetaInfo getMetaDataFromMinio(String bucketName, String objectName) throws Exception {
         String filaPath = objectName.substring(objectName.indexOf("/"));
         InputStream inputStream = minioClient.getObject(

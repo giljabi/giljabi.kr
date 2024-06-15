@@ -64,7 +64,7 @@ public class ElevationController {
     @Value("${minio.bucketData}")
     private String bucketData;
 
-    @Value("${minio.url}")
+    @Value("${minio.serviceurl}")
     private String s3url;
 
     @Value("${minio.bucketService}")

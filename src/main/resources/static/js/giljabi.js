@@ -303,13 +303,9 @@ function getMinMax() {
 //     });
 // }
 
-function getParam(name, url) {
-    if (!url) url = location.href;
-    name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
-    let regexS = "[\\?&]"+name+"=([^&#]*)";
-    let regex = new RegExp( regexS );
-    let results = regex.exec( url );
-    return results == null ? null : results[1];
+function getQueryParam(name) {
+    let urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(name);
 }
 
 function addWaypoint(info) {
@@ -477,7 +473,7 @@ $(document).ready(function () {
     fetchAndDecompressData();
     //=======================================================================
     function fetchAndDecompressData() {
-        let fileid = getParam('fileid', window.location.href);
+        let fileid = getQueryParam('fileid');
         if(fileid == null) {
             return;
         }

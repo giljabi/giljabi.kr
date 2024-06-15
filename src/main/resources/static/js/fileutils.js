@@ -41,8 +41,9 @@ function processFile(uuid, file) {
             let exifData = ExifReader.load(arrayBuffer);
             //console.log(exifData);
 
-            if (!exifData.GPSLatitude || !exifData.GPSLongitude || !exifData.GPSAltitude) {
-                resolve({status: -1, message:'GPS 정보가 없는 이미지는 등록할 수 없습니다', data:''});  // Promise 거부
+            //|| !exifData.GPSAltitude는 없을 수 있음
+            if (!exifData.GPSLatitude || !exifData.GPSLongitude ) {
+                resolve({status: -1, message:file.name + ': GPS 정보가 없는 이미지는 등록할 수 없습니다', data:''});  // Promise 거부
                 return;
             }
 

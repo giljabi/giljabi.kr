@@ -18,7 +18,7 @@
         <java.version>11</java.version>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
-        <maven.compiler.release>11</maven.compiler.release>
+<!--        <maven.compiler.release>11</maven.compiler.release>-->
 <!--        <resourcePath>target/resources/main/resource</resourcePath>-->
 <!--        <minifiedPath>target/minified</minifiedPath>-->
 
@@ -72,7 +72,8 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <optional>true</optional>
+            <version>1.18.22</version>
+            <scope>provided</scope>            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -347,6 +348,10 @@
 
                                 <replaceregexp file="target/classes/templates/vworld.html"
                                                match="routeutil.js" replace="routeutil.min.js" byline="true" encoding="UTF-8"/>
+                                <replaceregexp file="target/classes/templates/vworld.html"
+                                               match="apiKey=EF0CBEDB-A6FA-3FD9-B1B3-D7C725EF09D3"
+                                               replace="apiKey=9061B3F7-8879-385D-8E87-ED75ABCD0EF5" byline="true" encoding="UTF-8"/>
+
                             </tasks>
                         </configuration>
                         <goals>
