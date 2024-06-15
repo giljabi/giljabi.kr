@@ -137,7 +137,9 @@ function processFile(uuid, file) {
                         gps[piexif.GPSIFD.GPSAltitude] = checkExif('GPSAltitude', exifData);
                         //console.log('exifData: ' + exifData);
 
+                        exif[piexif.ExifIFD.UserComment] = ['giljabi.kr']; //water mark
                         let exifObj = {"0th": jpeg, "Exif": exif, "GPS": gps}; //이해가 안되네...
+
                         //console.log(exifObj);
 
                         let exifStr = piexif.dump(exifObj);
