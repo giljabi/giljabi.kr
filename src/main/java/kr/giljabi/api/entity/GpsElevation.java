@@ -45,13 +45,13 @@ public class GpsElevation implements Serializable {
     private Timestamp changeat = Timestamp.from(Instant.now());
 
     @Column(name = "transtime", nullable = false)
-    private Integer transtime;
+    private long transtime;
 
     @Column(name = "wpt", nullable = false)
-    private Short wpt;
+    private Integer wpt;
 
     @Column(name = "trkpt", nullable = false)
-    private Short trkpt;
+    private Integer trkpt;
 
     @Column(name = "reqcnt")
     private Integer reqcnt;

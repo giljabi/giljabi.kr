@@ -64,38 +64,22 @@ public class GiljabiController {
                             final @Valid @RequestBody RequestGpsDataDTO gpsDataDTO) {
         try {
             log.info("gpsDataDTO.getXmldata().length: " + gpsDataDTO.getXmldata().length());
-
             userInfo = CommonUtils.getSessionByUserinfo(request);
 
-            String xmlData = LZString.decompressFromUTF16(gpsDataDTO.getXmldata());
-            String filename = String.format("%s/%s/%s.%s",
-                    gpxPath,
-                    CommonUtils.getFileLocation(gpsDataDTO.getUuid()),
-                    gpsDataDTO.getUuid(),
-                    gpsDataDTO.getFileext());
-
-            //압축된 상태로 저장하는것이 좋을까?
+            String decompressXml = LZString.decompressFromUTF16(gpsDataDTO.getXmldata());
+            String filename = CommonUtils.makeGpsdataObjectName(gpxPath, gpsDataDTO);
             //압축된 상태로 저장하면 데이터가 이상하게 저장되어 압축을 풀고 다시 압축해서 저장하는 것으로 변경, 하루종일 삽질...
-            String compressedXml = LZString.compressToUTF16(xmlData);
+            String compressedXml = LZString.compressToUTF16(decompressXml);
+
             String savedFilename = minioService.saveFileToMinio(bucketService, filename, compressedXml);
-            //String savedFilename = minioService.saveTextFile(bucketService, filename, compressedXml);
-            //db에 저장하는 코드
-            GiljabiGpsdata gpsdata = new GiljabiGpsdata();
-            gpsdata.setDistance(gpsDataDTO.getDistance());
-            gpsdata.setFileext(gpsDataDTO.getFileext());
-            gpsdata.setFileurl(s3url + "/" + savedFilename);
-            gpsdata.setSpeed(gpsDataDTO.getSpeed());
-            gpsdata.setTrackname(gpsDataDTO.getTrackName());
-            gpsdata.setTrkpt(gpsDataDTO.getTrkpt());
-            gpsdata.setUserid(userInfo.getUserid());
-            gpsdata.setUuid(gpsDataDTO.getUuid()); //filename
-            gpsdata.setWpt(gpsDataDTO.getWpt());
-            gpsdata.setFilesize(xmlData.getBytes().length);
-            gpsdata.setFilesizecompress(compressedXml.getBytes().length);
-            gpsdata.setApiname("saveGpsdata");
-
+            GiljabiGpsdata gpsdata = CommonUtils.makeGiljabiGpsdata(request.getRemoteAddr(),
+                    "saveGpsdata",
+                    gpsDataDTO,
+                    decompressXml.getBytes().length,    //decompressed
+                    compressedXml.getBytes().length,
+                    s3url + "/" + savedFilename,
+                    userInfo.getUserid());
             log.info("saveGpsdata: " + savedFilename);
-
             gpsService.saveGpsdata(gpsdata);
 
             GiljabiResponse giljabiResponse = new GiljabiResponse();
@@ -217,10 +201,11 @@ public class GiljabiController {
             if(gpsdata == null) {
                 return new Response(ErrorCode.STATUS_FAILURE.getStatus(), "Not found data");
             }
-            int index = gpsdata.getFileurl().indexOf(gpxPath);
+            int index = gpsdata.getFileurl().indexOf(bucketService);
             String filePath = gpsdata.getFileurl().substring(index);
 
-            String reader = minioService.readFileContentByString(bucketService, filePath);
+            String reader = minioService.readFileContentByString(bucketService,
+                    filePath.substring(filePath.indexOf("/") + 1));
 
             GiljabiResponseGpsdataDTO dto = new GiljabiResponseGpsdataDTO();
             dto.setXmldata(reader);

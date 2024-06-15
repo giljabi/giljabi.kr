@@ -65,16 +65,19 @@ public class GiljabiGpsdata implements java.io.Serializable {
     private String fileext;
 
     @Column(nullable = true)
-    private int filesize;
+    private long filesize;
 
     @Column(nullable = true, length = 16)
     private String apiname;
 
     @Column(nullable = true)
-    private int filesizecompress;
+    private long filesizecompress;
 
     @Column(nullable = false)
     private boolean shareflag = false;
+
+    @Column(nullable = true)
+    private String userip;
 
     @OneToMany(mappedBy = "gpsdata", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GiljabiGpsdataImage> gpsdataimages;

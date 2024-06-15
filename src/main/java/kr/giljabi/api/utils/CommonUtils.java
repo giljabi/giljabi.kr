@@ -3,7 +3,10 @@ package kr.giljabi.api.utils;
 import com.google.gson.Gson;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
+import kr.giljabi.api.entity.GiljabiGpsdata;
 import kr.giljabi.api.entity.UserInfo;
+import kr.giljabi.api.geo.gpx.TrackPoint;
+import kr.giljabi.api.request.RequestGpsDataDTO;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -79,5 +82,47 @@ public class CommonUtils {
         return userInfo;
     }
 
+    public static GiljabiGpsdata makeGiljabiGpsdata(String userAddress, String apiName,
+                                              RequestGpsDataDTO gpsDataDTO,
+                                              long decompressedSize, long compressedSize,
+                                              String fileurl, String userid) {
+        GiljabiGpsdata gpsdata = new GiljabiGpsdata();
+        gpsdata.setDistance(gpsDataDTO.getDistance());
+        gpsdata.setFileext(gpsDataDTO.getFileext());
+        gpsdata.setFileurl(fileurl);
+        gpsdata.setSpeed(gpsDataDTO.getSpeed());
+        gpsdata.setTrackname(gpsDataDTO.getTrackName());
+        gpsdata.setTrkpt(gpsDataDTO.getTrkpt());
+        gpsdata.setUserid(userid);
+        gpsdata.setUuid(gpsDataDTO.getUuid()); //filename
+        gpsdata.setWpt(gpsDataDTO.getWpt());
+        gpsdata.setFilesize(decompressedSize);
+        gpsdata.setFilesizecompress(compressedSize);
+        gpsdata.setApiname(apiName);
+        gpsdata.setUserip(userAddress);
 
+        return gpsdata;
+    }
+
+
+    public static String makeGpsdataObjectName(String bucketName, RequestGpsDataDTO gpsDataDTO) {
+        String filename = String.format("%s/%s/%s.%s",
+                bucketName,
+                CommonUtils.getFileLocation(gpsDataDTO.getUuid()),
+                gpsDataDTO.getUuid(),
+                gpsDataDTO.getFileext());
+        return filename;
+    }
+
+    private static final double EARTH_RADIUS = 6371e3; // Earth radius in meters
+    public static double getDistance(TrackPoint from, TrackPoint to) {
+        double dLat = Math.toRadians(to.getLat() - from.getLat());
+        double dLon = Math.toRadians(to.getLng() - from.getLng());
+
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(Math.toRadians(from.getLat())) * Math.cos(Math.toRadians(to.getLat())) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return EARTH_RADIUS * c;
+    }
 }
