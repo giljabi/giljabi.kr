@@ -126,7 +126,8 @@ public class MinioFileService {
         try {
 
             String compressToBase64 = LZString.compressToBase64("giljabi.kr");
-
+            System.out.println("Compressed to Base64: " + compressToBase64);
+            System.out.println("Decompressed from Base64: " + LZString.decompressFromBase64(compressToBase64));
 
             // Initialize MinioFileService with your MinIO server details
             MinioFileService fileService = new MinioFileService("http://localhost:9000",

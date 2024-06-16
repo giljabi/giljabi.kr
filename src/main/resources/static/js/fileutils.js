@@ -57,8 +57,8 @@ function processFile(uuid, file) {
                 let canvas = document.createElement('canvas');
                 let ctx = canvas.getContext('2d');
 
-                let maxWidth = 1024;
-                let maxHeight = 1024;
+                let maxWidth = 800; //1024?
+                let maxHeight = 800;
                 let width = image.width;
                 let height = image.height;
 
@@ -138,13 +138,10 @@ function processFile(uuid, file) {
                         //console.log('exifData: ' + exifData);
 
                         //water mark: LZString.compressToBase64("giljabi.kr");
+                        //            LZString.decompressFromBase64('OYSwNgVghgRiB0BrATkAAA==')
                         exif[piexif.ExifIFD.UserComment] = ['OYSwNgVghgRiB0BrATkAAA=='];
                         let exifObj = {"0th": jpeg, "Exif": exif, "GPS": gps}; //이해가 안되네...
-
-                        //console.log(exifObj);
-
                         let exifStr = piexif.dump(exifObj);
-
                         let newDataUrlWithExif = piexif.insert(exifStr, newDataUrl);
                         let newBlob = dataURLtoBlob(newDataUrlWithExif);
 

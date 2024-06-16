@@ -1446,7 +1446,8 @@ TCX
                     });
                     marker.setMap(_map);
                     kakao.maps.event.addListener(marker, 'click', function() {
-                        window.open(savedFileInfo.filePath, savedFileInfo.originalFileName);
+                        const url = '/util/image-view.html?path=' + savedFileInfo.filePath;
+                        window.open(url, savedFileInfo.originalFileName, 'width=800,height=600');
                     });
                     marker.setDraggable(true);
 
