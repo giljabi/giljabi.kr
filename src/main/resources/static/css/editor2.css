@@ -1,4 +1,11 @@
-body, p, tr, th, td, ul, li, select, input {
+body {
+    margin: 0;
+    padding: 0;
+    font-family: AppleGotihc, "Malgun Gothic", dotum;
+    font-size: 12px;
+    overflow: hidden;
+}
+p, tr, th, td, ul, li, select, input {
     color: #000000;
     font-family: AppleGotihc, "Malgun Gothic", dotum;
     font-size: 12px;
@@ -54,16 +61,16 @@ body, p, tr, th, td, ul, li, select, input {
 .elevationContainer {
     box-sizing: border-box;
     align-content: center;
-    width: 350px;
+    width: 950px;
     height: 100px;
     border: 1px solid #ddd;
     justify-content: center;
     position: absolute;
     /*top: 85%;*/
-    bottom: 10%; /* Positions the element 10% above the bottom of the container */
+    bottom: 2%; /* Positions the element 10% above the bottom of the container */
     transform: translateY(10%); /* Offsets the element upwards by 10% of its own height */
     z-index: 1;
-    opacity: 1.0;
+    opacity: 0.7;
     background-color: white;
 }
 .elevation {

@@ -67,7 +67,10 @@ public class GiljabiController {
             userInfo = CommonUtils.getSessionByUserinfo(request);
 
             String decompressXml = LZString.decompressFromUTF16(gpsDataDTO.getXmldata());
-            String filename = CommonUtils.makeGpsdataObjectName(gpxPath, gpsDataDTO);
+            String filename = CommonUtils.makeGpsdataObjectName(gpxPath,
+                    gpsDataDTO.getUuid(),
+                    gpsDataDTO.getFileext());
+
             //압축된 상태로 저장하면 데이터가 이상하게 저장되어 압축을 풀고 다시 압축해서 저장하는 것으로 변경, 하루종일 삽질...
             String compressedXml = LZString.compressToUTF16(decompressXml);
 

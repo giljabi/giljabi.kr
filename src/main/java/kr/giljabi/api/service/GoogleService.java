@@ -175,7 +175,9 @@ public class GoogleService {
         gpsDataDTO.setFileext("gpx");
         gpsDataDTO.setFilename("");
 
-        String objectName = CommonUtils.makeGpsdataObjectName(gpxPath, gpsDataDTO);
+        String objectName = CommonUtils.makeGpsdataObjectName(gpxPath,
+                gpsDataDTO.getUuid(),
+                gpsDataDTO.getFileext());
         String savedFilename = minioService.saveFileToMinio(bucketService, objectName, compressedXml);
 
         GiljabiGpsdata gpsdata = CommonUtils.makeGiljabiGpsdata(request.getRemoteAddr(),

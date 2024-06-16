@@ -59,8 +59,11 @@ public class ElevationController {
     @Value("${giljabi.mountain100.path}")
     private String mountain100Path;
 
-    @Value("${giljabi.google.elevation.path}")
-    private String elevationPath;
+//    @Value("${giljabi.google.elevation.path}")
+//    private String elevationPath;
+
+    @Value("${giljabi.gpx.path}")
+    private String gpxPath;
 
     @Value("${minio.bucketData}")
     private String bucketData;
@@ -180,7 +183,7 @@ public class ElevationController {
 
             String uuid = CommonUtils.generateUUID().toString();
             String filename = String.format("%s/%s.%s",
-                    elevationPath,
+                    gpxPath,
                     CommonUtils.getFileLocation(uuid),
                     elevationSaveData.getFileExt());
 
@@ -204,15 +207,6 @@ public class ElevationController {
             gpsdata.setUserip(request.getRemoteAddr());
             log.info("saveElevation: " + savedFilename);
             gpsService.saveGpsdata(gpsdata);
-
-
-
-
-
-
-
-
-
 
             GiljabiResponse giljabiResponse = new GiljabiResponse();
             giljabiResponse.setFileKey(gpsdata.getUuid());

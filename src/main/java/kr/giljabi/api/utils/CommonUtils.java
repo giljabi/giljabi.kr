@@ -104,13 +104,14 @@ public class CommonUtils {
         return gpsdata;
     }
 
-
-    public static String makeGpsdataObjectName(String bucketName, RequestGpsDataDTO gpsDataDTO) {
+    public static String makeGpsdataObjectName(String bucketName,
+                                               String uuid,
+                                               String fileext) {
         String filename = String.format("%s/%s/%s.%s",
                 bucketName,
-                CommonUtils.getFileLocation(gpsDataDTO.getUuid()),
-                gpsDataDTO.getUuid(),
-                gpsDataDTO.getFileext());
+                CommonUtils.getCurrentTime("YYYYMM"), ///yyyymm/uuid
+                uuid,
+                fileext);
         return filename;
     }
 

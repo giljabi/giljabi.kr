@@ -465,13 +465,13 @@ function onClickSaveGpx() {
         let data = _drawingManager.getData();
         let len = data[kakao.maps.drawing.OverlayType.POLYLINE].length;
 
-        // if (len == 0) {
-        //     alert('경로정보가 없습니다."Track" 기능으로 경로를 그린 후 저장합니다.');
-        //     return;
-        // }
-        if(!confirm("고도(높이) 정보를 처리하지 않고 경로를 저장할까요?")) {
+        if (len == 0) {
+            alert('경로정보가 없습니다."Track" 기능으로 경로를 그린 후 저장합니다.');
             return;
         }
+        // if(!confirm("고도(높이) 정보를 처리하지 않고 경로를 저장할까요?")) {
+        //     return;
+        // }
 
         //구글 높이를 받아오지 않은 경우에도 경로를 저장하기 위한 정보처리
         if (eleFalg == false) {
@@ -526,6 +526,8 @@ function onClickSaveGpx() {
 
 $(document).ready(function() {
     BASETIME = setBaseTimeToToday(BASETIME);
+    $(document).tooltip();
+
     initMap();
 
     initDrawing();
