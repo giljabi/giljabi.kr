@@ -24,7 +24,10 @@
     <script >
 
     $(document).ready(function() {
-
+        if (!sessionStorage.getItem('token')) {
+            // If no session information, redirect to /giljabi.html
+            window.location.href = '/giljabi.html';
+        }
     });
 
     function login(){

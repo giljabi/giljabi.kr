@@ -38,7 +38,7 @@
     <div class="map_wrap">
         <div id="map" style="z-index: auto"></div>
         <p class="modes">
-            <button onclick="selectOverlay('POLYLINE')" style='color:red;'>경로 시작하기</button>
+            <button onclick="selectOverlay('POLYLINE')" style='color:red;'>경로 그리기</button>
             <input class='mapType' type="checkbox" id="chkTerrain"/>
             <label for="chkTerrain">지형정보</label>
             <!--                &nbsp;&nbsp;-->
@@ -85,7 +85,9 @@
             <input type="button" id="gpxsave" value="GPX 저장"/>&nbsp;&nbsp;
             <input type="button" id="getElevation" value="높이정보">&nbsp;&nbsp;
             <input type="button" id="viewVworld" value="3D View"
-                   title="준비중입니다."/>&nbsp;&nbsp;&nbsp;
+                   title="준비중입니다."/>&nbsp;&nbsp;
+            <input type="button" id="openGiljabi" value="웨이포인트 연결"
+                   title="웨이포인트 편집화면으로 이동합니다."/>&nbsp;&nbsp;&nbsp;
         </div>
         <div id="elevationImage" class="elevation"></div>
     </div>

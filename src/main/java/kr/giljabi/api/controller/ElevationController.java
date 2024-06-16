@@ -182,9 +182,9 @@ public class ElevationController {
             String xmlData = LZString.decompressFromUTF16(elevationSaveData.getXmlData());
 
             String uuid = CommonUtils.generateUUID().toString();
-            String filename = String.format("%s/%s.%s",
+            String filename = CommonUtils.makeGpsdataObjectName(
                     gpxPath,
-                    CommonUtils.getFileLocation(uuid),
+                    uuid,
                     elevationSaveData.getFileExt());
 
             String compressedXml = LZString.compressToUTF16(xmlData);
@@ -203,7 +203,7 @@ public class ElevationController {
             gpsdata.setSpeed(elevationSaveData.getSpeed());
             gpsdata.setUserid(userInfo.getUserid());
             gpsdata.setUuid(uuid); //filename
-            gpsdata.setApiname("saveElevation");
+            gpsdata.setApiname(elevationSaveData.getApiName());
             gpsdata.setUserip(request.getRemoteAddr());
             log.info("saveElevation: " + savedFilename);
             gpsService.saveGpsdata(gpsdata);

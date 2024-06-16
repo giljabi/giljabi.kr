@@ -477,9 +477,11 @@ $(document).ready(function () {
         if(fileid == null) {
             return;
         }
+        let elevation = getQueryParam('elevation');
+
         $('#blockingAds').show();
         $.ajax({
-            url: '/api/1.0/getShareGpsdata/' + fileid,
+            url: '/api/1.0/getShareGpsdata/' + fileid + '/' + elevation,
             async: false,
             type: 'GET',
             success: function(response, status) {

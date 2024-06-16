@@ -107,10 +107,11 @@ public class CommonUtils {
     public static String makeGpsdataObjectName(String bucketName,
                                                String uuid,
                                                String fileext) {
-        String filename = String.format("%s/%s/%s.%s",
+        String filename = String.format("%s/%s/%s/%s.%s",
                 bucketName,
                 CommonUtils.getCurrentTime("YYYYMM"), ///yyyymm/uuid
-                uuid,
+                uuid,   //디렉토리 명
+                uuid,   //파일 명
                 fileext);
         return filename;
     }

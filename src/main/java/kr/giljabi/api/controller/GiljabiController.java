@@ -107,7 +107,6 @@ public class GiljabiController {
                                      @RequestParam("uuid") String uuidKey) {
         try {
             String extension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
-
             String filename = String.format("%s/%s/%s",
                     gpxPath,
                     CommonUtils.getFileLocation(uuidKey),
@@ -197,10 +196,22 @@ public class GiljabiController {
         }
     }
 
-    @GetMapping("/api/1.0/getShareGpsdata/{uuidkey}")
-    public Response getShareGpsdata(@PathVariable String uuidkey) {
+    /**
+     * apiname editor에서 연결해서 가져오는 경우에 사용됨: linkElevation
+     * @param uuidkey
+     * @return
+     */
+    @GetMapping("/api/1.0/getShareGpsdata/{uuidkey}/{apiname}")
+    public Response getShareGpsdata(@PathVariable String uuidkey,
+                                    @PathVariable String apiname) {
         try {
-            GiljabiGpsdata gpsdata = gpsService.findByUuidAndShareflagTrue(uuidkey);
+            GiljabiGpsdata gpsdata = null;
+            if(apiname.equals("linkElevation")) {
+                gpsdata = gpsService.findByApinameAndUuidAndCreateat(apiname, uuidkey);
+            } else {
+                gpsdata = gpsService.findByUuid(uuidkey);
+            }
+            gpsService.findByUuidAndShareflagTrue(uuidkey);
             if(gpsdata == null) {
                 return new Response(ErrorCode.STATUS_FAILURE.getStatus(), "Not found data");
             }

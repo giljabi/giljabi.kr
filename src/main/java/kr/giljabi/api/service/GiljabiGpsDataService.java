@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Optional;
 
 @Slf4j
@@ -34,5 +36,10 @@ public class GiljabiGpsDataService {
     public GiljabiGpsdata findByUuidAndShareflagTrue(String uuid) {
         return giljabiGpsDataRepository.findByUuidAndShareflagTrue(uuid);
     }
+    public GiljabiGpsdata findByApinameAndUuidAndCreateat(String apiname, String uuid) {
+        Timestamp tenMinutesAgo = Timestamp.from(Instant.now().minusSeconds(600)); // 10 minutes ago
+        return giljabiGpsDataRepository.findByApinameAndUuidAndCreateat(apiname, uuid, tenMinutesAgo);
+    }
+
 
 }

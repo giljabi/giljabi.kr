@@ -8,6 +8,7 @@ import lombok.Setter;
 @Setter
 @Data
 public class RequestElevationSaveData {
+    private String apiName;
     private String gpxName;
     private String fileExt;
     private int wayPointCount;
@@ -16,9 +17,10 @@ public class RequestElevationSaveData {
     private String xmlData;
     private double speed;
 
-    public RequestElevationSaveData(String gpxName, String fileExt
-            , int wayPointCount, int trackPointCount
-            , double distance, String xmlData, double speed) {
+    public RequestElevationSaveData(String apiName, String gpxName,
+                                    String fileExt, int wayPointCount, int trackPointCount,
+                                    double distance, String xmlData, double speed) {
+        this.apiName = apiName;
         this.gpxName = gpxName;
         this.fileExt = fileExt;
         this.wayPointCount = wayPointCount;
@@ -31,7 +33,8 @@ public class RequestElevationSaveData {
     @Override
     public String toString() {
         return "RequestElevationSaveData{" +
-                "gpxName='" + gpxName + '\'' +
+                "apiName='" + apiName + '\'' +
+                ", gpxName='" + gpxName + '\'' +
                 ", fileExt='" + fileExt + '\'' +
                 ", wayPointCount=" + wayPointCount +
                 ", trackPointCount=" + trackPointCount +

@@ -288,7 +288,7 @@ function onClickGetElevation() {
         let data = _drawingManager.getData();
         let len = data[kakao.maps.drawing.OverlayType.POLYLINE].length;
         if (len == 0) {
-            alert('경로정보가 없습니다."Track" 기능으로 경로를 그린 후 사용하세요.');
+            alert('경로정보가 없습니다."경로 그리기" 기능으로 경로를 그린 후 사용하세요.');
             return;
         }
 
@@ -432,31 +432,36 @@ function onClickReset() {
     });
 }
 
-function saveGpxToServer(saveData) {
-    const compressedData = LZString.compressToUTF16(saveData);
-    let jsonData = {
-        gpxName: _fileName,
-        fileExt: _filetype,
-        wayPointCount: 0,
-        trackPointCount: _gpxTrkseqArray.length,
-        distance: _gpxTrkseqArray[_gpxTrkseqArray.length - 1].dist, //Meter
-        xmlData: compressedData,
-        speed: Number($('#averageV').val())
-    };
+function saveGpxToServer(saveData, apiName) {
+    return new Promise((resolve, reject) => {
+        const compressedData = LZString.compressToUTF16(saveData);
+        let jsonData = {
+            apiName: apiName,
+            gpxName: _fileName,
+            fileExt: _filetype,
+            wayPointCount: 0,
+            trackPointCount: _gpxTrkseqArray.length,
+            distance: _gpxTrkseqArray[_gpxTrkseqArray.length - 1].dist, //Meter
+            xmlData: compressedData,
+            speed: Number($('#averageV').val())
+        };
 
-    $.ajax({
-        url: '/api/1.0/saveElevation',
-        type: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify(jsonData),
-        async: true,    //pc 저장과 별개...
-        success: function (response) {
-            //console.log('Data successfully sent to the server');
-            //console.log(response);
-        },
-        error: function (xhr, status, error) {
-            console.log('Error sending data: ' + error);
-        }
+        $.ajax({
+            url: '/api/1.0/saveElevation',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(jsonData),
+            async: true,    //pc 저장과 별개...
+            success: function (response) {
+                //console.log('Data successfully sent to the server');
+                //console.log(response);
+                resolve(response.data.fileKey);
+            },
+            error: function (xhr, status, error) {
+                console.log('Error sending data: ' + error);
+                reject(error);
+            }
+        });
     });
 }
 
@@ -466,7 +471,7 @@ function onClickSaveGpx() {
         let len = data[kakao.maps.drawing.OverlayType.POLYLINE].length;
 
         if (len == 0) {
-            alert('경로정보가 없습니다."Track" 기능으로 경로를 그린 후 저장합니다.');
+            alert('경로정보가 없습니다."경로 그리기" 기능으로 경로를 그린 후 저장합니다.');
             return;
         }
         // if(!confirm("고도(높이) 정보를 처리하지 않고 경로를 저장할까요?")) {
@@ -519,10 +524,66 @@ function onClickSaveGpx() {
             type: "application/vnd.garmin.gpx+xml"
         }), _fileName + '.' + _filetype);
 
-        saveGpxToServer(saveData);
+        saveGpxToServer(saveData, 'saveElevation');
     });
 }
 
+//서버에 저장 후 file를 연결한다. gpsdata에서 apiname=linkElevation 저장하고, 10분 이내인 것을 사용한다.
+function onClickOpenGiljabi() {
+    $('#openGiljabi').click(function () {
+        let data = _drawingManager.getData();
+        let len = data[kakao.maps.drawing.OverlayType.POLYLINE].length;
+
+        if (len == 0) {
+            alert('경로정보가 없습니다."경로 그리기" 기능으로 경로를 그린 후 저장합니다.');
+            return;
+        }
+
+        if (eleFalg == false) {
+            _gpxTrkseqArray = [];
+            for (let i = 0; i < len; i++) {
+                data.polyline[i].points.forEach(point => {
+                    let line = new kakao.maps.LatLng(point.y, point.x);
+                    _gpxTrkseqArray.push({
+                        lat: line.getLat(),
+                        lng: line.getLng(),
+                        ele: 0,
+                        dist: 0,
+                        time: ''
+                    });
+                });
+            }
+        }
+
+        _fileName = (new Date().getTime() / 1000).toFixed(0);
+
+        let ptDateTime = new Date(BASETIME);
+
+        _gpxTrkseqArray[0].time = (new Date(BASETIME)).toISOString();
+        _gpxTrkseqArray[0].dist = 0;
+
+        //시간 = 거리 / 속도
+        let speed = Number($('#averageV').val());
+        for (let trkptIndex = 1; trkptIndex < _gpxTrkseqArray.length; trkptIndex++) {
+            let distance = getDistance(_gpxTrkseqArray[trkptIndex - 1], _gpxTrkseqArray[trkptIndex]);
+            _gpxTrkseqArray[trkptIndex].dist = (Number(_gpxTrkseqArray[trkptIndex - 1].dist) + distance).toFixed(2);
+            let ptSecond = distance / speed * 3600;
+            ptDateTime.setSeconds(ptDateTime.getSeconds() + ptSecond);
+            _gpxTrkseqArray[trkptIndex].time = ptDateTime.toISOString();
+            _gpxTrkseqArray[trkptIndex].desc = _gpxTrkseqArray[trkptIndex].dist; //누적거리 km
+        }
+        let saveData = saveGpx(_fileName, Number($('#averageV').val()),
+            [], _gpxTrkseqArray);
+
+        saveGpxToServer(saveData, 'linkElevation').then(function (uuid) {
+            //새창열기
+            window.open('/giljabi.html?elevation=linkElevation&fileid=' + uuid, uuid);
+        }).catch(error => {
+            console.error('Error:', error);
+        });
+
+    });
+}
 
 $(document).ready(function() {
     BASETIME = setBaseTimeToToday(BASETIME);
@@ -548,5 +609,7 @@ $(document).ready(function() {
     onClickReset();
 
     onClickSaveGpx();
+
+    onClickOpenGiljabi();
 });
 

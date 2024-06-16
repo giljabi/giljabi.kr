@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 /**
@@ -18,4 +20,10 @@ public interface GiljabiGpsDataRepository extends CrudRepository<GiljabiGpsdata,
 
     //@Query("SELECT g FROM GiljabiGpsdata g WHERE g.uuid = :uuid AND g.shareflag = false")
     GiljabiGpsdata findByUuidAndShareflagTrue(@Param("uuid") String uuid);
+
+    @Query("SELECT g FROM GiljabiGpsdata g WHERE g.apiname = :apiname AND g.uuid = :uuid AND g.createat >= :tenMinutesAgo")
+    GiljabiGpsdata findByApinameAndUuidAndCreateat(@Param("apiname") String apiname,
+                                                   @Param("uuid") String uuid,
+                                                   @Param("tenMinutesAgo") Timestamp tenMinutesAgo);
+
 }

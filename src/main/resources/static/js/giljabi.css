@@ -54,7 +54,7 @@ body, p, tr, th, td, ul, li, select, input {
     margin-bottom: 0;
     vertical-align: top;
     height: 150px;
-    width: 960px;
+    max-width: 960px;
     /*background-image: url('/images/charter-ad.png');*/
 }
 
