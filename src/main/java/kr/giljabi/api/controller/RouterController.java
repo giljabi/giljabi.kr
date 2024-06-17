@@ -14,6 +14,7 @@ import kr.giljabi.api.response.Response;
 import kr.giljabi.api.service.RouteService;
 import kr.giljabi.api.utils.CommonUtils;
 import kr.giljabi.api.utils.ErrorCode;
+import kr.giljabi.api.utils.MyHttpUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -53,7 +54,7 @@ public class RouterController {
         ArrayList<Geometry3DPoint> list;
         Response response;
         try {
-            routeRequest.setRemoteAddr(request.getRemoteAddr());
+            routeRequest.setRemoteAddr(MyHttpUtils.getClientIp(request));
 
             //list = getOpenRouteServiceTest();
             list = geometryService.getOpenRouteService(routeRequest);

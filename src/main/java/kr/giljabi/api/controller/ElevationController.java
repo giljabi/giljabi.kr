@@ -204,7 +204,7 @@ public class ElevationController {
             gpsdata.setUserid(userInfo.getUserid());
             gpsdata.setUuid(uuid); //filename
             gpsdata.setApiname(elevationSaveData.getApiName());
-            gpsdata.setUserip(request.getRemoteAddr());
+            gpsdata.setUserip(MyHttpUtils.getClientIp(request));
             log.info("saveElevation: " + savedFilename);
             gpsService.saveGpsdata(gpsdata);
 

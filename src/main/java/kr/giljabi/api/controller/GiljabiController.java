@@ -15,6 +15,7 @@ import kr.giljabi.api.service.GiljabiGpsDataService;
 import kr.giljabi.api.service.MinioService;
 import kr.giljabi.api.utils.CommonUtils;
 import kr.giljabi.api.utils.ErrorCode;
+import kr.giljabi.api.utils.MyHttpUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -75,7 +76,8 @@ public class GiljabiController {
             String compressedXml = LZString.compressToUTF16(decompressXml);
 
             String savedFilename = minioService.saveFileToMinio(bucketService, filename, compressedXml);
-            GiljabiGpsdata gpsdata = CommonUtils.makeGiljabiGpsdata(request.getRemoteAddr(),
+            GiljabiGpsdata gpsdata = CommonUtils.makeGiljabiGpsdata(
+                    MyHttpUtils.getClientIp(request),
                     "saveGpsdata",
                     gpsDataDTO,
                     decompressXml.getBytes().length,    //decompressed
@@ -134,7 +136,7 @@ public class GiljabiController {
             gpsImage.setOriginaldatetime(metadata.getDateTime());
             gpsImage.setOriginalfname(file.getOriginalFilename());
             gpsImage.setFilesize(file.getSize());
-            gpsImage.setUserip(request.getRemoteAddr());
+            gpsImage.setUserip(MyHttpUtils.getClientIp(request));
             imageService.saveGpsImage(gpsImage, gpsdata);
 
             GiljabiResponse giljabiResponse = new GiljabiResponse();
