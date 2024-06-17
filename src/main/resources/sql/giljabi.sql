@@ -85,6 +85,7 @@ CREATE TABLE gpsdataimage (
                               filesizecompress BIGINT default 0,
                               originalfname VARCHAR(255) NOT NULL,
                               readcount int4 DEFAULT 0 NOT NULL,
+                              userip varchar(36) NULL,
                               FOREIGN KEY (gpsdata_id) REFERENCES gpsdata(id) ON DELETE CASCADE
 );
 

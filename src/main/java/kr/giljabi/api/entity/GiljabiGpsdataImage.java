@@ -71,4 +71,7 @@ public class GiljabiGpsdataImage implements java.io.Serializable {
 
     @Column(nullable = false, length = 255)
     private String originalfname;
+
+    @Column(length = 36)
+    private String userip;
 }

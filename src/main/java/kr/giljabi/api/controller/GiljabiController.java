@@ -103,7 +103,8 @@ public class GiljabiController {
      * @return
      */
     @PostMapping("/api/1.0/uploadImage")
-    public Response handleFileUpload(@RequestParam("file") MultipartFile file,
+    public Response handleFileUpload(HttpServletRequest request,
+                                     @RequestParam("file") MultipartFile file,
                                      @RequestParam("uuid") String uuidKey) {
         try {
             String extension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
@@ -133,6 +134,7 @@ public class GiljabiController {
             gpsImage.setOriginaldatetime(metadata.getDateTime());
             gpsImage.setOriginalfname(file.getOriginalFilename());
             gpsImage.setFilesize(file.getSize());
+            gpsImage.setUserip(request.getRemoteAddr());
             imageService.saveGpsImage(gpsImage, gpsdata);
 
             GiljabiResponse giljabiResponse = new GiljabiResponse();
