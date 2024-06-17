@@ -1,11 +1,13 @@
-body {
+/*body {
     margin: 0;
     padding: 0;
     font-family: AppleGotihc, "Malgun Gothic", dotum;
     font-size: 12px;
     overflow: hidden;
-}
-p, tr, th, td, ul, li, select, input {
+}*/
+body, p, tr, th, td, ul, li, select, input {
+    margin: 0;
+    padding: 0;
     color: #000000;
     font-family: AppleGotihc, "Malgun Gothic", dotum;
     font-size: 12px;
@@ -27,7 +29,7 @@ p, tr, th, td, ul, li, select, input {
 }
 .modes { /* 지도 POU선택*/
     position: absolute;
-    top: -10px;
+    /*top: 10px;*/
     left: 0px;
     z-index: 1;
     opacity: 0.8;
