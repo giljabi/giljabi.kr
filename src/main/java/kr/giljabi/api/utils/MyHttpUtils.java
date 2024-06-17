@@ -239,6 +239,7 @@ public class MyHttpUtils {
         if (xfHeader == null) {
             return request.getRemoteAddr();
         }
+        log.info("X-Forwarded-For: " + xfHeader);
         return xfHeader.split(",")[0];
     }
 }
