@@ -1,6 +1,9 @@
 package kr.giljabi.api.config;
 
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.filter.ForwardedHeaderFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -11,5 +14,24 @@ public class WebConfig implements WebMvcConfigurer{
 	public void addCorsMappings(CorsRegistry registry) {
 		registry.addMapping("/api/**")
 				.allowedOrigins("*");
+	}
+
+	/**
+	 nginx:
+	 proxy_set_header X-Real-IP $remote_addr;
+	 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+	 proxy_set_header Host $host;
+	 proxy_set_header X-Forwarded-Proto $scheme;
+
+	 yml:
+	 server.forward-headers-strategy: native  #nginx 사용시 remote address(ip) 가져오기 위해 설정
+
+	 * @return
+	 */
+	@Bean
+	public FilterRegistrationBean<ForwardedHeaderFilter> forwardedHeaderFilter() {
+		FilterRegistrationBean<ForwardedHeaderFilter> filterRegistrationBean = new FilterRegistrationBean<>(new ForwardedHeaderFilter());
+		filterRegistrationBean.setOrder(0);
+		return filterRegistrationBean;
 	}
 }

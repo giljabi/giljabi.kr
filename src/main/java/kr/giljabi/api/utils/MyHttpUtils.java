@@ -16,6 +16,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.json.JSONObject;
 import org.springframework.util.Base64Utils;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
@@ -225,5 +226,19 @@ public class MyHttpUtils {
      */
     public static String generateUUID() {
         return java.util.UUID.randomUUID().toString().replace("-", "");
+    }
+
+    /**
+     * Get client IP address
+     * ref: WebConfig.forwardedHeaderFilter()
+     * @param request
+     * @return
+     */
+    public static String getClientIp(HttpServletRequest request) {
+        String xfHeader = request.getHeader("X-Forwarded-For");
+        if (xfHeader == null) {
+            return request.getRemoteAddr();
+        }
+        return xfHeader.split(",")[0];
     }
 }

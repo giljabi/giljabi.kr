@@ -1,6 +1,7 @@
 package kr.giljabi.api.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import kr.giljabi.api.utils.MyHttpUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
@@ -50,7 +51,8 @@ public class LoggerAspect {
 
         String controllerName = pjp.getSignature().getDeclaringType().getSimpleName();
         String methodName = pjp.getSignature().getName();
-        String remoteAddr = request.getHeader("X-Forwarded-For"); //nginx 사용시 remoteAddr
+        //String remoteAddr = request.getHeader("X-Forwarded-For"); //nginx 사용시 remoteAddr
+        String remoteAddr = MyHttpUtils.getClientIp(request);
         String mappingType = getMappingType(pjp);
 
         long startAt = System.currentTimeMillis();
