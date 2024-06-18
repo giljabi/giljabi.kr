@@ -64,6 +64,8 @@ function initMap() {
     let zoomControl = new kakao.maps.ZoomControl();
     _globalMap.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
 
+    initMapView();
+
     combo100();         //100개 산 목록을 콤보박스에 채운다.
 
 }
@@ -107,16 +109,35 @@ function combo100() {
     });
 }
 
+let all100Click = true;
+
+function initMapView() {
+    _globalMap.setCenter(new kakao.maps.LatLng(37.995034, 127.503119));//화악산
+    // 대한민국 영역에 대한 bounds 설정
+    var bounds = new kakao.maps.LatLngBounds(
+        new kakao.maps.LatLng(33.066065, 122.745646), // 남서쪽 좌표
+        new kakao.maps.LatLng(39.514972, 132.094870)  // 북동쪽 좌표
+    );        //전국 level
+
+    _globalMap.setBounds(bounds);
+}
+
 function onClickAll100() {
     $('#all100').click(function () {
-        //산목록
-        let mountain100Select = $('#mountain100Select option').map(function () {
-            return $(this).val();
-        }).get();
-        //첫째 데이터는 제외한다.
-        mountain100Select.shift();
-        let totalMountains = mountain100Select.length;
-        let completedTasks = 0;
+        all100Click = true;
+
+        initMapView();
+
+        //전체화면으로 만들고 0.5초 후 시작한다.
+        setTimeout(
+            function() {
+                let mountain100Select = $('#mountain100Select option').map(function () {
+                return $(this).val();
+            }).get();
+            //첫째 데이터는 제외한다.
+            mountain100Select.shift();
+            let totalMountains = mountain100Select.length;
+            let completedTasks = 0;
 
         mountain100Select.forEach(function (mountain, index) {
             // Calculate delay based on index
@@ -132,10 +153,12 @@ function onClickAll100() {
                     $('#progress-bar').val("");
                 }
             }, 500 * index); // Delay increases by 1 second each iteration
-        });
-        $('#all100')
-            .css({'color': '#aaa', 'opacity': '0.5'})
-            .prop('disabled', true);
+        })}, 500);
+
+        all100Click = false;
+        // $('#all100')
+        //     .css({'color': '#aaa', 'opacity': '0.5'})
+        //     .prop('disabled', true);
     });
 }
 
@@ -350,7 +373,9 @@ function basePathLoadGpx(gpxfile, strokeColor) {
             strokeWeight: 3
         });
         basePolyline.push(lineStyle);
-        _globalMap.setCenter(trkptList[Math.floor(trkptList.length / 2)]);
+
+        if(all100Click) //100대 명산 전체가 클릭되면 중심점 이동하지 않음
+            _globalMap.setCenter(trkptList[Math.floor(trkptList.length / 2)]);
     });
 
     //wpt 체크되어 있으면 웨이포인트를 표시한다.
