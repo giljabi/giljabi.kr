@@ -441,7 +441,8 @@
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
+
+        <finalName>giljabi-2</finalName>
     </build>
 </project>
