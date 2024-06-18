@@ -10,7 +10,7 @@
     </parent>
     <groupId>kr</groupId>
     <artifactId>giljabi</artifactId>
-    <version>1.0.0</version>
+    <version>2.1.${buildNumber}</version>
     <name>giljabi</name>
     <description>giljabi</description>
     <properties>
@@ -26,6 +26,12 @@
 <!--        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>-->
 <!--        <encoding>UTF-8</encoding>-->
     </properties>
+
+    <scm>
+        <connection>scm:git:https://github.com/parknamjun/giljabi.git</connection>
+        <developerConnection>scm:git:git@github.com:parknamjun/giljabi.git</developerConnection>
+        <url>https://github.com/parknamjun/giljabi</url>
+    </scm>
 
     <dependencies>
         <dependency>
@@ -208,6 +214,50 @@
             </resource>
         </resources>-->
         <plugins>
+            <!-- Properties Maven Plugin -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>properties-maven-plugin</artifactId>
+                <version>1.0.0</version>
+                <executions>
+                    <execution>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>read-project-properties</goal>
+                        </goals>
+                        <configuration>
+                            <files>
+                                <file>buildNumber.properties</file>
+                            </files>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Maven Compiler Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                </configuration>
+            </plugin>
+            <!-- Maven Toolchains Plugin -->
+<!--            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-toolchains-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>toolchain</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>-->
+
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -221,6 +271,32 @@
                 </configuration>
             </plugin>
 
+            <!-- Build Number Maven Plugin, 빌드 숫자 자동증가 -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>buildnumber-maven-plugin</artifactId>
+                <version>1.4</version>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>create</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <doCheck>false</doCheck>
+                    <doUpdate>false</doUpdate>
+                    <format>{0,number}</format>
+                    <items>
+                        <item>buildNumber</item>
+                    </items>
+                    <providerImplementations>
+                        <git>git</git>
+                    </providerImplementations>
+                </configuration>
+            </plugin>
+
             <!-- Maven Resources Plugin Configuration -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -231,6 +307,7 @@
                 </configuration>
             </plugin>
 
+            <!-- -Dmaven.test.skip=true or -DskipTests -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -351,6 +428,10 @@
                                 <replaceregexp file="target/classes/templates/vworld.html"
                                                match="apiKey=EF0CBEDB-A6FA-3FD9-B1B3-D7C725EF09D3"
                                                replace="apiKey=9061B3F7-8879-385D-8E87-ED75ABCD0EF5" byline="true" encoding="UTF-8"/>
+
+                                <replaceregexp file="target/classes/static/menu.html"
+                                               match="__BUILD_VERSION__"
+                                               replace="${project.version}" byline="true" encoding="UTF-8"/>
 
                             </tasks>
                         </configuration>
