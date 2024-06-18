@@ -76,7 +76,7 @@ function onClickFileInput() {
         let reader = new FileReader();
 
         reader.onload = function (e) {
-            makeObject(reader.result);
+            makeGpxTcxObject(reader.result);
             //console.log(reader.result);	//필요하면 디버깅으로...
         };
 
@@ -350,7 +350,7 @@ function basePathLoadGpx(gpxfile, strokeColor) {
             strokeWeight: 3
         });
         basePolyline.push(lineStyle);
-        //moveCenterPoint(trkptList[parseInt(trkptList.length / 2)]);
+        _globalMap.setCenter(trkptList[Math.floor(trkptList.length / 2)]);
     });
 
     //wpt 체크되어 있으면 웨이포인트를 표시한다.
@@ -370,7 +370,7 @@ function basePathLoadGpx(gpxfile, strokeColor) {
     }
 }
 
-function makeObject(xml) {
+function makeGpxTcxObject(xml) {
     let gpx = $($.parseXML(xml));
     loadGpx(gpx);
 
@@ -380,6 +380,7 @@ function makeObject(xml) {
 
     _drawingManager.put(kakao.maps.drawing.OverlayType.POLYLINE, _trkPoly);
 
+    moveCenterPoint(_globalMap, _gpxTrkseqArray);
 }
 
 function loadGpx(x) {

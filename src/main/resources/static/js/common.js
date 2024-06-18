@@ -301,3 +301,9 @@ function convertSecondsToDaysHoursMinutes(seconds) {
 	return String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0');
 }
 
+function moveCenterPoint(kakaoMap, trkPoly) {
+	let point = trkPoly[parseInt(trkPoly.length / 2)];
+	kakaoMap.setCenter(new kakao.maps.LatLng(point.lat, point.lng));
+	//kakaoMap.setLevel(7);
+}
+
