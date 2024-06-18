@@ -4,6 +4,7 @@ import com.github.diogoduailibe.lzstring4j.LZString;
 import io.swagger.annotations.ApiOperation;
 import kr.giljabi.api.entity.GiljabiGpsdata;
 import kr.giljabi.api.entity.GpsElevation;
+import kr.giljabi.api.entity.GpxRecommend;
 import kr.giljabi.api.entity.UserInfo;
 import kr.giljabi.api.geo.*;
 import kr.giljabi.api.geo.gpx.TrackPoint;
@@ -11,6 +12,7 @@ import kr.giljabi.api.request.RequestElevationSaveData;
 import kr.giljabi.api.response.GiljabiResponse;
 import kr.giljabi.api.response.Gpx100Response;
 import kr.giljabi.api.service.GiljabiGpsDataService;
+import kr.giljabi.api.service.GiljabiGpxRecommendService;
 import kr.giljabi.api.service.GoogleService;
 import kr.giljabi.api.request.RequestElevationData;
 import kr.giljabi.api.response.Response;
@@ -50,6 +52,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ElevationController {
     private final GiljabiGpsDataService gpsService;
+    private final GiljabiGpxRecommendService gpxRecommendService;
 
     private final GoogleService googleService;
 
@@ -146,6 +149,15 @@ public class ElevationController {
     public Response getMountainList100Files(@PathVariable String filename) {
         List<String> fileList = new ArrayList<>();
         try {
+            List<GpxRecommend> list = gpxRecommendService.findByTrackname(filename);
+            return new Response(list);
+        } catch (Exception e) {
+            return new Response(ErrorCode.STATUS_EXCEPTION.getStatus(), e.getMessage());
+        }
+    }
+/*    public Response getMountainList100Files(@PathVariable String filename) {
+        List<String> fileList = new ArrayList<>();
+        try {
             //abc-*.gpx, gariwangsan*\\.gpx$
             fileList = minioService.listFiles(bucketData,
                     mountain100Path.substring(1) + "/",
@@ -154,7 +166,7 @@ public class ElevationController {
         } catch (Exception e) {
             return new Response(ErrorCode.STATUS_EXCEPTION.getStatus(), e.getMessage());
         }
-    }
+    }*/
 
     @GetMapping("/api/1.0/mountainGpx/{directory}/{filename}")
     @ApiOperation(value = "산림청 100대 명산 gpx 경로정보, gpx 파일로 관리하고 압축해서 전송한다 ")

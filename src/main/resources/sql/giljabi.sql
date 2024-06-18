@@ -86,6 +86,7 @@ CREATE TABLE gpsdataimage (
                               originalfname VARCHAR(255) NOT NULL,
                               readcount int4 DEFAULT 0 NOT NULL,
                               userip varchar(36) NULL,
+                              readcount int4 DEFAULT 0 NOT NULL,
                               FOREIGN KEY (gpsdata_id) REFERENCES gpsdata(id) ON DELETE CASCADE
 );
 
@@ -131,12 +132,34 @@ CREATE TABLE gpselevation (
                               transtime INTEGER NOT NULL,
                               wpt SMALLINT NOT NULL,
                               trkpt SMALLINT NOT NULL,
-                              reqcnt INTEGER DEFAULT NULL
+                              readcount int4 DEFAULT 0 NOT NULL
 );
 CREATE TRIGGER update_changeat
     BEFORE UPDATE ON gpselevation
     FOR EACH ROW
     EXECUTE PROCEDURE update_changeat_column(); --v11 이전 PROCEDURE, 이후는 function
+
+CREATE TABLE gpxrecommend (
+                              id SERIAL PRIMARY KEY,
+                              trackname VARCHAR(128) DEFAULT NULL,
+                              gpxgroup VARCHAR(16),
+                              filename VARCHAR(64) NOT NULL UNIQUE,
+                              createat TIMESTAMP NOT NULL DEFAULT now(),
+                              changeat TIMESTAMP NOT NULL DEFAULT now(),
+                              readcnt INTEGER DEFAULT 0
+);
+CREATE TRIGGER update_changeat
+    BEFORE UPDATE ON gpxrecommend
+    FOR EACH ROW
+    EXECUTE PROCEDURE update_changeat_column(); --v11 이전 PROCEDURE, 이후는 function
+
+
+
+
+
+
+
+
 
 
 
