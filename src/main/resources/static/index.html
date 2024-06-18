@@ -8,12 +8,17 @@
 <meta http-equiv="Expires" content="-1">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Cache-Control" content="no-cache">
-
+    <script type="text/javascript" src="/js/jquery-3.3.1.js"></script>
     <script>
-        window.location.href = 'https://giljabi.kr:8443/giljabi.html';
+        //window.location.href = 'https://giljabi.kr:8443/giljabi.html';
+        $(document).ready(function() {
+            if (!sessionStorage.getItem('token')) {
+                // If no session information, redirect to /giljabi.html
+                window.location.href = '/giljabi.html';
+            }
+        });
+
     </script>
-
-
 </head>
 
 <body>
