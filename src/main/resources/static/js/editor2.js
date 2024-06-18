@@ -77,7 +77,7 @@ function onClickFileInput() {
 
         reader.onload = function (e) {
             makeObject(reader.result);
-            console.log(reader.result);	//필요하면 디버깅으로...
+            //console.log(reader.result);	//필요하면 디버깅으로...
         };
 
         reader.readAsText(file);
