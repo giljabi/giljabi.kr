@@ -99,7 +99,7 @@ function combo100() {
         success: function (response, status) {
             if (response.status === 0) {
                 response.data.forEach(function (mountain) {
-                    $('#mountain100Select').append($('<option></option>').val(mountain.filename).html(mountain.name));
+                    $('#mountain100Select').append($('<option></option>').val(mountain.trackname).html(mountain.trackkorean));
                 });
                 //console.log($('#mountain100Select').html());
             } else {
@@ -181,7 +181,7 @@ function getMountainGpxLists(mountainName) {
     let mountainList = [];
     $.ajax({
         type: 'get',
-        url: '/api/1.0/mountainGpxLists/' + mountainName,
+        url: '/api/1.0/mountainGpxLists/forest100/' + mountainName,
         contentType: 'application/json',
         dataType: 'json',
         async: false,
@@ -206,7 +206,7 @@ function getMountainGpx(mountainList) {
     $.each(mountainList, function (index, ele) {
         $.ajax({
             type: 'get',
-            url: '/api/1.0/mountainGpx/' + mountainList[index],
+            url: '/api/1.0/mountainGpx/forest100/' + mountainList[index],
             contentType: 'application/json',
             dataType: 'json',
             async: false,

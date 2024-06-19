@@ -19,6 +19,8 @@ public class GpxRecommend {
 
     @Column(name = "trackname", length = 128)
     private String trackname;
+    @Column(name = "trackkorean", length = 128)
+    private String trackkorean;
 
     @Column(name = "gpxgroup", length = 16)
     private String gpxgroup;
@@ -28,7 +30,7 @@ public class GpxRecommend {
 
     //@Column(nullable = false, length = 36)
     @Column(nullable = false)
-    private Timestamp createt = Timestamp.from(Instant.now());
+    private Timestamp createat = Timestamp.from(Instant.now());
 
     //@Column(nullable = false, length = 36)
     @Column(nullable = false)

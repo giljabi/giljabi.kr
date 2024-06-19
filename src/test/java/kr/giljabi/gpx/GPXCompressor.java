@@ -7,9 +7,10 @@ import java.io.*;
 public class GPXCompressor {
 
     public static void main(String[] args) {
-        String directoryPath = "/Users/parknamjun/IdeaProjects/giljabi.tistory.com/forest100/";
-        File directory = new File(directoryPath);
+        //String directoryPath = "/Users/parknamjun/IdeaProjects/giljabi.tistory.com/forest100/";
+        String directoryPath = "/git/github/parknamjun/giljabi.tisoty.com/forest100/";
 
+        File directory = new File(directoryPath);
         if (!directory.exists() || !directory.isDirectory()) {
             System.out.println("Directory does not exist: " + directoryPath);
             return;
@@ -21,9 +22,11 @@ public class GPXCompressor {
             System.out.println("No .gpx files found in the directory.");
             return;
         }
-
+        int index = 1;
         for (File file : files) {
             try {
+                System.out.format("Processing file: %d/%d, %s",
+                        index++, files.length, file.getName());
                 String content = readFile(file);
                 String compressedContent = LZString.compressToUTF16(content);
                 String compressedFileName = file.getName() + ".lz";

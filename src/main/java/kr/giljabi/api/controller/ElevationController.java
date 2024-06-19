@@ -11,6 +11,7 @@ import kr.giljabi.api.geo.gpx.TrackPoint;
 import kr.giljabi.api.request.RequestElevationSaveData;
 import kr.giljabi.api.response.GiljabiResponse;
 import kr.giljabi.api.response.Gpx100Response;
+import kr.giljabi.api.response.Mountain100;
 import kr.giljabi.api.service.GiljabiGpsDataService;
 import kr.giljabi.api.service.GiljabiGpxRecommendService;
 import kr.giljabi.api.service.GoogleService;
@@ -109,47 +110,28 @@ public class ElevationController {
                     "https://www.data.go.kr/data/15098177/fileData.do?recommendDataYn=Y<br>")
     public Response getMountainList100() {
         try {
-            String filename = String.format("%s/100.txt", mountain100Path);
-            //bucketNameData
-            List<String> comboData = minioService.readFileContentByList(bucketData, filename);
-
-            List<Mountain100> fileList = new ArrayList<>();
-            for (String line : comboData) {
-                if(line.charAt(0) == '#')
-                    continue;
-                fileList.add(new Mountain100(line));
-            }
-            return new Response(fileList);
+            List<Mountain100> list = gpxRecommendService.findTrackNamesByGpxGroup("forest100");
+            return new Response(list);
         } catch (Exception e) {
             return new Response(ErrorCode.STATUS_EXCEPTION.getStatus(), e.getMessage());
         }
     }
 
-    @Data
-    private class Mountain100 {
-        public String name;
-        public String filename;
-
-        public Mountain100(String lineReader) {
-            String[] mountain = lineReader.split(",");
-            this.name = mountain[0];
-            this.filename = mountain[1];
-        }
-    }
-
     /**
      * editor getMountainGpxLists
+     * gxpgroup: forest100
      * minio 서비스로 변경
      * @param filename + "-*\\.gpx$": abc-*.gpx
      * @return
      */
-    @GetMapping("/api/1.0/mountainGpxLists/{filename}")
+    @GetMapping("/api/1.0/mountainGpxLists/{gxpgroup}/{filename}")
     @ApiOperation(value = "산림청 100대 명산 이름으로 검색한 gpx 파일 목록은 2개 이상일 수 있어 " +
             "목록을 반환하고 클라이언트에서 파일을 순차적으로 요청한다.")
-    public Response getMountainList100Files(@PathVariable String filename) {
-        List<String> fileList = new ArrayList<>();
+    public Response getMountainList100Files(@PathVariable String gxpgroup,
+                                            @PathVariable String filename) {
         try {
-            List<GpxRecommend> list = gpxRecommendService.findByTrackname(filename);
+            List<String> list = gpxRecommendService
+                    .findByGpxgroupAndTracknameOrderByFilename(gxpgroup, filename);
             return new Response(list);
         } catch (Exception e) {
             return new Response(ErrorCode.STATUS_EXCEPTION.getStatus(), e.getMessage());
@@ -168,17 +150,22 @@ public class ElevationController {
         }
     }*/
 
+    /**
+     *
+     * @param directory: forest100
+     * @param filename
+     * @return
+     */
     @GetMapping("/api/1.0/mountainGpx/{directory}/{filename}")
     @ApiOperation(value = "산림청 100대 명산 gpx 경로정보, gpx 파일로 관리하고 압축해서 전송한다 ")
     public Response getMountainList100Gpxfile(@PathVariable String directory,
                                               @PathVariable String filename) {
         try {
             Gpx100Response gpx100Response = new Gpx100Response();
-            String gpx = minioService.readFileContentByString(bucketData,
+            String xmlDataLink = minioService.readFileContentByString(bucketData,
                     directory + "/" + filename);
-            String xmlData = LZString.compressToUTF16(gpx);
             gpx100Response.setTrackName(filename);
-            gpx100Response.setXmlData(xmlData);
+            gpx100Response.setXmlData(xmlDataLink);
             return new Response(Optional.of(gpx100Response));
         } catch (Exception e) {
             return new Response(ErrorCode.STATUS_EXCEPTION.getStatus(), e.getMessage());
