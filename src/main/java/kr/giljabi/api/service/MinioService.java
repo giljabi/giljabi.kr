@@ -14,6 +14,7 @@ import io.minio.messages.Item;
 import kr.giljabi.api.geo.JpegMetaInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,6 +30,9 @@ import java.util.regex.Pattern;
 @Slf4j
 public class MinioService {
 
+    @Value("${minio.awsObjectUrl}")
+    private String s3url;
+
     @Autowired
     private MinioClient minioClient;
 
@@ -42,12 +46,30 @@ public class MinioService {
                             .contentType("application/octet-stream")
                             .build()
             );
-            return bucketName + objectName;
+            return s3url + "/" + bucketName + "/" + objectName;
         } catch (MinioException e) {
             log.error("Failed to save the compressed file to MinIO\n{}", e.toString());
             throw new MinioException("Failed to save the compressed file to MinIO", e.toString());
         }
     }
+
+    public String saveFileToAws(String bucketName, String objectName, String compressedContent) throws Exception {
+        try (InputStream inputStream = new ByteArrayInputStream(compressedContent.getBytes(StandardCharsets.UTF_8))) {
+            minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(objectName)
+                            .stream(inputStream, inputStream.available(), -1)
+                            .contentType("application/octet-stream")
+                            .build()
+            );
+            return s3url + "/" +objectName;
+        } catch (MinioException e) {
+            log.error("Failed to save the compressed file to AWS S3\n{}", e.toString());
+            throw new MinioException("Failed to save the compressed file to AWS", e.toString());
+        }
+    }
+
     public String saveImageFileToMinio(String bucketName, String pathAndFilename, MultipartFile file) {
         try {
             minioClient.putObject(
@@ -57,7 +79,23 @@ public class MinioService {
                             .stream(file.getInputStream(), file.getSize(), -1)
                             .contentType(file.getContentType())
                             .build());
-            return bucketName + pathAndFilename;
+            return s3url + "/" + bucketName + "/" + pathAndFilename;
+        } catch (Exception e) {
+            log.error("Failed to save the compressed file to MinIO\n{}", e.toString());
+            throw new RuntimeException("Error occurred while uploading file to MinIO", e);
+        }
+    }
+
+    public String saveImageFileToAws(String bucketName, String pathAndFilename, MultipartFile file) {
+        try {
+            minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(pathAndFilename)
+                            .stream(file.getInputStream(), file.getSize(), -1)
+                            .contentType(file.getContentType())
+                            .build());
+            return s3url + "/" +pathAndFilename;
         } catch (Exception e) {
             log.error("Failed to save the compressed file to MinIO\n{}", e.toString());
             throw new RuntimeException("Error occurred while uploading file to MinIO", e);

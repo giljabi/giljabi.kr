@@ -55,8 +55,8 @@ public class GiljabiController {
     @Value("${giljabi.gpx.path}")
     private String gpxPath;
 
-    @Value("${minio.serviceurl}")
-    private String s3url;
+//    @Value("${minio.serviceurl}")
+//    private String s3url;
 
     //bucketName: service
     //file pth: service/yyyyMM/uuid_filename
@@ -75,14 +75,14 @@ public class GiljabiController {
             //압축된 상태로 저장하면 데이터가 이상하게 저장되어 압축을 풀고 다시 압축해서 저장하는 것으로 변경, 하루종일 삽질...
             String compressedXml = LZString.compressToUTF16(decompressXml);
 
-            String savedFilename = minioService.saveFileToMinio(bucketService, filename, compressedXml);
+            String savedFilename = minioService.saveFileToAws(bucketService, filename, compressedXml);
             GiljabiGpsdata gpsdata = CommonUtils.makeGiljabiGpsdata(
                     MyHttpUtils.getClientIp(request),
                     "saveGpsdata",
                     gpsDataDTO,
                     decompressXml.getBytes().length,    //decompressed
                     compressedXml.getBytes().length,
-                    s3url + "/" + savedFilename,
+                    savedFilename,
                     userInfo.getUserid());
             log.info("saveGpsdata: " + savedFilename);
             gpsService.saveGpsdata(gpsdata);
@@ -105,7 +105,7 @@ public class GiljabiController {
      * @return
      */
     @PostMapping("/api/1.0/uploadImage")
-    public Response handleFileUpload(HttpServletRequest request,
+    public Response uploadImage(HttpServletRequest request,
                                      @RequestParam("file") MultipartFile file,
                                      @RequestParam("uuid") String uuidKey) {
         try {
@@ -124,7 +124,7 @@ public class GiljabiController {
             //db에 저장하는 코드
             GiljabiGpsdataImage gpsImage = new GiljabiGpsdataImage();
             gpsImage.setFileext(extension.substring(extension.indexOf(".") + 1));
-            gpsImage.setFileurl(s3url + "/" + imageUrl); //서버는 항상 다를 수 있음
+            gpsImage.setFileurl(imageUrl); //서버는 항상 다를 수 있음
             gpsImage.setGpsdata(gpsdata);   //gpsdata에 대한 참조 키
             gpsImage.setEle(metadata.getAltitude());
             gpsImage.setLat(metadata.getGeoLocation().getLatitude());
@@ -140,7 +140,7 @@ public class GiljabiController {
             imageService.saveGpsImage(gpsImage, gpsdata);
 
             GiljabiResponse giljabiResponse = new GiljabiResponse();
-            giljabiResponse.setFilePath(s3url + "/" + imageUrl);
+            giljabiResponse.setFilePath(imageUrl);
             giljabiResponse.setFileKey(uuidKey);
             giljabiResponse.setGeoLocation(metadata.getGeoLocation());
             giljabiResponse.setAltitude(metadata.getAltitude());
