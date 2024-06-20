@@ -27,6 +27,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import java.io.*;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -60,11 +61,11 @@ public class GoogleService {
     @Value("${giljabi.gpx.path}")
     private String gpxPath;
 
-    @Value("${minio.serviceurl}")
+    @Value("${minio.serviceUrl}")
     private String s3url;
 
-    @Value("${minio.bucketService}")
-    private String bucketService;
+    @Value("${minio.bucketPrivate}")
+    private String bucketPrivate;
 
     //장시간 호출이 없는 경우 socket error가 발생하므로 미리 호출한다
     //key를 사용해도 되지만 google api 호출건수가 증가하므로 key를 사용하지 않게 한다.
@@ -79,7 +80,6 @@ public class GoogleService {
         UserInfo userInfo = CommonUtils.getSessionByUserinfo(request);
 
         List<RequestElevationData.Geometry2DPoint> trackPoint = requestElevationData.getTrackPoint();
-        //ArrayList<Geometry3DPoint> returnPoint = new ArrayList<>();
         ArrayList<TrackPoint> returnPoint = new ArrayList<>();
 
         //elevation api는 하루 2500요청
@@ -147,6 +147,14 @@ public class GoogleService {
         GpsElevation gpsElevation = new GpsElevation();
         gpsElevation.setApiname("getElevation");
         gpsElevation.setUuid(UUID.randomUUID().toString());
+
+        String objectName = CommonUtils.makeGpsdataObjectName(gpxPath,
+                gpsElevation.getUuid(),
+                "gpx");
+
+        String fileurl = String.format("%s/%s/%s",
+                s3url, bucketPrivate, objectName);
+        gpsElevation.setFileurl(fileurl);
         gpsElevation.setTranstime(endTime - startTime);
         gpsElevation.setTrkpt(trackPoint.size());
         gpsElevation.setUserid(userInfo.getUserid());
@@ -178,7 +186,10 @@ public class GoogleService {
         String objectName = CommonUtils.makeGpsdataObjectName(gpxPath,
                 gpsDataDTO.getUuid(),
                 gpsDataDTO.getFileext());
-        String savedFilename = minioService.saveFileToMinio(bucketService, objectName, compressedXml);
+
+        InputStream inputStream = new ByteArrayInputStream(compressedXml.getBytes(StandardCharsets.UTF_8));
+        String savedFilename = minioService.putObject(bucketPrivate,
+                objectName, inputStream, CommonUtils.BINARY_CONTENT_TYPE);
 
         GiljabiGpsdata gpsdata = CommonUtils.makeGiljabiGpsdata(request.getRemoteAddr(),
                 "makeElevation",

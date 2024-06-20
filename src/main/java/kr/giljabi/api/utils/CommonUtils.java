@@ -1,10 +1,16 @@
 package kr.giljabi.api.utils;
 
+import com.drew.metadata.Metadata;
+import com.drew.metadata.exif.ExifIFD0Directory;
+import com.drew.metadata.exif.ExifSubIFDDirectory;
+import com.drew.metadata.exif.GpsDirectory;
+import com.drew.metadata.jpeg.JpegDirectory;
 import com.google.gson.Gson;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import kr.giljabi.api.entity.GiljabiGpsdata;
 import kr.giljabi.api.entity.UserInfo;
+import kr.giljabi.api.geo.JpegMetaInfo;
 import kr.giljabi.api.geo.gpx.TrackPoint;
 import kr.giljabi.api.request.RequestGpsDataDTO;
 
@@ -20,6 +26,9 @@ import java.util.UUID;
 
 public class CommonUtils {
     public static String DEFAULT_TIMESTAMP_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS";
+
+    public final static String BINARY_CONTENT_TYPE = "application/octet-stream";
+    public final static String TEXT_CONTENT_TYPE = "application/text";
 
     public static String getCurrentTime(String format) {
         if (format == null || format.isEmpty()) {
@@ -127,4 +136,47 @@ public class CommonUtils {
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return EARTH_RADIUS * c;
     }
+
+    /**
+     * jpeg 파일의 메타데이터를 추출한다.
+     * @param metadata
+     * @return
+     * @throws Exception
+     */
+    public static JpegMetaInfo getMetaData(Metadata metadata) throws Exception {
+        JpegMetaInfo jpegMetaInfo = new JpegMetaInfo();
+        ExifIFD0Directory exifIFD0Directory = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
+
+        jpegMetaInfo.setDateTime(exifIFD0Directory.getString(ExifIFD0Directory.TAG_DATETIME));
+        jpegMetaInfo.setMake(exifIFD0Directory.getString(ExifIFD0Directory.TAG_MAKE));
+        jpegMetaInfo.setModel(exifIFD0Directory.getString(ExifIFD0Directory.TAG_MODEL));
+        jpegMetaInfo.setOrientation(exifIFD0Directory.getInteger(ExifIFD0Directory.TAG_ORIENTATION));
+
+        JpegDirectory jpegDirectory = metadata.getFirstDirectoryOfType(JpegDirectory.class);
+        jpegMetaInfo.setImageWidth(jpegDirectory.getInteger(JpegDirectory.TAG_IMAGE_WIDTH));
+        jpegMetaInfo.setImageLength(jpegDirectory.getInteger(JpegDirectory.TAG_IMAGE_HEIGHT));
+
+        ExifSubIFDDirectory exifSubIFDDirectory = metadata.getFirstDirectoryOfType(ExifSubIFDDirectory.class);
+        jpegMetaInfo.setExifVersion(exifSubIFDDirectory.getString(ExifSubIFDDirectory.TAG_EXIF_VERSION));
+
+        GpsDirectory gpsDirectory = metadata.getFirstDirectoryOfType(GpsDirectory.class);
+        jpegMetaInfo.setAltitude(gpsDirectory.getDouble(GpsDirectory.TAG_ALTITUDE));
+        jpegMetaInfo.setGeoLocation(gpsDirectory.getGeoLocation());
+
+        return jpegMetaInfo;
+    }
+
+    /*    public Response getMountainList100Files(@PathVariable String filename) {
+        List<String> fileList = new ArrayList<>();
+        try {
+            //abc-*.gpx, gariwangsan*\\.gpx$
+            fileList = minioService.listFiles(bucketData,
+                    mountain100Path.substring(1) + "/",
+                    filename + "*", "gpx");
+            return new Response(fileList);
+        } catch (Exception e) {
+            return new Response(ErrorCode.STATUS_EXCEPTION.getStatus(), e.getMessage());
+        }
+    }*/
+
 }

@@ -1,6 +1,8 @@
 package kr.giljabi.api.controller;
 
+import com.drew.imaging.ImageMetadataReader;
 import com.drew.lang.GeoLocation;
+import com.drew.metadata.Metadata;
 import kr.giljabi.api.entity.GiljabiGpsdataImage;
 import kr.giljabi.api.entity.GiljabiGpsdata;
 import kr.giljabi.api.entity.UserInfo;
@@ -27,6 +29,9 @@ import javax.validation.Valid;
 
 import com.github.diogoduailibe.lzstring4j.LZString;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 /**
@@ -49,14 +54,11 @@ public class GiljabiController {
 
     private UserInfo userInfo;
 
-    @Value("${minio.bucketService}")
-    private String bucketService;
+    @Value("${minio.bucketPrivate}")
+    private String bucketPrivate;
 
     @Value("${giljabi.gpx.path}")
     private String gpxPath;
-
-//    @Value("${minio.serviceurl}")
-//    private String s3url;
 
     //bucketName: service
     //file pth: service/yyyyMM/uuid_filename
@@ -74,8 +76,10 @@ public class GiljabiController {
 
             //압축된 상태로 저장하면 데이터가 이상하게 저장되어 압축을 풀고 다시 압축해서 저장하는 것으로 변경, 하루종일 삽질...
             String compressedXml = LZString.compressToUTF16(decompressXml);
+            InputStream inputStream = new ByteArrayInputStream(compressedXml.getBytes(StandardCharsets.UTF_8));
+            String savedFilename = minioService.putObject(bucketPrivate,
+                    filename, inputStream, CommonUtils.BINARY_CONTENT_TYPE);
 
-            String savedFilename = minioService.saveFileToAws(bucketService, filename, compressedXml);
             GiljabiGpsdata gpsdata = CommonUtils.makeGiljabiGpsdata(
                     MyHttpUtils.getClientIp(request),
                     "saveGpsdata",
@@ -114,17 +118,18 @@ public class GiljabiController {
                     gpxPath,
                     CommonUtils.getFileLocation(uuidKey),
                     CommonUtils.generateUUIDFilename(extension));
-            String imageUrl = minioService.saveImageFileToMinio(bucketService, filename, file);
-            log.info("imageUrl: " + imageUrl);
+
+            String savedFilename = minioService.putObject(bucketPrivate,
+                    filename, file.getInputStream(), CommonUtils.BINARY_CONTENT_TYPE);
+
+            JpegMetaInfo metadata = CommonUtils.getMetaData(ImageMetadataReader.readMetadata(file.getInputStream()));
+            log.info("metadata: " + metadata.toString());
 
             GiljabiGpsdata gpsdata = gpsService.findByUuid(uuidKey);
-
-            JpegMetaInfo metadata = minioService.getMetaDataFromMinio(bucketService, imageUrl);
-            log.info("metadata: " + metadata.toString());
             //db에 저장하는 코드
             GiljabiGpsdataImage gpsImage = new GiljabiGpsdataImage();
             gpsImage.setFileext(extension.substring(extension.indexOf(".") + 1));
-            gpsImage.setFileurl(imageUrl); //서버는 항상 다를 수 있음
+            gpsImage.setFileurl(savedFilename); //서버는 항상 다를 수 있음
             gpsImage.setGpsdata(gpsdata);   //gpsdata에 대한 참조 키
             gpsImage.setEle(metadata.getAltitude());
             gpsImage.setLat(metadata.getGeoLocation().getLatitude());
@@ -140,7 +145,7 @@ public class GiljabiController {
             imageService.saveGpsImage(gpsImage, gpsdata);
 
             GiljabiResponse giljabiResponse = new GiljabiResponse();
-            giljabiResponse.setFilePath(imageUrl);
+            giljabiResponse.setFilePath(savedFilename);
             giljabiResponse.setFileKey(uuidKey);
             giljabiResponse.setGeoLocation(metadata.getGeoLocation());
             giljabiResponse.setAltitude(metadata.getAltitude());
@@ -219,10 +224,10 @@ public class GiljabiController {
             if(gpsdata == null) {
                 return new Response(ErrorCode.STATUS_FAILURE.getStatus(), "Not found data");
             }
-            int index = gpsdata.getFileurl().indexOf(bucketService);
+            int index = gpsdata.getFileurl().indexOf(bucketPrivate);
             String filePath = gpsdata.getFileurl().substring(index);
 
-            String reader = minioService.readFileContentByString(bucketService,
+            String reader = minioService.readFileContentByString(bucketPrivate,
                     filePath.substring(filePath.indexOf("/") + 1));
 
             GiljabiResponseGpsdataDTO dto = new GiljabiResponseGpsdataDTO();

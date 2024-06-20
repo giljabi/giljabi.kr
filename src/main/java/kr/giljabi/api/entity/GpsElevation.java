@@ -56,13 +56,7 @@ public class GpsElevation implements Serializable {
     @Column(name = "reqcnt")
     private Integer reqcnt;
 
-    @PrePersist
-    protected void onCreate() {
-        createat = changeat = Timestamp.from(Instant.now());
-    }
+    @Column(nullable = true, length = 255)
+    private String fileurl;
 
-    @PreUpdate
-    protected void onUpdate() {
-        changeat = Timestamp.from(Instant.now());
-    }
 }

@@ -29,8 +29,8 @@ public class ShareCoursesService {
     @Value("${giljabi.xmlshare.path}")
     private String xmlSharePath;
 
-    @Value("${minio.bucketData}")
-    private String bucketNameData;
+    @Value("${minio.bucketPublic}")
+    private String bucketPublic;
 
     @Autowired
     public ShareCoursesService(ShareCoursesRepository shareCoursesRepository,
@@ -49,7 +49,7 @@ public class ShareCoursesService {
 
                 XmlShareResponse xmlShareResponse = new XmlShareResponse();
                 String xmlData = LZString.compressToUTF16(
-                        minioService.readFileContentByString(bucketNameData, filePath));
+                        minioService.readFileContentByString(bucketPublic, filePath));
                 xmlShareResponse.setXmlData(xmlData);
                 xmlShareResponse.setTrackName(shareCourses.get().getPcFileName());
                 xmlShareResponse.setFileType("tcx");

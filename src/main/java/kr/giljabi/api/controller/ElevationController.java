@@ -69,14 +69,11 @@ public class ElevationController {
     @Value("${giljabi.gpx.path}")
     private String gpxPath;
 
-    @Value("${minio.bucketData}")
-    private String bucketData;
+    @Value("${minio.bucketPublic}")
+    private String bucketPublic;
 
-    @Value("${minio.serviceurl}")
-    private String s3url;
-
-    @Value("${minio.bucketService}")
-    private String bucketService;
+    @Value("${minio.bucketPrivate}")
+    private String bucketPrivate;
 
     @PostMapping("/api/1.0/elevation")
     @ApiOperation(value = "고도정보", notes = "google elevation api 이용하여 고도정보를 받아오는 api")
@@ -137,18 +134,6 @@ public class ElevationController {
             return new Response(ErrorCode.STATUS_EXCEPTION.getStatus(), e.getMessage());
         }
     }
-/*    public Response getMountainList100Files(@PathVariable String filename) {
-        List<String> fileList = new ArrayList<>();
-        try {
-            //abc-*.gpx, gariwangsan*\\.gpx$
-            fileList = minioService.listFiles(bucketData,
-                    mountain100Path.substring(1) + "/",
-                    filename + "*", "gpx");
-            return new Response(fileList);
-        } catch (Exception e) {
-            return new Response(ErrorCode.STATUS_EXCEPTION.getStatus(), e.getMessage());
-        }
-    }*/
 
     /**
      *
@@ -162,7 +147,7 @@ public class ElevationController {
                                               @PathVariable String filename) {
         try {
             Gpx100Response gpx100Response = new Gpx100Response();
-            String xmlDataLink = minioService.readFileContentByString(bucketData,
+            String xmlDataLink = minioService.readFileContentByString(bucketPublic,
                     directory + "/" + filename);
             gpx100Response.setTrackName(filename);
             gpx100Response.setXmlData(xmlDataLink);
@@ -187,7 +172,9 @@ public class ElevationController {
                     elevationSaveData.getFileExt());
 
             String compressedXml = LZString.compressToUTF16(xmlData);
-            String savedFilename = minioService.saveFileToMinio(bucketService, filename, compressedXml);
+            InputStream inputStream = new ByteArrayInputStream(compressedXml.getBytes(StandardCharsets.UTF_8));
+            String savedFilename = minioService.putObject(bucketPrivate,
+                    filename, inputStream, CommonUtils.BINARY_CONTENT_TYPE);
 
             //DB에 저장 필요
             GiljabiGpsdata gpsdata = new GiljabiGpsdata();
@@ -198,7 +185,7 @@ public class ElevationController {
             gpsdata.setDistance(elevationSaveData.getDistance());
             gpsdata.setFilesize(xmlData.length());
             gpsdata.setFilesizecompress(elevationSaveData.getXmlData().length());
-            gpsdata.setFileurl(s3url + "/" + savedFilename);
+            gpsdata.setFileurl(savedFilename);
             gpsdata.setSpeed(elevationSaveData.getSpeed());
             gpsdata.setUserid(userInfo.getUserid());
             gpsdata.setUuid(uuid); //filename

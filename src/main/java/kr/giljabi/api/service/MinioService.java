@@ -12,6 +12,7 @@ import io.minio.errors.MinioException;
 import io.minio.http.Method;
 import io.minio.messages.Item;
 import kr.giljabi.api.geo.JpegMetaInfo;
+import kr.giljabi.api.utils.CommonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,139 +31,36 @@ import java.util.regex.Pattern;
 @Slf4j
 public class MinioService {
 
-    @Value("${minio.awsObjectUrl}")
-    private String s3url;
+    @Value("${minio.bucketPublicUrl}")
+    private String bucketPublicUrl;
 
     @Autowired
     private MinioClient minioClient;
 
-    public String saveFileToMinio(String bucketName, String objectName, String compressedContent) throws Exception {
-        try (InputStream inputStream = new ByteArrayInputStream(compressedContent.getBytes(StandardCharsets.UTF_8))) {
-            minioClient.putObject(
+    public String putObject(String bucketName, String objectName,
+                           InputStream inputStream, String contentType) throws Exception {
+        try (inputStream) {
+            ObjectWriteResponse res = minioClient.putObject(
                     PutObjectArgs.builder()
                             .bucket(bucketName)
                             .object(objectName)
                             .stream(inputStream, inputStream.available(), -1)
-                            .contentType("application/octet-stream")
+                            .contentType(contentType)
                             .build()
             );
-            return s3url + "/" + bucketName + "/" + objectName;
+            return String.format("%s/%s/%s", bucketPublicUrl, res.bucket(), res.object());
         } catch (MinioException e) {
             log.error("Failed to save the compressed file to MinIO\n{}", e.toString());
             throw new MinioException("Failed to save the compressed file to MinIO", e.toString());
         }
     }
 
-    public String saveFileToAws(String bucketName, String objectName, String compressedContent) throws Exception {
-        try (InputStream inputStream = new ByteArrayInputStream(compressedContent.getBytes(StandardCharsets.UTF_8))) {
-            minioClient.putObject(
-                    PutObjectArgs.builder()
-                            .bucket(bucketName)
-                            .object(objectName)
-                            .stream(inputStream, inputStream.available(), -1)
-                            .contentType("application/octet-stream")
-                            .build()
-            );
-            return s3url + "/" +objectName;
-        } catch (MinioException e) {
-            log.error("Failed to save the compressed file to AWS S3\n{}", e.toString());
-            throw new MinioException("Failed to save the compressed file to AWS", e.toString());
-        }
-    }
-
-    public String saveImageFileToMinio(String bucketName, String pathAndFilename, MultipartFile file) {
-        try {
-            minioClient.putObject(
-                    PutObjectArgs.builder()
-                            .bucket(bucketName)
-                            .object(pathAndFilename)
-                            .stream(file.getInputStream(), file.getSize(), -1)
-                            .contentType(file.getContentType())
-                            .build());
-            return s3url + "/" + bucketName + "/" + pathAndFilename;
-        } catch (Exception e) {
-            log.error("Failed to save the compressed file to MinIO\n{}", e.toString());
-            throw new RuntimeException("Error occurred while uploading file to MinIO", e);
-        }
-    }
-
-    public String saveImageFileToAws(String bucketName, String pathAndFilename, MultipartFile file) {
-        try {
-            minioClient.putObject(
-                    PutObjectArgs.builder()
-                            .bucket(bucketName)
-                            .object(pathAndFilename)
-                            .stream(file.getInputStream(), file.getSize(), -1)
-                            .contentType(file.getContentType())
-                            .build());
-            return s3url + "/" +pathAndFilename;
-        } catch (Exception e) {
-            log.error("Failed to save the compressed file to MinIO\n{}", e.toString());
-            throw new RuntimeException("Error occurred while uploading file to MinIO", e);
-        }
-    }
-
-    public String saveTextFile(String bucketName, String filename, String data) {
-        try (InputStream inputStream = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8))) {
-            minioClient.putObject(
-                    PutObjectArgs.builder()
-                            .bucket(bucketName)
-                            .object(filename)
-                            .stream(inputStream, data.length(), -1)
-                            .contentType("application/octet-stream")
-                            .build());
-            return bucketName + "/" + filename;
-
-        } catch (Exception e) {
-            throw new RuntimeException("Error occurred while uploading file to MinIO", e);
-        }
-    }
-    /*
-        public String uploadFileImage(String bucketName, String pathAndFilename, MultipartFile file) {
-            try {
-                minioClient.putObject(
-                        PutObjectArgs.builder()
-                                .bucket(bucketName)
-                                .object(pathAndFilename)
-                                .stream(file.getInputStream(), file.getSize(), -1)
-                                .contentType(file.getContentType())
-                                .build());
-                return bucketName + "/" + pathAndFilename;
-            } catch (Exception e) {
-                throw new RuntimeException("Error occurred while uploading file to MinIO", e);
-            }
-        }
-
-     */
     public JpegMetaInfo getMetaDataFromMinio(String bucketName, String objectName) throws Exception {
         String filaPath = objectName.substring(objectName.indexOf("/"));
         InputStream inputStream = minioClient.getObject(
                 GetObjectArgs.builder().bucket(bucketName).object(filaPath).build());
         Metadata metadata = ImageMetadataReader.readMetadata(inputStream);
-        return getMetaData(metadata);
-    }
-
-    private JpegMetaInfo getMetaData(Metadata metadata) throws Exception {
-        JpegMetaInfo jpegMetaInfo = new JpegMetaInfo();
-        ExifIFD0Directory exifIFD0Directory = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
-
-        jpegMetaInfo.setDateTime(exifIFD0Directory.getString(ExifIFD0Directory.TAG_DATETIME));
-        jpegMetaInfo.setMake(exifIFD0Directory.getString(ExifIFD0Directory.TAG_MAKE));
-        jpegMetaInfo.setModel(exifIFD0Directory.getString(ExifIFD0Directory.TAG_MODEL));
-        jpegMetaInfo.setOrientation(exifIFD0Directory.getInteger(ExifIFD0Directory.TAG_ORIENTATION));
-
-        JpegDirectory jpegDirectory = metadata.getFirstDirectoryOfType(JpegDirectory.class);
-        jpegMetaInfo.setImageWidth(jpegDirectory.getInteger(JpegDirectory.TAG_IMAGE_WIDTH));
-        jpegMetaInfo.setImageLength(jpegDirectory.getInteger(JpegDirectory.TAG_IMAGE_HEIGHT));
-
-        ExifSubIFDDirectory exifSubIFDDirectory = metadata.getFirstDirectoryOfType(ExifSubIFDDirectory.class);
-        jpegMetaInfo.setExifVersion(exifSubIFDDirectory.getString(ExifSubIFDDirectory.TAG_EXIF_VERSION));
-
-        GpsDirectory gpsDirectory = metadata.getFirstDirectoryOfType(GpsDirectory.class);
-        jpegMetaInfo.setAltitude(gpsDirectory.getDouble(GpsDirectory.TAG_ALTITUDE));
-        jpegMetaInfo.setGeoLocation(gpsDirectory.getGeoLocation());
-
-        return jpegMetaInfo;
+        return CommonUtils.getMetaData(metadata);
     }
 
     /**
