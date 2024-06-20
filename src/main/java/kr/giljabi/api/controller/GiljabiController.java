@@ -57,6 +57,9 @@ public class GiljabiController {
     @Value("${minio.bucketPrivate}")
     private String bucketPrivate;
 
+    @Value("${minio.bucketPublic}")
+    private String bucketPublic;
+
     @Value("${giljabi.gpx.path}")
     private String gpxPath;
 
@@ -119,7 +122,7 @@ public class GiljabiController {
                     CommonUtils.getFileLocation(uuidKey),
                     CommonUtils.generateUUIDFilename(extension));
 
-            String savedFilename = minioService.putObject(bucketPrivate,
+            String savedFilename = minioService.putObject(bucketPublic,
                     filename, file.getInputStream(), CommonUtils.BINARY_CONTENT_TYPE);
 
             JpegMetaInfo metadata = CommonUtils.getMetaData(ImageMetadataReader.readMetadata(file.getInputStream()));
