@@ -54,8 +54,8 @@ public class GiljabiController {
 
     private UserInfo userInfo;
 
-    @Value("${minio.bucketPrivate}")
-    private String bucketPrivate;
+//    @Value("${minio.bucketPrivate}")
+//    private String bucketPrivate;
 
     @Value("${minio.bucketPublic}")
     private String bucketPublic;
@@ -80,7 +80,7 @@ public class GiljabiController {
             //압축된 상태로 저장하면 데이터가 이상하게 저장되어 압축을 풀고 다시 압축해서 저장하는 것으로 변경, 하루종일 삽질...
             String compressedXml = LZString.compressToUTF16(decompressXml);
             InputStream inputStream = new ByteArrayInputStream(compressedXml.getBytes(StandardCharsets.UTF_8));
-            String savedFilename = minioService.putObject(bucketPrivate,
+            String savedFilename = minioService.putObject(bucketPublic,
                     filename, inputStream, CommonUtils.BINARY_CONTENT_TYPE);
 
             GiljabiGpsdata gpsdata = CommonUtils.makeGiljabiGpsdata(
@@ -222,14 +222,14 @@ public class GiljabiController {
             if(gpsdata == null) {
                 return new Response(ErrorCode.STATUS_FAILURE.getStatus(), "Not found data");
             }
-            int index = gpsdata.getFileurl().indexOf(bucketPrivate);
+            int index = gpsdata.getFileurl().indexOf(bucketPublic);
             String filePath = gpsdata.getFileurl().substring(index);
 
-            String reader = minioService.getObjectByString(bucketPrivate,
+            String reader = minioService.getObjectByString(bucketPublic,
                     filePath.substring(filePath.indexOf("/") + 1));
 
             //gpx는 폴더 단위로 저장됨, 이미지 첨부가 있을 수 있음
-            minioService.deleteObject(bucketPrivate,
+            minioService.deleteObject(bucketPublic,
                     filePath.substring(filePath.indexOf("/") + 1,
                             filePath.lastIndexOf("/")));
 
@@ -254,10 +254,10 @@ public class GiljabiController {
             if(gpsdata == null) {
                 return new Response(ErrorCode.STATUS_FAILURE.getStatus(), "Not found data");
             }
-            int index = gpsdata.getFileurl().indexOf(bucketPrivate);
+            int index = gpsdata.getFileurl().indexOf(bucketPublic);
             String filePath = gpsdata.getFileurl().substring(index);
 
-            String reader = minioService.getObjectByString(bucketPrivate,
+            String reader = minioService.getObjectByString(bucketPublic,
                     filePath.substring(filePath.indexOf("/") + 1));
 
             GiljabiResponseGpsdataDTO dto = new GiljabiResponseGpsdataDTO();

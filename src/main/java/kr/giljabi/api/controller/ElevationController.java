@@ -58,8 +58,8 @@ public class ElevationController {
     @Value("${minio.bucketPublic}")
     private String bucketPublic;
 
-    @Value("${minio.bucketPrivate}")
-    private String bucketPrivate;
+//    @Value("${minio.bucketPrivate}")
+//    private String bucketPrivate;
 
     @PostMapping("/api/1.0/elevation")
     @ApiOperation(value = "고도정보", notes = "google elevation api 이용하여 고도정보를 받아오는 api")
@@ -133,7 +133,7 @@ public class ElevationController {
                                               @PathVariable String filename) {
         try {
             Gpx100Response gpx100Response = new Gpx100Response();
-            String xmlDataLink = minioService.getObjectByString(bucketPrivate,
+            String xmlDataLink = minioService.getObjectByString(bucketPublic,
                     directory + "/" + filename);
             gpx100Response.setTrackName(filename);
             gpx100Response.setXmlData(xmlDataLink);
@@ -159,7 +159,7 @@ public class ElevationController {
 
             String compressedXml = LZString.compressToUTF16(xmlData);
             InputStream inputStream = new ByteArrayInputStream(compressedXml.getBytes(StandardCharsets.UTF_8));
-            String savedFilename = minioService.putObject(bucketPrivate,
+            String savedFilename = minioService.putObject(bucketPublic,
                     filename, inputStream, CommonUtils.BINARY_CONTENT_TYPE);
 
             //DB에 저장 필요

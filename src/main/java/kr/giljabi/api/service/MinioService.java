@@ -31,12 +31,6 @@ import java.util.regex.Pattern;
 @Slf4j
 public class MinioService {
 
-//    @Value("${minio.bucketPublicUrl}")
-//    private String bucketPublicUrl;
-
-    @Value("${minio.bucketPrivateUrl}")
-    private String bucketPrivateUrl;
-
     @Value("${minio.bucketPublicUrl}")
     private String bucketPublicUrl;
 
@@ -56,7 +50,7 @@ public class MinioService {
             );
             String result = "";
             if(bucketName.compareTo("gil-media-pri") == 0){
-                result = String.format("%s/%s/%s", bucketPrivateUrl, res.bucket(), res.object());
+                result = String.format("%s/%s/%s", bucketPublicUrl, res.bucket(), res.object());
             } else if(bucketName.compareTo("gil-media-pub") == 0) {
                 result = String.format("%s/%s/%s", bucketPublicUrl, res.bucket(), res.object());
             }

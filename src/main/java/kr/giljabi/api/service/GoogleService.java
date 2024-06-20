@@ -61,11 +61,11 @@ public class GoogleService {
     @Value("${giljabi.gpx.path}")
     private String gpxPath;
 
-    @Value("${minio.bucketPrivate}")
-    private String bucketPrivate;
+    @Value("${minio.bucketPublic}")
+    private String bucketPublic;
 
-    @Value("${minio.bucketPrivateUrl}")
-    private String bucketPrivateUrl;
+    @Value("${minio.bucketPublicUrl}")
+    private String bucketPublicUrl;
 
 
     //장시간 호출이 없는 경우 socket error가 발생하므로 미리 호출한다
@@ -154,7 +154,7 @@ public class GoogleService {
                 "gpx");
 
         String fileurl = String.format("%s/%s/%s",
-                bucketPrivateUrl, bucketPrivate, objectName);
+                bucketPublicUrl, bucketPublic, objectName);
         gpsElevation.setFileurl(fileurl);
         gpsElevation.setTranstime(endTime - startTime);
         gpsElevation.setTrkpt(trackPoint.size());
@@ -189,7 +189,7 @@ public class GoogleService {
                 gpsDataDTO.getFileext());
 
         InputStream inputStream = new ByteArrayInputStream(compressedXml.getBytes(StandardCharsets.UTF_8));
-        String savedFilename = minioService.putObject(bucketPrivate,
+        String savedFilename = minioService.putObject(bucketPublic,
                 objectName, inputStream, CommonUtils.BINARY_CONTENT_TYPE);
 
         GiljabiGpsdata gpsdata = CommonUtils.makeGiljabiGpsdata(request.getRemoteAddr(),
@@ -197,7 +197,7 @@ public class GoogleService {
                 gpsDataDTO,
                 gpxXml.getBytes().length,    //decompressed
                 compressedXml.getBytes().length,
-                bucketPrivate + "/" + savedFilename,
+                bucketPublic + "/" + savedFilename,
                 userInfo.getUserid());
         log.info("getElevation: " + savedFilename);
         return gpsdata;
