@@ -226,7 +226,7 @@ public class GiljabiController {
                     filePath.substring(filePath.indexOf("/") + 1));
 
             //gpx는 폴더 단위로 저장됨, 이미지 첨부가 있을 수 있음
-            minioService.deleteDirectory(bucketPrivate,
+            minioService.deleteObject(bucketPrivate,
                     filePath.substring(filePath.indexOf("/") + 1,
                             filePath.lastIndexOf("/")));
 

@@ -52,9 +52,6 @@ public class ElevationController {
     private final MinioService minioService;
     private UserInfo userInfo;
 
-    //@Value("${giljabi.mountain100.path}")
-    //private String mountain100Path;
-
     @Value("${giljabi.gpx.path}")
     private String gpxPath;
 

@@ -31,6 +31,12 @@ import java.util.regex.Pattern;
 @Slf4j
 public class MinioService {
 
+//    @Value("${minio.bucketPublicUrl}")
+//    private String bucketPublicUrl;
+
+    @Value("${minio.bucketPrivateUrl}")
+    private String bucketPrivateUrl;
+
     @Value("${minio.bucketPublicUrl}")
     private String bucketPublicUrl;
 
@@ -48,7 +54,14 @@ public class MinioService {
                             .contentType(contentType)
                             .build()
             );
-            return String.format("%s/%s/%s", bucketPublicUrl, res.bucket(), res.object());
+            String result = "";
+            if(bucketName.compareTo("gil-media-pri") == 0){
+                result = String.format("%s/%s/%s", bucketPrivateUrl, res.bucket(), res.object());
+            } else if(bucketName.compareTo("gil-media-pub") == 0) {
+                result = String.format("%s/%s/%s", bucketPublicUrl, res.bucket(), res.object());
+            }
+
+            return result;
         } catch (MinioException e) {
             log.error("Failed to save the compressed file to MinIO\n{}", e.toString());
             throw new MinioException("Failed to save the compressed file to MinIO", e.toString());
@@ -83,24 +96,35 @@ public class MinioService {
      * @param folderName
      * @throws Exception
      */
-    public void deleteDirectory(String bucketName, String folderName) throws Exception {
+    public void deleteObject(String bucketName, String folderName) throws Exception {
         try {
             Iterable<Result<Item>> results = minioClient.listObjects(
-                    ListObjectsArgs.builder()
-                            .bucket(bucketName)
-                            .prefix(folderName)
-                            .recursive(true)
-                            .build()
-            );
-
+                    ListObjectsArgs.builder().bucket(bucketName)
+                            .prefix(folderName).recursive(false).build());
+            boolean isDirectory = false;
             for (Result<Item> result : results) {
                 Item item = result.get();
-                minioClient.removeObject(
-                        RemoveObjectArgs.builder()
-                                .bucket(bucketName)
-                                .object(item.objectName())
-                                .build()
-                );
+                if (!item.objectName().equals(folderName)) {
+                    isDirectory = true;
+                    break;
+                }
+            }
+            if(isDirectory) {
+                results = minioClient.listObjects(
+                        ListObjectsArgs.builder().bucket(bucketName)
+                                .prefix(folderName).recursive(true).build());
+                for (Result<Item> result : results) {
+                    Item item = result.get();
+                    minioClient.removeObject(
+                            RemoveObjectArgs.builder().bucket(bucketName)
+                                    .object(item.objectName()).build());
+                }
+            } else {
+                if(doesObjectExist(bucketName, folderName)) {
+                    minioClient.removeObject(
+                            RemoveObjectArgs.builder().bucket(bucketName)
+                                    .object(folderName).build());
+                }
             }
         } catch (Exception e) {
             throw e;
@@ -113,7 +137,7 @@ public class MinioService {
      * @param objectName
      * @throws Exception
      */
-    public void deleteObject(String bucketName, String objectName) throws Exception {
+/*    public void deleteObject(String bucketName, String objectName) throws Exception {
         try {
             if(doesObjectExist(bucketName, objectName)) {
                 minioClient.removeObject(
@@ -125,7 +149,7 @@ public class MinioService {
         } catch (Exception e) {
             throw e;
         }
-    }
+    }*/
 
     public boolean doesObjectExist(String bucketName, String objectName) {
         try {

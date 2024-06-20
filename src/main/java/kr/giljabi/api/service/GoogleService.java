@@ -61,11 +61,12 @@ public class GoogleService {
     @Value("${giljabi.gpx.path}")
     private String gpxPath;
 
-    @Value("${minio.serviceUrl}")
-    private String s3url;
-
     @Value("${minio.bucketPrivate}")
     private String bucketPrivate;
+
+    @Value("${minio.bucketPrivateUrl}")
+    private String bucketPrivateUrl;
+
 
     //장시간 호출이 없는 경우 socket error가 발생하므로 미리 호출한다
     //key를 사용해도 되지만 google api 호출건수가 증가하므로 key를 사용하지 않게 한다.
@@ -153,7 +154,7 @@ public class GoogleService {
                 "gpx");
 
         String fileurl = String.format("%s/%s/%s",
-                s3url, bucketPrivate, objectName);
+                bucketPrivateUrl, bucketPrivate, objectName);
         gpsElevation.setFileurl(fileurl);
         gpsElevation.setTranstime(endTime - startTime);
         gpsElevation.setTrkpt(trackPoint.size());
@@ -196,7 +197,7 @@ public class GoogleService {
                 gpsDataDTO,
                 gpxXml.getBytes().length,    //decompressed
                 compressedXml.getBytes().length,
-                s3url + "/" + savedFilename,
+                bucketPrivate + "/" + savedFilename,
                 userInfo.getUserid());
         log.info("getElevation: " + savedFilename);
         return gpsdata;
