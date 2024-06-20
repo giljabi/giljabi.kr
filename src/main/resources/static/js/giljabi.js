@@ -470,18 +470,18 @@ $(document).ready(function () {
         //console.log('direction flag:' + _chkRoute);
     });
 
-    fetchAndDecompressData();
+
     //=======================================================================
-    function fetchAndDecompressData() {
-        let fileid = getQueryParam('fileid');
+    goGiljabi();   //elevation --> giljabi 연결(elevation key)
+    function goGiljabi() {
+        let fileid = getQueryParam('linkid');
         if(fileid == null) {
             return;
         }
-        let elevation = getQueryParam('elevation');
 
         $('#blockingAds').show();
         $.ajax({
-            url: '/api/1.0/getShareGpsdata/' + fileid + '/' + elevation,
+            url: '/api/1.0/goGiljabi/' + fileid,
             async: false,
             type: 'GET',
             success: function(response, status) {
@@ -490,6 +490,40 @@ $(document).ready(function () {
                     console.log('decompressedData:' + decompressedData);
                     uuid = response.data.uuid;
                     _fileExt = response.data.fileext;
+                    changeFileType(_fileExt);
+                    $('#gpx_metadata_name').val(response.data.trackName);
+                    fileLoadAndDraw(decompressedData);
+                } else {
+                    alert(response.message);
+                }
+                $('#blockingAds').hide();
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX request failed:', error);
+            }
+        });
+    }
+
+    //=======================================================================
+    //과거 버전의 tcx share
+    oldTcxShare();
+    function oldTcxShare() {
+        let fileid = getQueryParam('fileid');
+        if(fileid == null) {
+            return;
+        }
+
+        $('#blockingAds').show();
+        $.ajax({
+            url: '/api/1.0/gpxshare/' + fileid,
+            async: false,
+            type: 'GET',
+            success: function(response, status) {
+                if (response.status === 0) {
+                    let decompressedData = LZString.decompressFromUTF16(response.data.xmlData);
+                    console.log('decompressedData:' + decompressedData);
+                    uuid = response.data.uuid;
+                    _fileExt = response.data.fileType;
                     changeFileType(_fileExt);
                     $('#gpx_metadata_name').val(response.data.trackName);
                     fileLoadAndDraw(decompressedData);

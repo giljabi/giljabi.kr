@@ -10,6 +10,7 @@ import lombok.Setter;
 @Data
 public class XmlShareResponse {
     private String fileId;
+    private String uuid;
     private String trackName;
     private String xmlData;
     private String fileType;

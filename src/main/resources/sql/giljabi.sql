@@ -124,6 +124,7 @@ CREATE TABLE gpselevation (
                               id SERIAL PRIMARY KEY,
                               apiname VARCHAR(16),
                               uuid VARCHAR(36) NOT NULL UNIQUE,
+                              fileurl VARCHAR(255) NOT NULL,
                               userid VARCHAR(255) DEFAULT NULL,
                               userip VARCHAR(36) NOT NULL,
                               trackname VARCHAR(128) DEFAULT NULL,
@@ -153,8 +154,48 @@ CREATE TRIGGER update_changeat
     FOR EACH ROW
     EXECUTE PROCEDURE update_changeat_column(); --v11 이전 PROCEDURE, 이후는 function
 
+-- old giljabi data
+CREATE TABLE tcxsharecourses (
+                                 fileid SERIAL PRIMARY KEY,
+                                 trtime CHAR(14) NOT NULL,
+                                 userip VARCHAR(32) NOT NULL,
+                                 userno VARCHAR(128) NOT NULL,
+                                 filehash VARCHAR(32) NOT NULL,
+                                 pcfilename VARCHAR(128) NOT NULL,
+                                 pathname VARCHAR(128) NOT NULL,
+                                 readcnt INT NOT NULL,
+                                 downcnt INT NOT NULL,
+                                 recommend INT NOT NULL,
+                                 wptcnt INT NOT NULL,
+                                 trkcnt INT NOT NULL,
+                                 distance INT NOT NULL,
+                                 elevation INT NOT NULL,
+                                 slope DECIMAL(4,2) NOT NULL,
+                                 traveltime INT NOT NULL,
+                                 memo TEXT NOT NULL,
+                                 flag CHAR(1) DEFAULT NULL
+);
 
+COMMENT ON TABLE tcxsharecourses IS '경로공유정보';
 
+COMMENT ON COLUMN tcxsharecourses.fileid IS '파일관리번호';
+COMMENT ON COLUMN tcxsharecourses.trtime IS '생성일시';
+COMMENT ON COLUMN tcxsharecourses.userip IS '사용자IP';
+COMMENT ON COLUMN tcxsharecourses.userno IS '사용자ID';
+COMMENT ON COLUMN tcxsharecourses.filehash IS '파일명해시값';
+COMMENT ON COLUMN tcxsharecourses.pcfilename IS '파일명';
+COMMENT ON COLUMN tcxsharecourses.pathname IS '경로명';
+COMMENT ON COLUMN tcxsharecourses.readcnt IS '조회수';
+COMMENT ON COLUMN tcxsharecourses.downcnt IS '경로명';
+COMMENT ON COLUMN tcxsharecourses.recommend IS '추천';
+COMMENT ON COLUMN tcxsharecourses.wptcnt IS '웨이포인트수';
+COMMENT ON COLUMN tcxsharecourses.trkcnt IS '트랙수';
+COMMENT ON COLUMN tcxsharecourses.distance IS '이동거리';
+COMMENT ON COLUMN tcxsharecourses.elevation IS '상승고도';
+COMMENT ON COLUMN tcxsharecourses.slope IS '평균경사도';
+COMMENT ON COLUMN tcxsharecourses.traveltime IS '시간';
+COMMENT ON COLUMN tcxsharecourses.memo IS 'MEMO';
+COMMENT ON COLUMN tcxsharecourses.flag IS '상태 플래그';
 
 
 

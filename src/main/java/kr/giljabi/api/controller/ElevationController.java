@@ -3,8 +3,6 @@ package kr.giljabi.api.controller;
 import com.github.diogoduailibe.lzstring4j.LZString;
 import io.swagger.annotations.ApiOperation;
 import kr.giljabi.api.entity.GiljabiGpsdata;
-import kr.giljabi.api.entity.GpsElevation;
-import kr.giljabi.api.entity.GpxRecommend;
 import kr.giljabi.api.entity.UserInfo;
 import kr.giljabi.api.geo.*;
 import kr.giljabi.api.geo.gpx.TrackPoint;
@@ -21,14 +19,9 @@ import kr.giljabi.api.service.MinioService;
 import kr.giljabi.api.utils.CommonUtils;
 import kr.giljabi.api.utils.ErrorCode;
 import kr.giljabi.api.utils.MyHttpUtils;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.util.Base64Utils;
-import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -38,7 +31,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Gpx track 정보를 tcx 변환
@@ -60,11 +52,8 @@ public class ElevationController {
     private final MinioService minioService;
     private UserInfo userInfo;
 
-    @Value("${giljabi.mountain100.path}")
-    private String mountain100Path;
-
-//    @Value("${giljabi.google.elevation.path}")
-//    private String elevationPath;
+    //@Value("${giljabi.mountain100.path}")
+    //private String mountain100Path;
 
     @Value("${giljabi.gpx.path}")
     private String gpxPath;
@@ -147,7 +136,7 @@ public class ElevationController {
                                               @PathVariable String filename) {
         try {
             Gpx100Response gpx100Response = new Gpx100Response();
-            String xmlDataLink = minioService.readFileContentByString(bucketPublic,
+            String xmlDataLink = minioService.getObjectByString(bucketPublic,
                     directory + "/" + filename);
             gpx100Response.setTrackName(filename);
             gpx100Response.setXmlData(xmlDataLink);

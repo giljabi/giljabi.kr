@@ -1,7 +1,6 @@
 package kr.giljabi.api.entity;
 
 import lombok.Getter;
-import lombok.Setter;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -9,69 +8,65 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.io.Serializable;
 
-@Getter
-@Setter
 @Entity
+@Getter
 @Table(name = "tcxsharecourses")
-public class ShareCourses {
-
+public class TcxShareCourses implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "fileid")
     private Long fileId;
 
-    @Column(name = "trtime", nullable = false)
+    @Column(name = "trtime", nullable = false, length = 14)
     private String trTime;
 
-    @Column(name = "userip", nullable = false)
+    @Column(name = "userip", nullable = false, length = 32)
     private String userIp;
 
-    @Column(name = "userno", nullable = false)
+    @Column(name = "userno", nullable = false, length = 128)
     private String userNo;
 
-    //pk
-    @Column(name = "filehash", nullable = false)
+    @Column(name = "filehash", nullable = false, length = 32)
     private String fileHash;
 
-    @Column(name = "pcfilename", nullable = false)
+    @Column(name = "pcfilename", nullable = false, length = 128)
     private String pcFileName;
 
-    @Column(name = "pathname", nullable = false)
+    @Column(name = "pathname", nullable = false, length = 128)
     private String pathName;
 
     @Column(name = "readcnt", nullable = false)
-    private int readCnt;
+    private Integer readCnt;
 
     @Column(name = "downcnt", nullable = false)
-    private int downCnt;
+    private Integer downCnt;
 
     @Column(name = "recommend", nullable = false)
-    private int recommend;
+    private Integer recommend;
 
     @Column(name = "wptcnt", nullable = false)
-    private int wptCnt;
+    private Integer wptCnt;
 
     @Column(name = "trkcnt", nullable = false)
-    private int trkCnt;
+    private Integer trkCnt;
 
     @Column(name = "distance", nullable = false)
-    private int distance;
+    private Integer distance;
 
     @Column(name = "elevation", nullable = false)
-    private int elevation;
+    private Integer elevation;
 
-    @Column(name = "slope", nullable = false)
+    @Column(name = "slope", nullable = false, precision = 4, scale = 2)
     private Double slope;
 
     @Column(name = "traveltime", nullable = false)
-    private int travelTime;
+    private Integer travelTime;
 
     @Column(name = "memo", nullable = false, columnDefinition = "TEXT")
     private String memo;
 
-    @Column(name = "flag")
+    @Column(name = "flag", length = 1)
     private String flag;
-
-    // Getters and Setters
 }

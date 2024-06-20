@@ -55,6 +55,20 @@ public class MinioService {
         }
     }
 
+    public InputStream getObject(String bucketName, String objectUrl) throws IOException {
+        try {
+            InputStream stream = minioClient.getObject(
+                    GetObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(objectUrl)
+                            .build()
+            );
+            return stream;
+        } catch (Exception e) {
+            throw new IOException("Error reading file from MinIO", e);
+        }
+    }
+
     public JpegMetaInfo getMetaDataFromMinio(String bucketName, String objectName) throws Exception {
         String filaPath = objectName.substring(objectName.indexOf("/"));
         InputStream inputStream = minioClient.getObject(
@@ -64,7 +78,37 @@ public class MinioService {
     }
 
     /**
-     * 로그인이 있으면 본인것만 지울 수 있어야 함
+     * Object가 폴더인 경우가 있어서 폴더 내의 모든 Object를 삭제
+     * @param bucketName
+     * @param folderName
+     * @throws Exception
+     */
+    public void deleteDirectory(String bucketName, String folderName) throws Exception {
+        try {
+            Iterable<Result<Item>> results = minioClient.listObjects(
+                    ListObjectsArgs.builder()
+                            .bucket(bucketName)
+                            .prefix(folderName)
+                            .recursive(true)
+                            .build()
+            );
+
+            for (Result<Item> result : results) {
+                Item item = result.get();
+                minioClient.removeObject(
+                        RemoveObjectArgs.builder()
+                                .bucket(bucketName)
+                                .object(item.objectName())
+                                .build()
+                );
+            }
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    /**
+     * 1개 Object 삭제
      * @param bucketName
      * @param objectName
      * @throws Exception
@@ -73,12 +117,16 @@ public class MinioService {
         try {
             if(doesObjectExist(bucketName, objectName)) {
                 minioClient.removeObject(
-                        RemoveObjectArgs.builder().bucket(bucketName).object(objectName).build());
+                        RemoveObjectArgs.builder()
+                                .bucket(bucketName)
+                                .object(objectName)
+                                .build());
             }
         } catch (Exception e) {
             throw e;
         }
     }
+
     public boolean doesObjectExist(String bucketName, String objectName) {
         try {
             StatObjectResponse stat = minioClient.statObject(
@@ -110,7 +158,7 @@ public class MinioService {
      * @return
      * @throws IOException
      */
-    public String readFileContentByString(String bucketName, String fileName) throws IOException {
+    public String getObjectByString(String bucketName, String fileName) throws IOException {
         try (var stream = minioClient.getObject(
                 GetObjectArgs.builder()
                         .bucket(bucketName)
@@ -136,7 +184,7 @@ public class MinioService {
      * @return
      * @throws IOException
      */
-    public List<String> readFileContentByList(String bucketName, String fileName) throws IOException {
+    public List<String> getObjectStringByList(String bucketName, String fileName) throws IOException {
         List<String> lines = new ArrayList<>();
 
         try (var stream = minioClient.getObject(

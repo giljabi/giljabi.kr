@@ -603,7 +603,7 @@ function onClickOpenGiljabi() {
 
         saveGpxToServer(saveData, 'linkElevation').then(function (uuid) {
             //새창열기
-            window.open('/giljabi.html?elevation=linkElevation&fileid=' + uuid, uuid);
+            window.open('/giljabi.html?linkid=' + uuid, uuid);
         }).catch(error => {
             console.error('Error:', error);
         });

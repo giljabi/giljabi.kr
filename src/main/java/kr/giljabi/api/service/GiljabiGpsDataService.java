@@ -5,9 +5,11 @@ import kr.giljabi.api.repository.GiljabiGpsDataRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Slf4j
@@ -36,10 +38,16 @@ public class GiljabiGpsDataService {
     public GiljabiGpsdata findByUuidAndShareflagTrue(String uuid) {
         return giljabiGpsDataRepository.findByUuidAndShareflagTrue(uuid);
     }
-    public GiljabiGpsdata findByApinameAndUuidAndCreateat(String apiname, String uuid) {
+    public GiljabiGpsdata findByApinameAndUuidAndCreateat(String uuid) {
         Timestamp tenMinutesAgo = Timestamp.from(Instant.now().minusSeconds(600)); // 10 minutes ago
-        return giljabiGpsDataRepository.findByApinameAndUuidAndCreateat(apiname, uuid, tenMinutesAgo);
-    }
 
+        GiljabiGpsdata gpsdata = giljabiGpsDataRepository.findByApinameAndUuidAndCreateat(uuid, tenMinutesAgo);
+/*
+        //DB에서 삭제하지는 않고 object만 삭제
+        if (gpsdata != null) {
+            giljabiGpsDataRepository.delete(gpsdata);
+        }*/
+        return gpsdata;
+    }
 
 }

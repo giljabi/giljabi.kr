@@ -207,27 +207,54 @@ public class GiljabiController {
 
     /**
      * apiname editor에서 연결해서 가져오는 경우에 사용됨: linkElevation
+     *
      * @param uuidkey
      * @return
      */
-    @GetMapping("/api/1.0/getShareGpsdata/{uuidkey}/{apiname}")
-    public Response getShareGpsdata(@PathVariable String uuidkey,
-                                    @PathVariable String apiname) {
+    @GetMapping("/api/1.0/goGiljabi/{uuidkey}")
+    public Response goGiljabi(@PathVariable String uuidkey) {
         try {
-            GiljabiGpsdata gpsdata = null;
-            if(apiname.equals("linkElevation")) {
-                gpsdata = gpsService.findByApinameAndUuidAndCreateat(apiname, uuidkey);
-            } else {
-                gpsdata = gpsService.findByUuid(uuidkey);
-            }
-            gpsService.findByUuidAndShareflagTrue(uuidkey);
+            GiljabiGpsdata gpsdata = gpsService.findByApinameAndUuidAndCreateat(uuidkey);
+
             if(gpsdata == null) {
                 return new Response(ErrorCode.STATUS_FAILURE.getStatus(), "Not found data");
             }
             int index = gpsdata.getFileurl().indexOf(bucketPrivate);
             String filePath = gpsdata.getFileurl().substring(index);
 
-            String reader = minioService.readFileContentByString(bucketPrivate,
+            String reader = minioService.getObjectByString(bucketPrivate,
+                    filePath.substring(filePath.indexOf("/") + 1));
+
+            //gpx는 폴더 단위로 저장됨, 이미지 첨부가 있을 수 있음
+            minioService.deleteDirectory(bucketPrivate,
+                    filePath.substring(filePath.indexOf("/") + 1,
+                            filePath.lastIndexOf("/")));
+
+            GiljabiResponseGpsdataDTO dto = new GiljabiResponseGpsdataDTO();
+            dto.setXmldata(reader);
+            dto.setFileext(gpsdata.getFileext());
+            dto.setFileurl(gpsdata.getFileurl());
+            dto.setTrackname(gpsdata.getTrackname());
+            dto.setUuid(gpsdata.getUuid());
+            return new Response(dto);
+        } catch (Exception e) {
+            return new Response(ErrorCode.STATUS_FAILURE.getStatus(), e.getMessage());
+        }
+    }
+
+    @GetMapping("/api/1.0/getOldShare/{uuidkey}")
+    public Response getOldShare(@PathVariable String uuidkey) {
+        try {
+            GiljabiGpsdata gpsdata = gpsService.findByUuid(uuidkey);
+            gpsService.findByUuidAndShareflagTrue(uuidkey);
+
+            if(gpsdata == null) {
+                return new Response(ErrorCode.STATUS_FAILURE.getStatus(), "Not found data");
+            }
+            int index = gpsdata.getFileurl().indexOf(bucketPrivate);
+            String filePath = gpsdata.getFileurl().substring(index);
+
+            String reader = minioService.getObjectByString(bucketPrivate,
                     filePath.substring(filePath.indexOf("/") + 1));
 
             GiljabiResponseGpsdataDTO dto = new GiljabiResponseGpsdataDTO();

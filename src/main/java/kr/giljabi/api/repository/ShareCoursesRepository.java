@@ -1,12 +1,11 @@
 package kr.giljabi.api.repository;
 
-import kr.giljabi.api.entity.ClientInfo;
-import kr.giljabi.api.entity.ShareCourses;
+import kr.giljabi.api.entity.TcxShareCourses;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface ShareCoursesRepository extends JpaRepository<ShareCourses, String> {
-    Optional<ShareCourses> findByFileHash(String fileHashId);
+public interface ShareCoursesRepository extends JpaRepository<TcxShareCourses, String> {
+    Optional<TcxShareCourses> findByFileHash(String fileHashId);
 }
 
