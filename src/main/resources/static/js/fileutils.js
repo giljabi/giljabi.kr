@@ -57,8 +57,8 @@ function processFile(uuid, file) {
                 let canvas = document.createElement('canvas');
                 let ctx = canvas.getContext('2d');
 
-                let maxWidth = 800; //1024?
-                let maxHeight = 800;
+                let maxWidth = 1024; //1024?
+                let maxHeight = 1024;
                 let width = image.width;
                 let height = image.height;
 
