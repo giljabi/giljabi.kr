@@ -133,7 +133,7 @@ public class ElevationController {
                                               @PathVariable String filename) {
         try {
             Gpx100Response gpx100Response = new Gpx100Response();
-            String xmlDataLink = minioService.getObjectByString(bucketPublic,
+            String xmlDataLink = minioService.getObjectByString(bucketPrivate,
                     directory + "/" + filename);
             gpx100Response.setTrackName(filename);
             gpx100Response.setXmlData(xmlDataLink);
