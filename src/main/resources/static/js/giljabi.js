@@ -476,7 +476,7 @@ $(document).ready(function () {
     function getByParameter() {
         uuid = getQueryParam('fileid');
         if(uuid == null) {
-            alert('잘못된 요청입니다.');
+            //alert('잘못된 요청입니다.');
             return;
         }
         let action = getQueryParam('action');

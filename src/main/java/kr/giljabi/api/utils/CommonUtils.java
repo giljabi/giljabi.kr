@@ -13,6 +13,8 @@ import kr.giljabi.api.entity.UserInfo;
 import kr.giljabi.api.geo.JpegMetaInfo;
 import kr.giljabi.api.geo.gpx.TrackPoint;
 import kr.giljabi.api.request.RequestGpsDataDTO;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -24,6 +26,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.UUID;
 
+@Component
+@RequiredArgsConstructor
 public class CommonUtils {
     public static String DEFAULT_TIMESTAMP_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 

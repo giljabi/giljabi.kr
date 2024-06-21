@@ -47,7 +47,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 //.antMatchers("/api/**").permitAll()
                 //.anyRequest().authenticated(); //인증 필요시
                  .anyRequest().permitAll(); //모든 url 접속허용
-/*
+
 
         http
                 .formLogin()
@@ -62,7 +62,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .logout()
                 .logoutUrl("/logout")
-                .logoutSuccessUrl("/user/login")
+                .logoutSuccessUrl("/logout")
                 .invalidateHttpSession(true)
                 .permitAll();
 
@@ -75,6 +75,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
                 .invalidSessionUrl("/login");
 
- */
+
     }
 }

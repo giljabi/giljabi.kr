@@ -15,14 +15,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-@Component
 @Slf4j
 public class JwtProvider {
-	@Value("${jwt.accessTokenSecret}")
-	private String accessTokenSecret;
+	//@Value("${jwt.accessTokenSecret}")
+	private String accessTokenSecret = "4RT/2hAAJmC6i2FzmezBbaCVMD9FtsuExyjaVWJ5xRA=";
 
-	@Value("${jwt.accessTokenExpiration}")
-	private long accessTokenExpiration;
+	//@Value("${jwt.accessTokenExpiration}")
+	private long accessTokenExpiration = 604800000;
 
 	public String generateJwtToken(UserInfo userInfo) throws JsonProcessingException {
 		SecretKey secretKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(accessTokenSecret));
