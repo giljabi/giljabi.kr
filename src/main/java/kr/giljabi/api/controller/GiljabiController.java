@@ -27,8 +27,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
-import com.github.diogoduailibe.lzstring4j.LZString;
-
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -71,14 +69,12 @@ public class GiljabiController {
         try {
             log.info("gpsDataDTO.getXmldata().length: " + gpsDataDTO.getXmldata().length());
             userInfo = CommonUtils.getSessionByUserinfo(request);
+            String compressedXml = gpsDataDTO.getXmldata();
 
-            String decompressXml = LZString.decompressFromUTF16(gpsDataDTO.getXmldata());
             String filename = CommonUtils.makeGpsdataObjectName(gpxPath,
                     gpsDataDTO.getUuid(),
                     gpsDataDTO.getFileext());
 
-            //압축된 상태로 저장하면 데이터가 이상하게 저장되어 압축을 풀고 다시 압축해서 저장하는 것으로 변경, 하루종일 삽질...
-            String compressedXml = LZString.compressToUTF16(decompressXml);
             InputStream inputStream = new ByteArrayInputStream(compressedXml.getBytes(StandardCharsets.UTF_8));
             String savedFilename = minioService.putObject(bucketPublic,
                     filename, inputStream, CommonUtils.BINARY_CONTENT_TYPE);
@@ -87,7 +83,7 @@ public class GiljabiController {
                     MyHttpUtils.getClientIp(request),
                     "saveGpsdata",
                     gpsDataDTO,
-                    decompressXml.getBytes().length,    //decompressed
+                    0,//compressed
                     compressedXml.getBytes().length,
                     savedFilename,
                     userInfo.getUserid());
@@ -210,14 +206,20 @@ public class GiljabiController {
 
     /**
      * apiname editor에서 연결해서 가져오는 경우에 사용됨: linkElevation
-     *
+     * action: linkElevation,
      * @param uuidkey
      * @return
      */
-    @GetMapping("/api/1.0/goGiljabi/{uuidkey}")
-    public Response goGiljabi(@PathVariable String uuidkey) {
+    @GetMapping("/api/1.0/getByParameter/{uuidkey}/{action}")
+    public Response getByParameter(@PathVariable String uuidkey,
+                                   @PathVariable String action) {
         try {
-            GiljabiGpsdata gpsdata = gpsService.findByApinameAndUuidAndCreateat(uuidkey);
+            GiljabiGpsdata gpsdata = null;
+            if(action.compareToIgnoreCase("linkElevation") == 0) {
+                gpsdata = gpsService.findByApinameAndUuidAndCreateat(uuidkey);
+            } else {
+                gpsdata = gpsService.findByUuid(uuidkey); //shareflag = true
+            }
 
             if(gpsdata == null) {
                 return new Response(ErrorCode.STATUS_FAILURE.getStatus(), "Not found data");
@@ -228,8 +230,9 @@ public class GiljabiController {
             String reader = minioService.getObjectByString(bucketPublic,
                     filePath.substring(filePath.indexOf("/") + 1));
 
-            //gpx는 폴더 단위로 저장됨, 이미지 첨부가 있을 수 있음
-            minioService.deleteObject(bucketPublic,
+            //elevation --> giljabi 임시사용이므로 삭제
+            if(action.compareToIgnoreCase("linkElevation") == 0)
+                minioService.deleteObject(bucketPublic,
                     filePath.substring(filePath.indexOf("/") + 1,
                             filePath.lastIndexOf("/")));
 

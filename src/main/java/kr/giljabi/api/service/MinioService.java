@@ -2,11 +2,6 @@ package kr.giljabi.api.service;
 
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.metadata.Metadata;
-import com.drew.metadata.exif.ExifIFD0Directory;
-import com.drew.metadata.exif.ExifSubIFDDirectory;
-import com.drew.metadata.exif.GpsDirectory;
-import com.drew.metadata.jpeg.JpegDirectory;
-import com.github.diogoduailibe.lzstring4j.LZString;
 import io.minio.*;
 import io.minio.errors.MinioException;
 import io.minio.http.Method;
@@ -17,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -267,31 +261,4 @@ public class MinioService {
         );
     }
 
-    public String decompressFileFromMinio(String bucketName, String objectName) throws Exception {
-        try (InputStream inputStream = getFileInputStream(bucketName, objectName);
-             InputStreamReader isr = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-             BufferedReader reader = new BufferedReader(isr)) {
-
-            // Read the entire content into a StringBuilder
-            StringBuilder contentBuilder = new StringBuilder();
-            char[] buffer = new char[1024];
-            int bytesRead;
-            while ((bytesRead = reader.read(buffer)) != -1) {
-                contentBuilder.append(buffer, 0, bytesRead);
-            }
-            String compressedContent = contentBuilder.toString();
-            log.info("Compressed Content Length: " + compressedContent.length());
-
-            // Debug: Print the compressed content length and a portion of the content
-            log.info("Compressed Content Length: " + compressedContent.length());
-
-            // Decompress the content using LZString
-            String decompressedData = LZString.decompressFromUTF16(compressedContent);
-            if (decompressedData == null) {
-                throw new IOException("Decompression failed. The data may be corrupted or improperly formatted.");
-            }
-
-            return decompressedData;
-        }
-    }
 }

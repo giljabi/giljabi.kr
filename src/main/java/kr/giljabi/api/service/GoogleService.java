@@ -166,6 +166,18 @@ public class GoogleService {
         return gpsElevation;
     }
 
+    /**
+     * 구글에서 받은 elevation정보를 이용해 xml을 만들고 압축해서 저장한다.
+     * 서버에서 압축하지 않고, 클라이언트로 전송 후 클라이언트에서 압축해서 전송하는 것으로 변경 해야 함
+     * 절대로 서버에서 compress/decompress 해서는 안됨....
+     * @param request
+     * @param userInfo
+     * @param trackPoint
+     * @param returnPoint
+     * @param gpsElevation
+     * @return
+     * @throws Exception
+     */
     private GiljabiGpsdata saveGpxdata(HttpServletRequest request, UserInfo userInfo, List<RequestElevationData.Geometry2DPoint> trackPoint, ArrayList<TrackPoint> returnPoint, GpsElevation gpsElevation) throws Exception {
         Gpx gpx = makeGpxXml(returnPoint);
         String gpxXml = gpx.getXml();

@@ -1,6 +1,5 @@
 package kr.giljabi.api.controller;
 
-import com.github.diogoduailibe.lzstring4j.LZString;
 import io.swagger.annotations.ApiOperation;
 import kr.giljabi.api.entity.GiljabiGpsdata;
 import kr.giljabi.api.entity.UserInfo;
@@ -149,7 +148,6 @@ public class ElevationController {
                                   final @Valid @RequestBody RequestElevationSaveData elevationSaveData) {
         try {
             userInfo = CommonUtils.getSessionByUserinfo(request);
-            String xmlData = LZString.decompressFromUTF16(elevationSaveData.getXmlData());
 
             String uuid = CommonUtils.generateUUID().toString();
             String filename = CommonUtils.makeGpsdataObjectName(
@@ -157,7 +155,7 @@ public class ElevationController {
                     uuid,
                     elevationSaveData.getFileExt());
 
-            String compressedXml = LZString.compressToUTF16(xmlData);
+            String compressedXml = elevationSaveData.getXmlData();
             InputStream inputStream = new ByteArrayInputStream(compressedXml.getBytes(StandardCharsets.UTF_8));
             String savedFilename = minioService.putObject(bucketPublic,
                     filename, inputStream, CommonUtils.BINARY_CONTENT_TYPE);
@@ -169,8 +167,8 @@ public class ElevationController {
             gpsdata.setWpt(elevationSaveData.getWayPointCount());
             gpsdata.setTrkpt(elevationSaveData.getTrackPointCount());
             gpsdata.setDistance(elevationSaveData.getDistance());
-            gpsdata.setFilesize(xmlData.length());
-            gpsdata.setFilesizecompress(elevationSaveData.getXmlData().length());
+            gpsdata.setFilesize(0);
+            gpsdata.setFilesizecompress(compressedXml.length());
             gpsdata.setFileurl(savedFilename);
             gpsdata.setSpeed(elevationSaveData.getSpeed());
             gpsdata.setUserid(userInfo.getUserid());
