@@ -472,16 +472,22 @@ $(document).ready(function () {
 
 
     //=======================================================================
-    goGiljabi();   //elevation --> giljabi 연결(elevation key)
-    function goGiljabi() {
-        let fileid = getQueryParam('linkid');
-        if(fileid == null) {
+    getByParameter();   //elevation --> giljabi 연결(elevation key)
+    function getByParameter() {
+        uuid = getQueryParam('fileid');
+        if(uuid == null) {
+            alert('잘못된 요청입니다.');
             return;
         }
+        let action = getQueryParam('action');
+/*        if(action == null) {
+            alert('잘못된 요청입니다.');
+            return;
+        }*/
 
         $('#blockingAds').show();
         $.ajax({
-            url: '/api/1.0/goGiljabi/' + fileid,
+            url: '/api/1.0/getByParameter/' + uuid + '/' + action,
             async: false,
             type: 'GET',
             success: function(response, status) {
@@ -503,11 +509,11 @@ $(document).ready(function () {
             }
         });
     }
-
+/*
     //=======================================================================
     //과거 버전의 tcx share
-    oldTcxShare();
-    function oldTcxShare() {
+    getByOldShare();
+    function getByOldShare() {
         let fileid = getQueryParam('fileid');
         if(fileid == null) {
             return;
@@ -515,7 +521,7 @@ $(document).ready(function () {
 
         $('#blockingAds').show();
         $.ajax({
-            url: '/api/1.0/gpxshare/' + fileid,
+            url: '/api/1.0/getByOldShare/' + fileid,
             async: false,
             type: 'GET',
             success: function(response, status) {
@@ -537,6 +543,8 @@ $(document).ready(function () {
             }
         });
     }
+
+ */
     //=======================================================================
     //file loading....
     $('#fileInput').change(function () {
