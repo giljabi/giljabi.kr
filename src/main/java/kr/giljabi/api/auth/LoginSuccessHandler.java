@@ -1,7 +1,7 @@
 package kr.giljabi.api.auth;
 
 import kr.giljabi.api.entity.UserInfo;
-import kr.giljabi.api.utils.JwtProvider;
+import kr.giljabi.api.jwt.JwtProvider;
 import kr.giljabi.api.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,13 +27,13 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 	@Autowired
 	private final UserService userService;
 
-	//private final JwtProvider jwtProvider;
+	@Autowired
+	private final JwtProvider jwtProvider;
 
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request,
 										HttpServletResponse response,
 										Authentication authentication) throws IOException {
-		JwtProvider jwtProvider = new JwtProvider();
 		request.getSession().invalidate();
 		session = request.getSession(true);
 		UserPrincipal user =  (UserPrincipal) authentication.getPrincipal();

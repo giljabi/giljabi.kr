@@ -12,8 +12,10 @@ import kr.giljabi.api.entity.GiljabiGpsdata;
 import kr.giljabi.api.entity.UserInfo;
 import kr.giljabi.api.geo.JpegMetaInfo;
 import kr.giljabi.api.geo.gpx.TrackPoint;
+import kr.giljabi.api.jwt.JwtProvider;
 import kr.giljabi.api.request.RequestGpsDataDTO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,6 +35,9 @@ public class CommonUtils {
 
     public final static String BINARY_CONTENT_TYPE = "application/octet-stream";
     public final static String TEXT_CONTENT_TYPE = "application/text";
+
+    @Autowired
+    private static JwtProvider jwtProvider;
 
     public static String getCurrentTime(String format) {
         if (format == null || format.isEmpty()) {
@@ -81,7 +86,7 @@ public class CommonUtils {
      * @return
      */
     public static UserInfo getSessionByUserinfo(HttpServletRequest request) {
-        JwtProvider jwtProvider = new JwtProvider();
+        //JwtProvider jwtProvider = new JwtProvider();
         UserInfo userInfo = new UserInfo();
         try {
             HttpSession session = request.getSession();

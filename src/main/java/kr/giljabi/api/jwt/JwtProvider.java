@@ -1,4 +1,4 @@
-package kr.giljabi.api.utils;
+package kr.giljabi.api.jwt;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,6 +9,7 @@ import kr.giljabi.api.entity.UserInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
@@ -16,12 +17,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
+@Service
 public class JwtProvider {
-	//@Value("${jwt.accessTokenSecret}")
-	private String accessTokenSecret = "4RT/2hAAJmC6i2FzmezBbaCVMD9FtsuExyjaVWJ5xRA=";
+	@Value("${jwt.accessTokenSecret}")
+	private String accessTokenSecret;// "4RT/2hAAJmC6i2FzmezBbaCVMD9FtsuExyjaVWJ5xRA=";
 
-	//@Value("${jwt.accessTokenExpiration}")
-	private long accessTokenExpiration = 604800000;
+	@Value("${jwt.accessTokenExpiration}")
+	private long accessTokenExpiration; //604800000;
 
 	public String generateJwtToken(UserInfo userInfo) throws JsonProcessingException {
 		SecretKey secretKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(accessTokenSecret));
