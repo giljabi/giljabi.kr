@@ -75,7 +75,7 @@ public class GiljabiController {
 
             GiljabiGpsdata gpsdataCheck = gpsService.findByUuid(gpsDataDTO.getUuid());
             String savedFilename = "";
-            if(gpsdataCheck == null) { //update or insert
+            if(gpsdataCheck == null) { //insert
                 String filename = CommonUtils.makeGpsdataObjectName(gpxPath,
                         gpsDataDTO.getUuid(),
                         gpsDataDTO.getFileext());
@@ -94,7 +94,18 @@ public class GiljabiController {
                         userInfo.getUserid());
                 log.info("saveGpsdata: " + savedFilename);
                 gpsService.save(gpsdata);
-            } else {
+            } else {    //update
+                GiljabiGpsdata gpsdata = CommonUtils.makeGiljabiGpsdata(
+                        MyHttpUtils.getClientIp(request),
+                        "saveGpsdata",
+                        gpsDataDTO,
+                        0,//compressed
+                        compressedXml.getBytes().length,
+                        savedFilename,
+                        userInfo.getUserid());
+                gpsdata.setId(gpsdataCheck.getId());
+                log.info("saveGpsdata: " + savedFilename);
+                gpsService.save(gpsdata);
 
             }
             GiljabiResponse giljabiResponse = new GiljabiResponse();

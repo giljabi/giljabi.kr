@@ -27,6 +27,7 @@ public class GiljabiGpsDataService {
     public GiljabiGpsdata save(GiljabiGpsdata giljabiGpsdata) {
         return giljabiGpsDataRepository.save(giljabiGpsdata);
     }
+    /*
     @Transactional
     public GiljabiGpsdata updateGpsdataByUuid(GiljabiGpsdata newGpsdata,
                                               GiljabiGpsdata oldGpsdata) {
@@ -53,7 +54,7 @@ public class GiljabiGpsDataService {
             return null;
         }
     }
-
+*/
     public Optional<GiljabiGpsdata> findById(Long id) {
         return giljabiGpsDataRepository.findById(id);
     }
