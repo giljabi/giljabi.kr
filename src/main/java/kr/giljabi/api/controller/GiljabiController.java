@@ -14,6 +14,7 @@ import kr.giljabi.api.response.GiljabiResponseGpsdataImageDTO;
 import kr.giljabi.api.response.Response;
 import kr.giljabi.api.service.GiljabiGpsDataImageService;
 import kr.giljabi.api.service.GiljabiGpsDataService;
+import kr.giljabi.api.service.JwtProviderService;
 import kr.giljabi.api.service.MinioService;
 import kr.giljabi.api.utils.CommonUtils;
 import kr.giljabi.api.utils.ErrorCode;
@@ -47,6 +48,7 @@ public class GiljabiController {
 
     private final GiljabiGpsDataService gpsService;
     private final GiljabiGpsDataImageService imageService;
+    private final JwtProviderService jwtProviderService;
 
     private final MinioService minioService;
 
@@ -68,28 +70,33 @@ public class GiljabiController {
                             final @Valid @RequestBody RequestGpsDataDTO gpsDataDTO) {
         try {
             log.info("gpsDataDTO.getXmldata().length: " + gpsDataDTO.getXmldata().length());
-            userInfo = CommonUtils.getSessionByUserinfo(request);
+            userInfo = jwtProviderService.getSessionByUserinfo(request);
             String compressedXml = gpsDataDTO.getXmldata();
 
-            String filename = CommonUtils.makeGpsdataObjectName(gpxPath,
-                    gpsDataDTO.getUuid(),
-                    gpsDataDTO.getFileext());
+            GiljabiGpsdata gpsdataCheck = gpsService.findByUuid(gpsDataDTO.getUuid());
+            String savedFilename = "";
+            if(gpsdataCheck == null) { //update or insert
+                String filename = CommonUtils.makeGpsdataObjectName(gpxPath,
+                        gpsDataDTO.getUuid(),
+                        gpsDataDTO.getFileext());
 
-            InputStream inputStream = new ByteArrayInputStream(compressedXml.getBytes(StandardCharsets.UTF_8));
-            String savedFilename = minioService.putObject(bucketPublic,
-                    filename, inputStream, CommonUtils.BINARY_CONTENT_TYPE);
+                InputStream inputStream = new ByteArrayInputStream(compressedXml.getBytes(StandardCharsets.UTF_8));
+                savedFilename = minioService.putObject(bucketPublic,
+                        filename, inputStream, CommonUtils.BINARY_CONTENT_TYPE);
 
-            GiljabiGpsdata gpsdata = CommonUtils.makeGiljabiGpsdata(
-                    MyHttpUtils.getClientIp(request),
-                    "saveGpsdata",
-                    gpsDataDTO,
-                    0,//compressed
-                    compressedXml.getBytes().length,
-                    savedFilename,
-                    userInfo.getUserid());
-            log.info("saveGpsdata: " + savedFilename);
-            gpsService.saveGpsdata(gpsdata);
+                GiljabiGpsdata gpsdata = CommonUtils.makeGiljabiGpsdata(
+                        MyHttpUtils.getClientIp(request),
+                        "saveGpsdata",
+                        gpsDataDTO,
+                        0,//compressed
+                        compressedXml.getBytes().length,
+                        savedFilename,
+                        userInfo.getUserid());
+                log.info("saveGpsdata: " + savedFilename);
+                gpsService.save(gpsdata);
+            } else {
 
+            }
             GiljabiResponse giljabiResponse = new GiljabiResponse();
             giljabiResponse.setFileKey(gpsDataDTO.getUuid());
             giljabiResponse.setFilePath(savedFilename);
@@ -112,6 +119,10 @@ public class GiljabiController {
                                      @RequestParam("file") MultipartFile file,
                                      @RequestParam("uuid") String uuidKey) {
         try {
+            userInfo = jwtProviderService.getSessionByUserinfo(request);
+            if(Integer.parseInt(userInfo.getLevel()) < 10) {
+                return new Response(ErrorCode.STATUS_FAILURE.getStatus(), "준비중인 기능입니다.");
+            }
             String extension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
             String filename = String.format("%s/%s/%s",
                     gpxPath,

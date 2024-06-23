@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
-@Service
+@Component
 public class JwtProvider {
 	@Value("${jwt.accessTokenSecret}")
 	private String accessTokenSecret;// "4RT/2hAAJmC6i2FzmezBbaCVMD9FtsuExyjaVWJ5xRA=";

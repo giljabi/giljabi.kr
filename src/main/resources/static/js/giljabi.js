@@ -1410,7 +1410,8 @@ TCX
         }), $('#gpx_metadata_name').val() + '.' + _filetype);
 
         //파일의 메인키로 사용
-        uuid = crypto.randomUUID();
+        if(uuid == null || uuid == '')
+            uuid = crypto.randomUUID();
 
         //서버 전송 추가
         let requestBody = {

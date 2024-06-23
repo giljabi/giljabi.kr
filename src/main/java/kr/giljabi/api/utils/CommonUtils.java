@@ -17,6 +17,7 @@ import kr.giljabi.api.request.RequestGpsDataDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -28,16 +29,18 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.UUID;
 
-@Component
-@RequiredArgsConstructor
 public class CommonUtils {
     public static String DEFAULT_TIMESTAMP_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 
     public final static String BINARY_CONTENT_TYPE = "application/octet-stream";
     public final static String TEXT_CONTENT_TYPE = "application/text";
 
-    @Autowired
     private static JwtProvider jwtProvider;
+
+    @Autowired
+    public CommonUtils(JwtProvider jwtProvider) {
+        this.jwtProvider = jwtProvider;
+    }
 
     public static String getCurrentTime(String format) {
         if (format == null || format.isEmpty()) {
@@ -80,25 +83,6 @@ public class CommonUtils {
         return String.format("%s/%s", CommonUtils.getCurrentTime("YYYYMM"), uuidKey);
     }
 
-    /**
-     * session정보가 있거나 없거나 반드시 리턴해야 함
-     * @param request
-     * @return
-     */
-    public static UserInfo getSessionByUserinfo(HttpServletRequest request) {
-        //JwtProvider jwtProvider = new JwtProvider();
-        UserInfo userInfo = new UserInfo();
-        try {
-            HttpSession session = request.getSession();
-            Jws<Claims> claims = jwtProvider.getClaims((String) session.getAttribute("token"));
-            userInfo = new Gson().fromJson((String) claims.getBody().get("userinfo"), UserInfo.class);
-        } catch(Exception e) {
-            userInfo.setLevel("00");
-            userInfo.setUserid("sonnim@giljabi.kr");
-            userInfo.setUsername("손님");
-        }
-        return userInfo;
-    }
 
     public static GiljabiGpsdata makeGiljabiGpsdata(String userAddress, String apiName,
                                               RequestGpsDataDTO gpsDataDTO,

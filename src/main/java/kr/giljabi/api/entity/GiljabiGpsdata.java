@@ -2,6 +2,7 @@ package kr.giljabi.api.entity;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.validator.constraints.UniqueElements;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
@@ -26,6 +27,7 @@ public class GiljabiGpsdata implements java.io.Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @UniqueElements
     @Column(nullable = false, length = 36)
     private String uuid;
 

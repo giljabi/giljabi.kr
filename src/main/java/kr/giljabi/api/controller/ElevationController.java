@@ -9,12 +9,9 @@ import kr.giljabi.api.request.RequestElevationSaveData;
 import kr.giljabi.api.response.GiljabiResponse;
 import kr.giljabi.api.response.Gpx100Response;
 import kr.giljabi.api.response.Mountain100;
-import kr.giljabi.api.service.GiljabiGpsDataService;
-import kr.giljabi.api.service.GiljabiGpxRecommendService;
-import kr.giljabi.api.service.GoogleService;
+import kr.giljabi.api.service.*;
 import kr.giljabi.api.request.RequestElevationData;
 import kr.giljabi.api.response.Response;
-import kr.giljabi.api.service.MinioService;
 import kr.giljabi.api.utils.CommonUtils;
 import kr.giljabi.api.utils.ErrorCode;
 import kr.giljabi.api.utils.MyHttpUtils;
@@ -45,6 +42,7 @@ import java.util.Optional;
 public class ElevationController {
     private final GiljabiGpsDataService gpsService;
     private final GiljabiGpxRecommendService gpxRecommendService;
+    private final JwtProviderService jwtProviderService;
 
     private final GoogleService googleService;
 
@@ -147,7 +145,7 @@ public class ElevationController {
     public Response saveElevation(final HttpServletRequest request,
                                   final @Valid @RequestBody RequestElevationSaveData elevationSaveData) {
         try {
-            userInfo = CommonUtils.getSessionByUserinfo(request);
+            userInfo = jwtProviderService.getSessionByUserinfo(request);
 
             String uuid = CommonUtils.generateUUID().toString();
             String filename = CommonUtils.makeGpsdataObjectName(
@@ -176,7 +174,7 @@ public class ElevationController {
             gpsdata.setApiname(elevationSaveData.getApiName());
             gpsdata.setUserip(MyHttpUtils.getClientIp(request));
             log.info("saveElevation: " + savedFilename);
-            gpsService.saveGpsdata(gpsdata);
+            gpsService.save(gpsdata);
 
             GiljabiResponse giljabiResponse = new GiljabiResponse();
             giljabiResponse.setFileKey(gpsdata.getUuid());

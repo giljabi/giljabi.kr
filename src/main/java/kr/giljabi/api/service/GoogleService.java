@@ -47,6 +47,7 @@ import java.util.concurrent.TimeUnit;
 public class GoogleService {
     private final GiljabiGpsElevationService giljabiGpsElevationService;
     private final GiljabiGpsDataService gpsService;
+    private final JwtProviderService jwtProviderService;
     private final MinioService minioService;
 
     @Value("${giljabi.google.elevation.apikey}")
@@ -78,7 +79,7 @@ public class GoogleService {
 
     public ArrayList<TrackPoint> getElevation(HttpServletRequest request,
                                                    RequestElevationData requestElevationData) throws Exception {
-        UserInfo userInfo = CommonUtils.getSessionByUserinfo(request);
+        UserInfo userInfo = jwtProviderService.getSessionByUserinfo(request);
 
         List<RequestElevationData.Geometry2DPoint> trackPoint = requestElevationData.getTrackPoint();
         ArrayList<TrackPoint> returnPoint = new ArrayList<>();
@@ -140,7 +141,7 @@ public class GoogleService {
 
 //gpsdata insert
         GiljabiGpsdata gpsdata = saveGpxdata(request, userInfo, trackPoint, returnPoint, gpsElevation);
-        gpsService.saveGpsdata(gpsdata);
+        gpsService.save(gpsdata);
         return returnPoint;
     }
 
