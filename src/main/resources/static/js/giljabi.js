@@ -1398,10 +1398,10 @@ TCX
 
         let saveData;
         if (_filetype === 'gpx') {
-            saveData = saveGpx(_uploadFilename, Number($('#averageV').val()),
+            saveData = saveGpx($('#gpx_metadata_name').val(), Number($('#averageV').val()),
                 waypointSortByDistance, _gpxTrkseqArray);
         } else {
-            saveData = saveTcx(_uploadFilename, Number($('#averageV').val()),
+            saveData = saveTcx($('#gpx_metadata_name').val(), Number($('#averageV').val()),
                 waypointSortByDistance, _gpxTrkseqArray);
         }
 
