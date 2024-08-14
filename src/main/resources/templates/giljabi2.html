@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>대한민국의 모든 경로</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="description" content="tcx, gpx 경로만들기">
+    <meta name="keyword" content="가민 tcx, garmin tcx, gpx, tcx,웨이포인트,waypoint,하이킹, hiking">
+
+    <meta http-equiv="Expires" content="-1">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-Control" content="no-cache">
+
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+
+    <script type="text/javascript"
+            src="//dapi.kakao.com/v2/maps/sdk.js?appkey=27f606d8edf497ab495f16d1d983047f&libraries=services"></script>
+
+    <script type="text/javascript" src="/js/jquery-3.3.1.js"></script>
+    <script type="text/javascript" src="/js/jquery-ui.js"></script>
+    <script type="text/javascript" src="/js/jquery.flot.js"></script>
+    <script type="text/javascript" src="/js/jquery.flot.crosshair.js"></script>
+    <script type="text/javascript" src="/js/jquery.flot.selection.js"></script>
+    <script type="text/javascript" src="/js/jquery-plugin/jquery.jqGrid.min.js"></script>
+    <link type="text/css" href="/js/jquery-ui.css" rel="stylesheet"/>
+
+    <!-- SheetJS -->
+    <script type="text/javascript" src="/js/xlsx-full-0.14.3-min.js"></script>
+    <!--FileSaver [savaAs 함수 이용] -->
+    <script type="text/javascript" src="/js/FileSaver.min.js"></script>
+    <!-- pako [gzip 압축/해제] -->
+    <script type="text/javascript" src="/js/lz-string-1.4.4.js"></script>
+
+    <!-- image processing -->
+    <script type="text/javascript" src="/js/exif-reader-4.12.0-min.js"></script>
+    <script type="text/javascript" src="/js/piexif-1.0.6.js"></script>
+
+    <script type="text/javascript" src="/js/common.js"></script>
+    <script type="text/javascript" src="/js/routeutil.js"></script>
+    <script type="text/javascript" src="/js/waypoint.js"></script>
+    <script type="text/javascript" src="/js/xmlwriter.js"></script>
+    <script type="text/javascript" src="/js/fileutils.js"></script>
+    <link type="text/css" href="/css/topmenu.css" rel="stylesheet"/>
+    <link type="text/css" href="/js/giljabi.css" rel="stylesheet"/>
+    <script type="text/javascript" src="/js/giljabi.js"></script>
+</head>
+
+<body>
+
+<div w3-include-html="/menu.html"></div>
+<div class="container" style="border: 1px solid #ddd;">
+    <div id="c1" class="row" style="border: 0px solid #ddd;">
+        <div id="div1" class="cell wide" style="width:100%;height:100%;">
+            <div id="map" style="z-index: auto"></div>
+            <div class="row" style="border: 0px solid #ddd;">
+                <p class="modes">기능선택:
+                    <select id="direction" style="width: 150px;">
+                        <option value="waypoint">waypoint 만들기</option>
+                        <option value="cycling-road">cycling-road 경로탐색</option>
+                        <option value="cycling-mountain">cycling-mountain 경로탐색</option>
+                        <option value="foot-hiking">foot-hiking 경로탐색</option>
+                    </select>
+                    <input class='mapType' type="checkbox" id="chkTerrain"/><label for="chkTerrain">지형정보</label>
+                    <input type="radio" name="daumpoi" value="CS2">편의점
+                    <input type="radio" name="daumpoi" value="AD5">숙박
+                    <input type="radio" name="daumpoi" value="CE7">카페
+                    <input type="radio" name="daumpoi" value="FD6">음식점
+                    <input type="radio" name="daumpoi" value="" checked>없음
+                </p>
+            </div>
+            <div class="row" style="border: 0px solid #ddd;">&nbsp;
+                <input type="button" id="reset"
+                       title="초기화 버튼을 누르면 모든 정보가 삭제됩니다."
+                       value="초기화"/>&nbsp;
+                <input type="file" id="fileInput" style="width:150px;"
+                       accept=".gpx,.tcx">&nbsp;
+                <input type="text" id="gpx_metadata_name"
+                       title="gpx/tcx 파일내부에 저장되는 이름과 파일명이 동일하게 저장됩니다."
+                       style="width:80px;"
+                       placeholder="경로명">&nbsp;
+                평속(Km/H) : <input type="text" id="averageV" value="2"
+                                  title="속도 6km 기준으로 기울기 정보가 다르게 표현됩니다. 속도 변경 후 이정표 정보를 클릭하면됩니다."
+                                  style="width:15px;">&nbsp;
+                <input type="radio" name="filetype" id="gpxradio" value="gpx" checked="checked">gpx&nbsp;
+                <input type="radio" name="filetype" id="tcxradio" value="tcx">tcx&nbsp;
+                <input type="button" id="saveas" value="저장"/>&nbsp;
+                <input type="button" id="reverse" value="반대방향"/>&nbsp;
+                <input type="button" id="waypointinfo"
+                       title="들머리/날머리를 양끝에 넣어주면 보기가 편합니다."
+                       value="이정표 정보"/>&nbsp;
+                <input type="button" id="waypointexcelsave" value="이정표 엑셀저장"/>&nbsp;
+                <input type="button" id="viewVworld" value="3D View"/>&nbsp;
+                <!--
+                파일병합: <input type="file" id="mergeInput" accept=".gpx,.tcx" size="0" disabled>
+                --->
+            </div>
+            <div class="row" style="border: 0px solid #ddd;">
+                <div class="containerPlot" style="border: 0px solid #ddd;">
+                    <div id="elevationImage" class="containerPlot elevation"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="c2" class="row" style="width: 210px; border: 1px solid #fff;">
+        <div id="div3" class="cell" style="border: 1px solid #ddd; ">
+            <div class="row"
+                 style="align-items: start;border: 0px solid #ddd; height:350px;overflow-y: auto;">
+                <table style="border: 2px">
+                    <tr>
+                        <td style="width: 10px; align:center">I</td>
+                        <td style="width: 100px;">Name</td>
+                        <td style="width: 40px; align: right;">km</td>
+                        <td style="width: 50px; align: right;">Time</td>
+                    </tr>
+                    <tbody id="waypointinfoViewTable"></tbody>
+                </table>
+            </div>
+            <div class="row" style="border: 0px solid #ddd;">
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <input type="file" id="files" name="files" accept=".jpg,.jpeg"
+                           style="width:120px;" multiple>
+                    <button type="submit"
+                            title="메타정보가 있어야 저장할 수 있습니다."
+                    >첨부하기</button>
+                </form>
+            </div>
+            <div class="row"  id="progressBarContainer">
+                <canvas id="progressCanvas"></canvas>
+            </div>
+            <div class="row" style="border: 0px solid #ddd; ">
+                <div>
+                    <div id="imageFileList" class="fileContainer" style="height: 100%;">
+                        <table style="border: 2px;">
+                            <tbody id="imageFileTbody" ></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div style="display: none;" id="viewWaypoint" class='waypointStyle'>
+    <div style='width:150px;'>
+        <img src="images/waypoint.png" id="selectWaypointIcon">
+        <input type='text' id="waypointName" size='11'>
+    </div>
+    <div style='margin-left:20px;layout:fixed;'>
+        <table>
+            <tr>
+                <td><img class='waypointIcon' src="images/left.png" height="44" width="44" id="left"></td>
+                <td><img class='waypointIcon' src="images/straight.png" height="44" width="44" id="straight"></td>
+                <td><img class='waypointIcon' src="images/right.png" height="44" width="44" id="right"></td>
+            </tr>
+            <tr>
+                <td><img class='waypointIcon' src="images/sprint.png" height="44" width="44" id="sprint"></td>
+                <td><img class='waypointIcon' src="images/generic.png" height="44" width="44" id="generic"></td>
+                <td><img class='waypointIcon' src="images/summit.png" height="44" width="44" id="summit"></td>
+            </tr>
+            <tr>
+                <td><img class='waypointIcon' src="images/water.png" height="44" width="44" id="water"></td>
+                <td><img class='waypointIcon' src="images/danger.png" height="44" width="44" id="danger"></td>
+                <td><img class='waypointIcon' src="images/food.png" height="44" width="44" id="food"></td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<!-- 서버에 정보 요청 후 기다리는 UI-->
+<div id="blockingAds" class="blockUI" style="display:none">
+    <div class="blockUI blockMsg blockElement blockingAds">
+        <div>
+            <br><br>
+            <img src="/images/ajax-loader.gif" width="200px" height="20px">
+            &nbsp;&nbsp;&nbsp;&nbsp;잠시만 기다려 주세요....
+        </div>
+    </div>
+</div>
+</body>
+
+<script type="text/javascript">
+    includeHTML();
+    if (!/Chrome/.test(navigator.userAgent)) {
+        alert('이 웹사이트는 Chrome 브라우저에서 최적으로 작동됩니다. Chrome 브라우저를 사용해 주세요.');
+    }
+</script>
+
+</body>
+
+</html>
