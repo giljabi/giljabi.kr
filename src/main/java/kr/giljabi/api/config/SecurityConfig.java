@@ -36,6 +36,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .csrf().disable()
                 .authorizeRequests()
+                // 로그인한 사용자만 접근 가능
+                .antMatchers("/manager/giljabi2").authenticated()
+                // 모든 요청은 인증 없이 접근 가능
+                .antMatchers("/**").permitAll();
+                /*
                 //.antMatchers("/hello/**").permitAll() //모든 이미지, 파일들...
                 //.requestMatchers(request -> "127.0.0.1".equals(request.getRemoteAddr()) || "::1".equals(request.getRemoteAddr()))
                 //.permitAll()
@@ -47,7 +52,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 //.antMatchers("/api/**").permitAll()
                 //.anyRequest().authenticated(); //인증 필요시
                  .anyRequest().permitAll(); //모든 url 접속허용
-
+*/
 
         http
                 .formLogin()

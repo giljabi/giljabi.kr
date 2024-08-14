@@ -34,4 +34,11 @@ public class UserController {
         return "/login";
         //return "redirect:/login";
     }*/
+
+    @RequestMapping("/manager/giljabi2")
+    public String goManagerGiljabi2(){
+        log.info("giljabi2");
+        return "manager/giljabi2";
+    }
+
 }
