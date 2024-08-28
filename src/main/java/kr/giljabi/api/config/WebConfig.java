@@ -1,7 +1,7 @@
 package kr.giljabi.api.config;
 
-import kr.giljabi.api.config.defaultsession.DefaultSessionFilter;
-import kr.giljabi.api.config.defaultsession.DefaultSessionInterceptor;
+//import kr.giljabi.api.config.defaultsession.DefaultSessionFilter;
+//import kr.giljabi.api.config.defaultsession.DefaultSessionInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -43,6 +43,7 @@ public class WebConfig implements WebMvcConfigurer{
 	 * 세션이 없는 경우 강제로 세션을 생성하는 필터
 	 * @return
 	 */
+/*
 	@Bean
 	public FilterRegistrationBean<DefaultSessionFilter> defaultSessionFilter() {
 		FilterRegistrationBean<DefaultSessionFilter> registrationBean = new FilterRegistrationBean<>();
@@ -59,5 +60,6 @@ public class WebConfig implements WebMvcConfigurer{
 		registry.addInterceptor(defaultSessionInterceptor).addPathPatterns("/**");
 	}
 	// 세션이 없는 경우 강제로 세션을 생성하는 필터 끝
+*/
 
 }
