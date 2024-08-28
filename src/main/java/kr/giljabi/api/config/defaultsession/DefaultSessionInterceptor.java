@@ -26,7 +26,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
+/*
 @Component
 public class DefaultSessionInterceptor implements HandlerInterceptor {
     private static final String DEFAULT_NAME = "token";
@@ -46,3 +46,5 @@ public class DefaultSessionInterceptor implements HandlerInterceptor {
         return true;
     }
 }
+
+ */

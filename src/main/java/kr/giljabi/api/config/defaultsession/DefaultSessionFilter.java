@@ -27,7 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-
+/*
 public class DefaultSessionFilter implements Filter {
 
     @Override
@@ -58,3 +58,5 @@ public class DefaultSessionFilter implements Filter {
         // Cleanup code if needed
     }
 }
+
+ */
