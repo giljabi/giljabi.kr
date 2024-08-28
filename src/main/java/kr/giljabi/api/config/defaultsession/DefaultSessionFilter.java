@@ -8,6 +8,14 @@ package kr.giljabi.api.config.defaultsession;
 DefaultSessionFilter.java: 이 필터는 세션이 존재하는지 확인합니다.
 그렇지 않은 경우 하나를 만들고 기본 속성을 설정합니다.
 세션이 존재하지만 기본 속성이 설정되지 않은 경우 기본 속성을 설정합니다.
+
+    @Date: 2024.08.28
+    @Author: eahn.park@gmail.com
+    @Description:
+ 손님상태는 이미지 파일을 첨부할 수 없는 설정이므로 현재 코드는 사용하지 않음
+ /gilgbi2.html은 손님용
+ /manager/gilgbi2.html은 관리자만 이미지를 첨부할 수 있음
+
  */
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
