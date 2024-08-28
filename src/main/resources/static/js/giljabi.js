@@ -454,7 +454,7 @@ $(document).ready(function () {
 
     $('.waypointIcon').click(function () {
         _pointIcon = this.id;
-        $('#selectWaypointIcon').attr('src', 'images/' + _pointIcon + '.png');
+        $('#selectWaypointIcon').attr('src', '/images/' + _pointIcon + '.png');
 
         let name = $('#waypointName').val().toLowerCase();
         //console.log(this.id + ',' + _waypointIcons.indexOf(name));

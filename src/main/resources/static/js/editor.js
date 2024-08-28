@@ -753,7 +753,7 @@ function WaypointMark(wayPosition, waypointName, uniqueId, waypointIcon) {
     else
         waypointIcon = 'generic';
 
-    content.innerHTML = '<img src=\"images/' + waypointIcon.toLowerCase() + '.png\" class=\"pointImage\"><span class=\"pointText\">' + waypointName + '</span>';
+    content.innerHTML = '<img src=\"/images/' + waypointIcon.toLowerCase() + '.png\" class=\"pointImage\"><span class=\"pointText\">' + waypointName + '</span>';
     // 커스텀 오버레이를 생성합니다
     let customoverlay = new kakao.maps.CustomOverlay({
         map: _globalMap,

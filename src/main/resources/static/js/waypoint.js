@@ -16,7 +16,7 @@ function Waypoint(mymap, wayPosition, waypointName, uniqueId, waypointIcon) {
 	////let uniqueId = uniqueId;
 	let content = document.createElement('div');
 
-	content.innerHTML = '<img src=\"images/'+ waypointIcon.toLowerCase() +'.png\" class=\"pointImage\"><span class=\"pointText\">' + waypointName + '</span>';
+	content.innerHTML = '<img src=\"/images/'+ waypointIcon.toLowerCase() +'.png\" class=\"pointImage\"><span class=\"pointText\">' + waypointName + '</span>';
 	 // 커스텀 오버레이를 생성합니다 
 	let customoverlay = new kakao.maps.CustomOverlay({
         map: mymap,
@@ -47,7 +47,7 @@ function Waypoint(mymap, wayPosition, waypointName, uniqueId, waypointIcon) {
 		$('#waypointName').val(waypointName);
 		
 		//현재 웨이포인트의 아이콘을 Dialog에서 보여준다.
-		$('#selectWaypointIcon').attr('src', 'images/' + waypointIcon.toLowerCase() + '.png');
+		$('#selectWaypointIcon').attr('src', '/images/' + waypointIcon.toLowerCase() + '.png');
 		let currentWaypointName = waypointIcon;
 		
 		$(id).dialog({
@@ -79,7 +79,7 @@ function Waypoint(mymap, wayPosition, waypointName, uniqueId, waypointIcon) {
 					} else {
 						waypointIcon = currentWaypointName;		//현재 포인트의 icon
 					}
-					content.innerHTML = '<img src=\"images/'+ waypointIcon.toLowerCase() +'.png\" class=\"pointImage\"><span class=\"pointText\">' + waypointName + '</span>';
+					content.innerHTML = '<img src=\"/images/'+ waypointIcon.toLowerCase() +'.png\" class=\"pointImage\"><span class=\"pointText\">' + waypointName + '</span>';
 				    customoverlay.setContent(content);
 				    addEvent();
 					_pointIcon = '';
