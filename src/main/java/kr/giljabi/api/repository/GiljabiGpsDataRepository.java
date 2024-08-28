@@ -16,6 +16,7 @@ import java.util.Optional;
  */
 public interface GiljabiGpsDataRepository extends CrudRepository<GiljabiGpsdata, String> {
     GiljabiGpsdata findByUuid(String uuid);
+    boolean existsByUuid(String uuid);
     Optional<GiljabiGpsdata> findById(long id);
 
     //@Query("SELECT g FROM GiljabiGpsdata g WHERE g.uuid = :uuid AND g.shareflag = false")

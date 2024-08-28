@@ -13,6 +13,41 @@ String url = "jdbc:mysql://localhost:3306/your_database_name?useUnicode=true&cha
 
 ```
 
+## minio
+```shell
+wget https://dl.min.io/server/minio/release/linux-amd64/minio
+chmod +x minio
+화
+sudo mv minio /usr/local/bin/
+
+sudo useradd -r minio-user -s /sbin/nologin
+sudo chown minio-user:minio-user /usr/local/bin/minio
+
+sudo mkdir /etc/minio
+sudo chown minio-user:minio-user /etc/minio
+
+sudo nano /etc/systemd/system/minio.service
+
+[Unit]
+Description=MinIO
+Documentation=https://docs.min.io
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=minio-user
+Group=minio-user
+WorkingDirectory=/usr/local/
+ExecStart=/usr/local/bin/minio server /home/bitnami/minio/data --console-address ":9000"
+Restart=always
+LimitNOFILE=65536
+EnvironmentFile=-/etc/default/minio
+
+[Install]
+WantedBy=multi-user.target
+
+```
+
 ## 2024.05.28
 * gpx, tcx 파일을 업로드하면 경로정보를 DB에 저장
 * vworld 3d view 기능추가
