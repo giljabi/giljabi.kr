@@ -3,7 +3,7 @@ package kr.giljabi.api.response;
 import lombok.Data;
 
 /**
- * @Author : njpark@hyosung.com
+ * @Author : eahn.park@gmail.com
  * @Date : 2024.06.19
  * @Description
  */

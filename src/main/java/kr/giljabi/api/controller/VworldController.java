@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /**
- * @Author : njpark@hyosung.com
+ * @Author : eahn.park@gmail.com
  * @Date : 2024.05.22
  * @Description
  */

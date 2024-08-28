@@ -8,7 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 /**
- * @Author : njpark@hyosung.com
+ * @Author : eahn.park@gmail.com
  * @Date : 2024.06.05
  * @Description
  */

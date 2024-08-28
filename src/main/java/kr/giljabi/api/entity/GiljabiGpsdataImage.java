@@ -9,7 +9,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 
 /**
- * @Author : njpark@hyosung.com
+ * @Author : eahn.park@gmail.com
  * @Date : 2024.05.28
  * @Description
  * gps 정보가 없으면 저장하지 않음

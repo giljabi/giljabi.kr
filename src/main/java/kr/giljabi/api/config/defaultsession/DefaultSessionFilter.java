@@ -1,7 +1,7 @@
 package kr.giljabi.api.config.defaultsession;
 
 /**
- * @Author : njpark@hyosung.com
+ * @Author : eahn.park@gmail.com
  * @Date : 2024.06.21
  * @Description
  * 세션이 없는 경우 강제로 세션을 생성하는 필터, 이유는 ....

@@ -1,7 +1,7 @@
 package kr.giljabi.api.config.defaultsession;
 
 /**
- * @Author : njpark@hyosung.com
+ * @Author : eahn.park@gmail.com
  * @Date : 2024.06.21
  * @Description
  * DefaultSessionInterceptor.java:
