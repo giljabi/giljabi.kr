@@ -398,29 +398,29 @@
                                 <delete file="target/classes/static/js/waypoint.js" />
                                 <delete file="target/classes/static/js/xmlwriter.js" />
                                 <delete file="target/classes/static/js/fileutils.js" />
-                                <delete file="target/classes/static/js/giljabi.js" />
+                                <delete file="target/classes/static/js/giljabi2.js" />
                                 <delete file="target/classes/static/js/editor2.js" />
 
-                                <replaceregexp file="target/classes/static/giljabi.html"
+                                <replaceregexp file="target/classes/static/html/giljabi2.html"
                                                match="common.js" replace="common.min.js" byline="true" encoding="UTF-8"/>
-                                <replaceregexp file="target/classes/static/giljabi.html"
+                                <replaceregexp file="target/classes/static/html/giljabi2.html"
                                                match="routeutil.js" replace="routeutil.min.js" byline="true" encoding="UTF-8"/>
-                                <replaceregexp file="target/classes/static/giljabi.html"
+                                <replaceregexp file="target/classes/static/html/giljabi2.html"
                                                match="waypoint.js" replace="waypoint.min.js" byline="true" encoding="UTF-8"/>
-                                <replaceregexp file="target/classes/static/giljabi.html"
+                                <replaceregexp file="target/classes/static/html/giljabi2.html"
                                                match="xmlwriter.js" replace="xmlwriter.min.js" byline="true" encoding="UTF-8"/>
-                                <replaceregexp file="target/classes/static/giljabi.html"
+                                <replaceregexp file="target/classes/static/html/giljabi2.html"
                                                match="fileutils.js" replace="fileutils.min.js" byline="true" encoding="UTF-8"/>
-                                <replaceregexp file="target/classes/static/giljabi.html"
-                                               match="giljabi.js" replace="giljabi.min.js" byline="true" encoding="UTF-8"/>
+                                <replaceregexp file="target/classes/static/html/giljabi2.html"
+                                               match="giljabi2.js" replace="giljabi2.min.js" byline="true" encoding="UTF-8"/>
 
-                                <replaceregexp file="target/classes/static/editor2.html"
+                                <replaceregexp file="target/classes/static/html/editor2.html"
                                                match="common.js" replace="common.min.js" byline="true" encoding="UTF-8"/>
-                                <replaceregexp file="target/classes/static/editor2.html"
+                                <replaceregexp file="target/classes/static/html/editor2.html"
                                                match="routeutil.js" replace="routeutil.min.js" byline="true" encoding="UTF-8"/>
-                                <replaceregexp file="target/classes/static/editor2.html"
+                                <replaceregexp file="target/classes/static/html/editor2.html"
                                                match="xmlwriter.js" replace="xmlwriter.min.js" byline="true" encoding="UTF-8"/>
-                                <replaceregexp file="target/classes/static/editor2.html"
+                                <replaceregexp file="target/classes/static/html/editor2.html"
                                                match="editor2.js" replace="editor2.min.js" byline="true" encoding="UTF-8"/>
 
                                 <replaceregexp file="target/classes/templates/vworld.html"
@@ -429,7 +429,7 @@
                                                match="apiKey=EF0CBEDB-A6FA-3FD9-B1B3-D7C725EF09D3"
                                                replace="apiKey=9061B3F7-8879-385D-8E87-ED75ABCD0EF5" byline="true" encoding="UTF-8"/>
 
-                                <replaceregexp file="target/classes/static/menu.html"
+                                <replaceregexp file="target/classes/static/html/menu.html"
                                                match="__BUILD_VERSION__"
                                                replace="${project.version}" byline="true" encoding="UTF-8"/>
 

@@ -43,7 +43,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
 
                 // 모든 요청은 인증 없이 접근 가능
-                .antMatchers("/css/**", "/images/**", "/js/**",
+                .antMatchers("/html/**", "/css/**", "/images/**", "/js/**",
                         "/map/**", "/poieditor/**", "/util/**", "/vendor/**",
                         "/user/**")
                 .permitAll()
