@@ -32,14 +32,25 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .cors().configurationSource(request -> new CorsConfiguration().applyPermitDefaultValues())
+                .headers()
+                .xssProtection().block(true)
+                .and()
+                .frameOptions().deny()
+                .and()
+                .cors()
                 .and()
                 .csrf().disable()
                 .authorizeRequests()
-                // 로그인한 사용자만 접근 가능
-                .antMatchers("/manager/giljabi2").authenticated()
+
                 // 모든 요청은 인증 없이 접근 가능
-                .antMatchers("/**").permitAll();
+                .antMatchers("/css/**", "/images/**", "/js/**",
+                        "/map/**", "/poieditor/**", "/util/**", "/vendor/**",
+                        "/user/**")
+                .permitAll()
+
+                // 로그인한 사용자만 접근 가능
+                .antMatchers("/manager/giljabi2")
+                .authenticated();
                 /*
                 //.antMatchers("/hello/**").permitAll() //모든 이미지, 파일들...
                 //.requestMatchers(request -> "127.0.0.1".equals(request.getRemoteAddr()) || "::1".equals(request.getRemoteAddr()))

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.servlet.http.HttpSession;
@@ -11,29 +12,26 @@ import javax.servlet.http.HttpSession;
 @Controller
 @RequiredArgsConstructor
 @Slf4j
-//@RequestMapping("/user")
 public class UserController {
-
-    @Autowired
-    private HttpSession session;
 
     @RequestMapping("/login")
     public String loginForm(){
         log.info("loginForm");
         return "login";
     }
-/*
+
     @RequestMapping("/logout")
-    public String logout(){
+    public String logout(HttpSession session){
+        session.removeAttribute("token");
         session.invalidate();
 
         // 로그아웃 메시지 로그
         log.info("logout");
 
         // 로그아웃 페이지로 리다이렉트
-        return "/login";
-        //return "redirect:/login";
-    }*/
+        //return "/login";
+        return "redirect:/";
+    }
 
     @RequestMapping("/manager/giljabi2")
     public String goManagerGiljabi2(){
