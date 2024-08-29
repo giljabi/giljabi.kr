@@ -11,9 +11,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class ScheduledTasks {
 
-    // 매 분 첫 번째 초에 실행(매일 00시 "0 0 0 * * ?")
+/*    // 매 분 첫 번째 초에 실행(매일 00시 "0 0 0 * * ?")
     @Scheduled(cron = "0 * * * * ?")
     public void performTaskUsingCron() {
         System.out.println("Cron task performed at " + System.currentTimeMillis());
-    }
+    }*/
 }
