@@ -470,46 +470,46 @@ $(document).ready(function () {
         //console.log('direction flag:' + _chkRoute);
     });
 
+//=======================================================================
+// @Date 2024/08/29  elevation --> giljabi 연결(elevation key)은 로직이 복잡해서 더이상 구현하지 않음
+//     getByParameter();
+//     function getByParameter() {
+//         uuid = getQueryParam('fileid');
+//         if(uuid == null) {
+//             //alert('잘못된 요청입니다.');
+//             return;
+//         }
+//         let action = getQueryParam('action');
+// /*        if(action == null) {
+//             alert('잘못된 요청입니다.');
+//             return;
+//         }*/
+//
+//         $('#blockingAds').show();
+//         $.ajax({
+//             url: '/api/1.0/getByParameter/' + uuid + '/' + action,
+//             async: false,
+//             type: 'GET',
+//             success: function(response, status) {
+//                 if (response.status === 0) {
+//                     let decompressedData = LZString.decompressFromUTF16(response.data.xmldata);
+//                     console.log('decompressedData:' + decompressedData);
+//                     uuid = response.data.uuid;
+//                     _fileExt = response.data.fileext;
+//                     changeFileType(_fileExt);
+//                     $('#gpx_metadata_name').val(response.data.trackName);
+//                     fileLoadAndDraw(decompressedData);
+//                 } else {
+//                     alert(response.message);
+//                 }
+//                 $('#blockingAds').hide();
+//             },
+//             error: function(xhr, status, error) {
+//                 console.error('AJAX request failed:', error);
+//             }
+//         });
+//     }
 
-    //=======================================================================
-    getByParameter();   //elevation --> giljabi 연결(elevation key)
-    function getByParameter() {
-        uuid = getQueryParam('fileid');
-        if(uuid == null) {
-            //alert('잘못된 요청입니다.');
-            return;
-        }
-        let action = getQueryParam('action');
-/*        if(action == null) {
-            alert('잘못된 요청입니다.');
-            return;
-        }*/
-
-        $('#blockingAds').show();
-        $.ajax({
-            url: '/api/1.0/getByParameter/' + uuid + '/' + action,
-            async: false,
-            type: 'GET',
-            success: function(response, status) {
-                if (response.status === 0) {
-                    let decompressedData = LZString.decompressFromUTF16(response.data.xmldata);
-                    console.log('decompressedData:' + decompressedData);
-                    uuid = response.data.uuid;
-                    _fileExt = response.data.fileext;
-                    changeFileType(_fileExt);
-                    $('#gpx_metadata_name').val(response.data.trackName);
-                    fileLoadAndDraw(decompressedData);
-                } else {
-                    alert(response.message);
-                }
-                $('#blockingAds').hide();
-            },
-            error: function(xhr, status, error) {
-                console.error('AJAX request failed:', error);
-            }
-        });
-    }
-/*
     //=======================================================================
     //과거 버전의 tcx share
     getByOldShare();
@@ -521,7 +521,7 @@ $(document).ready(function () {
 
         $('#blockingAds').show();
         $.ajax({
-            url: '/api/1.0/getByOldShare/' + fileid,
+            url: '/api/1.0/gpxshare/' + fileid,
             async: false,
             type: 'GET',
             success: function(response, status) {
@@ -539,12 +539,12 @@ $(document).ready(function () {
                 $('#blockingAds').hide();
             },
             error: function(xhr, status, error) {
-                console.error('AJAX request failed:', error);
+                console.log('AJAX request failed:' + error);
             }
         });
     }
 
- */
+
     //=======================================================================
     //file loading....
     $('#fileInput').change(function () {
