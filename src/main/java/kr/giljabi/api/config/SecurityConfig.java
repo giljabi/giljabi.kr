@@ -43,7 +43,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
 
                 // 모든 요청은 인증 없이 접근 가능
-                .antMatchers("/html/**", "/css/**", "/images/**", "/js/**",
+                .antMatchers("/v2/**", "/css/**", "/images/**", "/js/**",
                         "/map/**", "/poieditor/**", "/util/**", "/vendor/**",
                         "/", "/user/login")
                 .permitAll()
@@ -79,7 +79,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .logout()
                 .logoutUrl("/logout")
-                .logoutSuccessUrl("/html/giljabi2.html")
+                .logoutSuccessUrl("/v2/giljabi2.html")
                 .invalidateHttpSession(true)
                 .permitAll();
 
@@ -90,6 +90,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .maxSessionsPreventsLogin(true)
                 .and()
                 .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
-                .invalidSessionUrl("/html/giljabi2.html");
+                .invalidSessionUrl("/v2/giljabi2.html");
     }
 }
