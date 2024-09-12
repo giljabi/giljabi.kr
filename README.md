@@ -1,6 +1,10 @@
 
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fparknamjun%2Fgiljabi&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 
+## 2024.08.01
+* database 변경, mysql -> postgresql
+* 기존에 운영하던 WAS에서 mysql을 postgresql로 변경하고 v2에서는 postgresql을 사용
+
 ## 2024.06.05
 * mysql mb4 설정, 맥에서 한글 풀어쓰기 문제 확인 필요
 ```sql
@@ -14,6 +18,8 @@ String url = "jdbc:mysql://localhost:3306/your_database_name?useUnicode=true&cha
 ```
 
 ## minio
+* cpu 리소스가 부족하여 minio client을 사용하여 aws s3로 변경(2024.06.05)
+* minio를 더이상 사용하지 않음
 ```shell
 wget https://dl.min.io/server/minio/release/linux-amd64/minio
 chmod +x minio
