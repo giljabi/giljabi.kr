@@ -131,7 +131,7 @@ INFO 118324 --- [nio-9090-exec-8] p6spy                                    : Ope
 * mysql을 사용하고 있고 운영정보이므로 아래 yml에서 적절히 수정해야 함
 * yml파일은 실제 운영정보가 있어 첨부되지 않음
   * application-local.yml
-  * application-real.yml
+  * application-prod.yml
 
 ### Deploy 
 * deploy.sh 추가, git에 파일을 추가하지 않고 설명만 추가
@@ -195,7 +195,7 @@ else
 fi
 
 echo "Start giljabi application"
-nohup java -jar -Dspring.profiles.active=real -Djava.net.preferIPv4Stack=true giljabi-1.0.0.jar > /dev/null 2>&1 &
+nohup java -jar -Dspring.profiles.active=prod -Djava.net.preferIPv4Stack=true giljabi-1.0.0.jar > /dev/null 2>&1 &
 ```
 
 * kill.sh
@@ -222,7 +222,7 @@ fi
 * 지형정보, POI정보(편의점, 숙박, 카페, 식당) 조회 정보 추가
 * package 빌드시 application-local.yml 제외 
   * mvn clean package -f pom.xml -DskipTests
-  * java -jar -Djava.net.preferIPv4Stack=true -Dspring.profiles.active=real giljabi-1.0.0.jar
+  * java -jar -Djava.net.preferIPv4Stack=true -Dspring.profiles.active=prod giljabi-1.0.0.jar
 
 ---
 
