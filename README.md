@@ -3,10 +3,10 @@
 
 ## 2024.08.01
 * database 변경, mysql -> postgresql
-* 기존에 운영하던 WAS에서 mysql을 postgresql로 변경하고 v2에서는 postgresql을 사용
+* 기존에 운영하던 v1에서 mysql을 postgresql로 변경하고 v2에서는 postgresql을 사용
 
 ## 2024.06.05
-* mysql mb4 설정, 맥에서 한글 풀어쓰기 문제 확인 필요
+* mysql mb4 설정, 맥에서 한글 풀어쓰기 문제 확인 필요 --> mysql 사용하지 않음
 ```sql
 SHOW VARIABLES LIKE 'character_set%';
 SHOW VARIABLES LIKE 'collation%';
@@ -133,8 +133,7 @@ INFO 118324 --- [nio-9090-exec-8] p6spy                                    : Ope
   * application-local.yml
   * application-real.yml
 
-### 경로정보 저장
-* 100대 명산정보 위치정보 개선
+### Deploy 
 * deploy.sh 추가, git에 파일을 추가하지 않고 설명만 추가
 ```shell
 #!/bin/bash
