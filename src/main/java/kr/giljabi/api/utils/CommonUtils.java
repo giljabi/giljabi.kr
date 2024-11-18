@@ -118,6 +118,13 @@ public class CommonUtils {
         return filename;
     }
 
+    public static String makeGpsdataObjectPath(String uuid) {
+        String filename = String.format("/%s/%s",
+                CommonUtils.getCurrentTime("YYYYMM"), ///yyyymm/uuid
+                uuid);  // 파일마다 디렉토리 생성
+        return filename;
+    }
+
     private static final double EARTH_RADIUS = 6371e3; // Earth radius in meters
     public static double getDistance(TrackPoint from, TrackPoint to) {
         double dLat = Math.toRadians(to.getLat() - from.getLat());
@@ -173,3 +180,4 @@ public class CommonUtils {
     }*/
 
 }
+

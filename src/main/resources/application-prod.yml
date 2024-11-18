@@ -1,0 +1,79 @@
+server:
+  port: 9090
+  shutdown: graceful
+  forward-headers-strategy: native  #nginx 사용시 remote address(ip) 가져오기 위해 설정
+
+spring:
+  datasource:
+    url: ENC(LoLysQfDmgBdeYFHARcQ7y71cmSyAvtpweWxQQPLYy5P+Gi9/LHkkm7dkkAJSi/1ReFBRyB1XXRlXJPP6nbrSjj8IXS+XiMYrsa2Lb8148H8ska3obALnw==)
+    driver-class-name: org.postgresql.Driver
+    username: ENC(gjEQVrqQI/JVbiddLeFvPQ==)
+    password: ENC(4Ei9WNUxrbl15e5QyRHdjN2UkCkV1ceO)
+    hikari:
+      maximum-pool-size: 20
+
+
+
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        ddl-auto: none
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+  thymeleaf:
+    prefix: classpath:templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+    cache: false
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,shutdown
+  endpoint:
+    shutdown:
+      enabled: true
+
+jwt:
+  accessTokenSecret: ${accessToken.secret} # your key
+  accessTokenExpiration: 604800000
+
+giljabi:
+  openrouteservice:
+    apikey: ${apiserver.openrouteservice.apikey} # your key
+    directionUrl: https://api.openrouteservice.org/v2/directions/%s/json
+  google:
+    elevation:
+      # google elevation get api는 요청된 좌표 적절히 잘라서 8192(512개 좌표)를 넘지 않아야 한다.
+      # 400이 적당함(8192를 초과하지 않는 좌표수)
+      googleGetCount: 400
+      apikey: ${apiserver.google.elevation.apikey} # your key
+      elevationUrl: https://maps.googleapis.com/maps/api/elevation/json
+      path: elevation  #${minio.bucketService}/elevation
+  mountain100:
+    path: forest100 # --> ${minio.bucketData}/forest100
+  xmlshare: #gpx, tcx 공유파일 경로, 삭제하지 않는 파일들...
+    #path: /home/bitnami/apps/tomcat7/wasfiles/share
+    path: share  # --> ${minio.bucketData}/share
+  gpx:
+    path: gpx # --> ${minio.bucketService}/gpx
+
+#### 파일은 public만 사용함...private은 사용안함--> 관리가 귀찮네...
+minio:
+  url: ${bucket.url}
+  #  bucketPrivate: gil-media-pri #public gpx, elevation, gpximages 서비스에서 사용하는 데이터, 사용자가 생성한 파일들
+  #  bucketPublicUrl: http://localhost:9000
+  bucketPublicUrl: ${bucket.media-public.url}
+  bucketPublic: ${bucket.media-public.name} #public /forest100, /share
+  accessKey: ${bucket.accessKey}
+  secretKey: ${bucket.secretKey}
+
+

@@ -18,6 +18,7 @@ import kr.giljabi.api.service.JwtProviderService;
 import kr.giljabi.api.service.MinioService;
 import kr.giljabi.api.utils.CommonUtils;
 import kr.giljabi.api.utils.ErrorCode;
+import kr.giljabi.api.utils.FileUtils;
 import kr.giljabi.api.utils.MyHttpUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -76,13 +77,9 @@ public class GiljabiController {
             GiljabiGpsdata gpsdataCheck = gpsService.findByUuid(gpsDataDTO.getUuid());
             String savedFilename = "";
             if(gpsdataCheck == null) { //insert
-                String filename = CommonUtils.makeGpsdataObjectName(gpxPath,
-                        gpsDataDTO.getUuid(),
-                        gpsDataDTO.getFileext());
-
-                InputStream inputStream = new ByteArrayInputStream(compressedXml.getBytes(StandardCharsets.UTF_8));
-                savedFilename = minioService.putObject(bucketPublic,
-                        filename, inputStream, CommonUtils.BINARY_CONTENT_TYPE);
+                String physicalPath = CommonUtils.makeGpsdataObjectPath(gpsDataDTO.getUuid());
+                savedFilename = FileUtils.saveFile(gpxPath + physicalPath,
+                        gpsDataDTO.getUuid(), compressedXml);
 
                 GiljabiGpsdata gpsdata = CommonUtils.makeGiljabiGpsdata(
                         MyHttpUtils.getClientIp(request),
@@ -90,7 +87,7 @@ public class GiljabiController {
                         gpsDataDTO,
                         0,//compressed
                         compressedXml.getBytes().length,
-                        savedFilename,
+                        physicalPath,
                         userInfo.getUserid());
                 log.info("saveGpsdata: " + savedFilename);
                 gpsService.save(gpsdata);
@@ -140,8 +137,9 @@ public class GiljabiController {
                     CommonUtils.getFileLocation(uuidKey),
                     CommonUtils.generateUUIDFilename(extension));
 
-            String savedFilename = minioService.putObject(bucketPublic,
-                    filename, file.getInputStream(), CommonUtils.BINARY_CONTENT_TYPE);
+/*            String savedFilename = minioService.putObject(bucketPublic,
+                    filename, file.getInputStream(), CommonUtils.BINARY_CONTENT_TYPE);*/
+            String savedFilename = FileUtils.saveFile(gpxPath, filename, file);
 
             JpegMetaInfo metadata = CommonUtils.getMetaData(ImageMetadataReader.readMetadata(file.getInputStream()));
             log.info("metadata: " + metadata.toString());
@@ -298,3 +296,4 @@ public class GiljabiController {
     }
 
 }
+
