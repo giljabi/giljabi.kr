@@ -8,11 +8,11 @@ import lombok.Data;
  * @Description
  */
 @Data
-public class Mountain100 {
+public class Forest100 {
     private String trackname;
     private String trackkorean;
 
-    public Mountain100(String trackname, String trackkorean) {
+    public Forest100(String trackname, String trackkorean) {
         this.trackname = trackname;
         this.trackkorean = trackkorean;
     }
