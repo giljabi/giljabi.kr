@@ -14,7 +14,7 @@ import java.util.List;
  * @Date : 2024.05.28
  * @Description
  */
-public interface GiljabiGpxRecommendRepository extends CrudRepository<GpxRecommend, Long> {
+public interface GiljabiGpsRecommendRepository extends CrudRepository<GpxRecommend, Long> {
     List<GpxRecommend> findByTrackname(String trackName);
 
     @Query("SELECT new kr.giljabi.api.response.Forest100(gr.trackname, gr.trackkorean) FROM GpxRecommend gr WHERE gr.gpxgroup = :gpxgroup GROUP BY gr.trackname, gr.trackkorean ORDER BY gr.trackkorean")

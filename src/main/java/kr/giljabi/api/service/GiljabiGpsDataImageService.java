@@ -2,7 +2,7 @@ package kr.giljabi.api.service;
 
 import kr.giljabi.api.entity.GiljabiGpsdataImage;
 import kr.giljabi.api.entity.GiljabiGpsdata;
-import kr.giljabi.api.repository.GiljabiGpxImageRepository;
+import kr.giljabi.api.repository.GiljabiGpsImageRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,10 +13,10 @@ import java.util.ArrayList;
 @Service
 public class GiljabiGpsDataImageService {
 
-    private final GiljabiGpxImageRepository giljabiGpsImageRepository;
+    private final GiljabiGpsImageRepository giljabiGpsImageRepository;
 
     @Autowired
-    public GiljabiGpsDataImageService(GiljabiGpxImageRepository giljabiGpsImageRepository) {
+    public GiljabiGpsDataImageService(GiljabiGpsImageRepository giljabiGpsImageRepository) {
         this.giljabiGpsImageRepository = giljabiGpsImageRepository;
     }
 

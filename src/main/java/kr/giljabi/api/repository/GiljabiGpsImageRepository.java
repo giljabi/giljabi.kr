@@ -12,7 +12,7 @@ import java.util.Optional;
  * @Date : 2024.05.28
  * @Description
  */
-public interface GiljabiGpxImageRepository extends CrudRepository<GiljabiGpsdataImage, String> {
+public interface GiljabiGpsImageRepository extends CrudRepository<GiljabiGpsdataImage, String> {
     Optional<GiljabiGpsdataImage> findByGpsdata(GiljabiGpsdata gpsdata);
     ArrayList<GiljabiGpsdataImage> findAllByGpsdata(GiljabiGpsdata gpsdata);
     Optional<GiljabiGpsdataImage> findById(Long id);

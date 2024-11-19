@@ -40,7 +40,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ElevationController {
     private final GiljabiGpsDataService gpsService;
-    private final GiljabiGpxRecommendService gpxRecommendService;
+    private final GiljabiGpsRecommendService gpxRecommendService;
     private final JwtProviderService jwtProviderService;
 
     private final GoogleService googleService;
