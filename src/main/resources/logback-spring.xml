@@ -8,7 +8,7 @@
     <property name="LOG_PATTERN" value="[%d{yyyy-MM-dd HH:mm:ss}.%-3relative] %-5level ${PID:-}[%15.15thread] %logger{36}.%M : %msg%n"/>
 
     <!-- Local -->
-    <springProfile name="localpc, localm1">
+    <springProfile name="localpc, localmac">
         <logger name="kr.giljabi.api" level="INFO"/>
         <logger name="org.springframework.web" level="OFF"/>
         <logger name="org.springframework.security" level="INFO"/>

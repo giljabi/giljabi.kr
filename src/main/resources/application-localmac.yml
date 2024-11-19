@@ -1,0 +1,33 @@
+spring:
+  datasource:
+    url: ${database.dev.url}
+    username: ${database.dev.username}
+    password: ${database.dev.password}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+  devtools:
+    restart:
+      enabled: false
+
+
+giljabi:
+  forest100:  #산림청 100대 명산 gpx, 오래된것 같음, 화악산에서 gpx 없었으면 ....
+    path: /Users/ubuntu/apps/giljabi/data # --> ${minio.bucketData}/forest100
+  xmlshare: #gpx, tcx 공유파일 경로, 삭제하지 않는 파일, 과거 gpx2tcx, giljabi.tistory.com 블로그에 공유된 파일
+    path: /Users/ubuntu/apps/giljabi/data/share     # --> ${minio.bucketData}/share
+  gpx:  # 사용자가 작성한 파일은 모두 공유하게 변경
+    path: /Users/ubuntu/apps/giljabi/data/gpx # --> ${minio.bucketService}/gpx
+
+##### 파일은 public만 사용함...private은 사용안함--> 관리가 귀찮네...
+##### minio는 서버사양이 낮아서 안됨, s3 사용안함, 로컬에 저장하게 변경
+minio:
+  url: http://localhost:9000
+  accessKey: ENC(FmY3fp0RsLtBJ9xO+v98Aml1P6VMj5gGx1lckqIQ/iE=) #${bucket.accessKey}
+  secretKey: ENC(hX5jaFHeI123YBd24lYPQvksTIon7F6NZICVncekjRVYR4K1KAoVyZCVcyzXypEW) #${bucket.secretKey}
+  bucketPublicUrl: http://localhost:9000/gil-media-pub
+  bucketPublic: gil-media-pub #public /forest100, /share
+
+
+
+
