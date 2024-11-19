@@ -1,4 +1,3 @@
-
 spring:
   datasource:
     url: ${database.dev.url}
@@ -10,57 +9,25 @@ spring:
   devtools:
     restart:
       enabled: false
-  jpa:
-    properties:
-      hibernate:
-        jdbc:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        ddl-auto: none
-  servlet:
-    multipart:
-      max-file-size: 50MB
-      max-request-size: 50MB
-  thymeleaf:
-    prefix: classpath:templates/
-    suffix: .html
-    mode: HTML
-    encoding: UTF-8
-    cache: false
-  autoconfigure:
-    exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,shutdown
-  endpoint:
-    shutdown:
-      enabled: true
-
-jwt:
-  accessTokenSecret: ${accessToken.secret}
-  accessTokenExpiration: 604800000
 
 giljabi:
-  mountain100:
-    #path: ~/apps/giljabi/data/forest100 # --> ${minio.bucketData}/forest100
+  mountain100:  #산림청 100대 명산 gpx, 오래된것 같음, 화악산에서 gpx 없었으면 ....
     path: x:/home/ubuntu/apps/giljabi/data/forest100/ # --> ${minio.bucketData}/forest100
-  xmlshare: #gpx, tcx 공유파일 경로, 삭제하지 않는 파일들...
-    path: x:/home/ubuntu/apps/giljabi/data/share/
-    #path: share  # --> ${minio.bucketData}/share
-  gpx:  # 생성된 파일은 모두 공유하게 변경
+  xmlshare: #gpx, tcx 공유파일 경로, 삭제하지 않는 파일, 블로그에 공유된 파일
+    path: x:/home/ubuntu/apps/giljabi/data/share/     # --> ${minio.bucketData}/share
+  gpx:  # 사용자가 작성한 파일은 모두 공유하게 변경
     path: x:/home/ubuntu/apps/giljabi/data/gpx # --> ${minio.bucketService}/gpx
 
-#### 파일은 public만 사용함...private은 사용안함--> 관리가 귀찮네...
-#### s3사용하지 않고 로컬에 저장하게 변경
-minio:
-  url: ${bucket.url}
-#  bucketPrivate: gil-media-pri #public gpx, elevation, gpximages 서비스에서 사용하는 데이터, 사용자가 생성한 파일들
-#  bucketPublicUrl: http://localhost:9000
-  bucketPublicUrl: ${bucket.media-public.url}
-  bucketPublic: ${bucket.media-public.name} #public /forest100, /share
-  accessKey: ${bucket.accessKey}
-  secretKey: ${bucket.secretKey}
+##### 파일은 public만 사용함...private은 사용안함--> 관리가 귀찮네...
+##### s3사용하지 않고 로컬에 저장하게 변경
+#minio:
+#  url: ${bucket.url}
+##  bucketPrivate: gil-media-pri #public gpx, elevation, gpximages 서비스에서 사용하는 데이터, 사용자가 생성한 파일들
+##  bucketPublicUrl: http://localhost:9000
+#  bucketPublicUrl: ${bucket.media-public.url}
+#  bucketPublic: ${bucket.media-public.name} #public /forest100, /share
+#  accessKey: ${bucket.accessKey}
+#  secretKey: ${bucket.secretKey}
 
 

@@ -2,7 +2,6 @@ package kr.giljabi.api.controller;
 
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.lang.GeoLocation;
-import com.drew.metadata.Metadata;
 import kr.giljabi.api.entity.GiljabiGpsdataImage;
 import kr.giljabi.api.entity.GiljabiGpsdata;
 import kr.giljabi.api.entity.UserInfo;
@@ -29,9 +28,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 /**
