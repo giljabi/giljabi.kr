@@ -1,0 +1,73 @@
+server:
+  port: 9090
+  shutdown: graceful
+  forward-headers-strategy: native  #nginx 사용시 remote address(ip) 가져오기 위해 설정
+
+database:
+  dev:
+    url: ENC(b+onYowAER3fHkAhVSCDbkHcXuHIMu1VpApPu2Xkf/+gG801N4myVcl9eXkhUAvJJuOJr6FQlTiTIi5yXv3T8et3DSBMHlsy0Szh7OgnfE8BcCPzmJi0Lw==)
+    username: ENC(qKPlIGwMdBetYpJJkorjGQ==)
+    password: ENC(7I8Lzy6E8hRt/RgUp5TBYpFGP5yHoG7d)
+  prod:
+    url: ENC(LoLysQfDmgBdeYFHARcQ7y71cmSyAvtpweWxQQPLYy5P+Gi9/LHkkm7dkkAJSi/1ReFBRyB1XXRlXJPP6nbrSjj8IXS+XiMYrsa2Lb8148H8ska3obALnw==)
+    username: ENC(gjEQVrqQI/JVbiddLeFvPQ==)
+    password: ENC(4Ei9WNUxrbl15e5QyRHdjN2UkCkV1ceO)
+
+jwt:
+  accessTokenSecret: 4RT/2hAAJmC6i2FzmezBbaCVMD9FtsuExyjaVWJ5xRA=
+  accessTokenExpiration: 604800000
+
+spring:
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        ddl-auto: none
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+  thymeleaf:
+    prefix: classpath:templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+    cache: false
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,shutdown
+  endpoint:
+    shutdown:
+      enabled: true
+
+giljabi:
+  openrouteservice:
+    apikey: ENC(sOdLwLmOfb8HBvpiuSsPZ5V25Mntod0p250AlTyNKS9zn4XodJqarSgiQhynvHqfbBsVgGG2KjXEoKWjjEcCKislSWoN3IQ4)
+    directionUrl: https://api.openrouteservice.org/v2/directions/%s/json
+
+  google:
+    elevation:
+      #google elevation get api는 요청된 좌표 적절히 잘라서 8192(512개 좌표)를 넘지 않아야 한다. 400이 적당함(8192를 초과하지 않는 좌표수)
+      googleGetCount: 400
+      apikey: ENC(v9QZJCfKmhvsd/HhnNFRHB3O1jh9i4DRYdz4izgh6Pi2rxgzf5DLED+wVy7RNMTz)
+      elevationUrl: https://maps.googleapis.com/maps/api/elevation/json
+      path: elevation  #${minio.bucketService}/elevation
+#  mountain100:
+#    path: forest100 # --> ${minio.bucketData}/forest100
+#  xmlshare: #gpx, tcx 공유파일 경로, 삭제하지 않는 파일들... 이전버전 데이터 호환성으로 유지 #path: /home/bitnami/apps/tomcat7/wasfiles/share
+#    path: share  # --> ${minio.bucketData}/share
+#  gpx:
+#    path: gpx # --> ${minio.bucketService}/gpx
+
+
+
+
+
+
+
