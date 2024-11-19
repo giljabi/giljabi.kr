@@ -90,7 +90,7 @@ function onClickFileInput() {
 function combo100() {
     $.ajax({
         type: 'get',
-        url: '/api/1.0/mountain100',
+        url: '/api/1.0/forest100',
         contentType: 'application/json',
         dataType: 'json',
         async: false,
@@ -765,4 +765,5 @@ $(document).ready(function() {
 
     onClickOpenGiljabi();
 });
+
 

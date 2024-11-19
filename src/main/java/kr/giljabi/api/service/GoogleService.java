@@ -12,6 +12,7 @@ import kr.giljabi.api.geo.gpx.*;
 import kr.giljabi.api.request.RequestElevationData;
 import kr.giljabi.api.request.RequestGpsDataDTO;
 import kr.giljabi.api.utils.CommonUtils;
+import kr.giljabi.api.utils.FileUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
@@ -48,7 +49,7 @@ public class GoogleService {
     private final GiljabiGpsElevationService giljabiGpsElevationService;
     private final GiljabiGpsDataService gpsService;
     private final JwtProviderService jwtProviderService;
-    private final MinioService minioService;
+    //private final MinioService minioService;
 
     @Value("${giljabi.google.elevation.apikey}")
     private String googleApikey;
@@ -196,14 +197,21 @@ public class GoogleService {
         gpsDataDTO.setXmldata("");
         gpsDataDTO.setFileext("gpx");
         gpsDataDTO.setFilename("");
-
+/*
         String objectName = CommonUtils.makeGpsdataObjectName(gpxPath,
                 gpsDataDTO.getUuid(),
-                gpsDataDTO.getFileext());
+                gpsDataDTO.getFileext());*/
 
+        String physicalPath = CommonUtils.makeGpsdataObjectPath(gpsDataDTO.getUuid());
+        String savedFilename = FileUtils.saveFile(gpxPath + physicalPath,
+                gpsDataDTO.getUuid(), compressedXml);
+
+/*
         InputStream inputStream = new ByteArrayInputStream(compressedXml.getBytes(StandardCharsets.UTF_8));
+
         String savedFilename = minioService.putObject(bucketPublic,
                 objectName, inputStream, CommonUtils.BINARY_CONTENT_TYPE);
+*/
 
         GiljabiGpsdata gpsdata = CommonUtils.makeGiljabiGpsdata(request.getRemoteAddr(),
                 "makeElevation",
@@ -270,3 +278,4 @@ public class GoogleService {
     }
 
 }
+

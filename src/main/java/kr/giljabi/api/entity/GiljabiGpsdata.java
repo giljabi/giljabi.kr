@@ -82,7 +82,7 @@ public class GiljabiGpsdata implements java.io.Serializable {
     @Column(nullable = true)
     private String userip;
 
-    @OneToMany(mappedBy = "gpsdata", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "gpsdata", cascade = CascadeType.ALL /*, orphanRemoval = true*/)
     private List<GiljabiGpsdataImage> gpsdataimages;
     public void addGpsImage(GiljabiGpsdataImage gpsImage) {
         gpsdataimages.add(gpsImage);
@@ -117,3 +117,4 @@ public class GiljabiGpsdata implements java.io.Serializable {
         }
     }
 }
+

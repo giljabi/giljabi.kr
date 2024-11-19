@@ -1447,15 +1447,16 @@ TCX
         $('#blockingAds').hide();
     });
 
-    const canvas = document.getElementById('progressCanvas');
-    const ctx = canvas.getContext('2d');
-    const progressBarContainer = document.getElementById('progressBarContainer');
-    // Set canvas size to match container size
-    canvas.width = progressBarContainer.clientWidth;
-    canvas.height = progressBarContainer.clientHeight;
-
     $('#uploadForm').on('submit', function(event) {
         event.preventDefault(); // 기본 폼 제출 동작 막기
+
+        const canvas = document.getElementById('progressCanvas');
+        const ctx = canvas.getContext('2d');
+        const progressBarContainer = document.getElementById('progressBarContainer');
+        // Set canvas size to match container size
+        canvas.width = progressBarContainer.clientWidth;
+        canvas.height = progressBarContainer.clientHeight;
+
 
         if(uuid == null || uuid == '') {
             alert("gpx/tcx 저장 후 사용할 수 있습니다.");
@@ -1495,7 +1496,7 @@ TCX
                     marker.setDraggable(true);
 
                     let imageLink = `<tr>`;
-                    imageLink += `<td style="width:5px;" onclick="javascript:deleteImage('${savedFileInfo.filePath}');">X</td>`;
+                    imageLink += `<td style="width:5px;cursor: pointer;" onclick="javascript:deleteImage('${savedFileInfo.imageId}');">X</td>`;
                     imageLink += `<td class="timeClass" onclick="javascript:goCenter(${savedFileInfo.geoLocation.latitude},`;
                     imageLink += ` ${savedFileInfo.geoLocation.longitude}, 5);">${savedFileInfo.originalFileName}</td>`;
                     imageLink += `<td ></td>`;
@@ -1514,12 +1515,8 @@ TCX
 });
 
 
-function deleteImage(fileurl) {
-    const parts = fileurl.split('/');
-    const thirdSlashPart = parts.slice(3).join('/');
-/*
-    //let apiUrl = `/api/1.0/deleteImage/${parts[3]}/${parts[4]}/${parts[5]}/${parts[6]}`;
-    let apiUrl = `/api/1.0/deleteImage/${thirdSlashPart}`;
+function deleteImage(imageId) {
+    let apiUrl = `/api/1.0/deleteImage/${imageId}`;
     $.ajax({
         type: 'DELETE',
         url: apiUrl,
@@ -1531,7 +1528,6 @@ function deleteImage(fileurl) {
             console.info('Error deleting file');
         }
     });
- */
 }
 
 function updateProgressGraph(ctx, processedFiles, totalFiles) {
@@ -1614,3 +1610,4 @@ function chartPlotAdView(view) {
             $('.containerPlot').css('background-image', 'none');
     */
 }
+

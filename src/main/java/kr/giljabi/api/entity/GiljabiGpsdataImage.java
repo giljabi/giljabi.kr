@@ -21,7 +21,7 @@ import java.time.Instant;
 public class GiljabiGpsdataImage implements java.io.Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "gpsdata_id", nullable = false)
@@ -75,3 +75,4 @@ public class GiljabiGpsdataImage implements java.io.Serializable {
     @Column(length = 36)
     private String userip;
 }
+

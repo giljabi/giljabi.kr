@@ -16,7 +16,8 @@ public class WebConfig implements WebMvcConfigurer{
 
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
 		registry.addResourceHandler("/gpx/**")
-				.addResourceLocations("file:" + filePath);
+				.addResourceLocations("file:" + filePath + "/");
+
 	}
 
 	@Override
@@ -68,4 +69,5 @@ public class WebConfig implements WebMvcConfigurer{
 */
 
 }
+
 

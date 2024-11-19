@@ -8,12 +8,13 @@ import kr.giljabi.api.geo.gpx.TrackPoint;
 import kr.giljabi.api.request.RequestElevationSaveData;
 import kr.giljabi.api.response.GiljabiResponse;
 import kr.giljabi.api.response.Gpx100Response;
-import kr.giljabi.api.response.Mountain100;
+import kr.giljabi.api.response.Forest100;
 import kr.giljabi.api.service.*;
 import kr.giljabi.api.request.RequestElevationData;
 import kr.giljabi.api.response.Response;
 import kr.giljabi.api.utils.CommonUtils;
 import kr.giljabi.api.utils.ErrorCode;
+import kr.giljabi.api.utils.FileUtils;
 import kr.giljabi.api.utils.MyHttpUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,8 +23,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -46,14 +45,18 @@ public class ElevationController {
 
     private final GoogleService googleService;
 
-    private final MinioService minioService;
+    //private final MinioService minioService;
+
     private UserInfo userInfo;
 
     @Value("${giljabi.gpx.path}")
     private String gpxPath;
 
-    @Value("${minio.bucketPublic}")
-    private String bucketPublic;
+    @Value("${giljabi.forest100.path}")
+    private String forest100;
+
+//    @Value("${minio.bucketPublic}")
+//    private String bucketPublic;
 
 //    @Value("${minio.bucketPrivate}")
 //    private String bucketPrivate;
@@ -80,17 +83,17 @@ public class ElevationController {
     }
 
     /**
-     * /api/1.0/mountain100 for mountain100Select combobox
+     * /api/1.0/forest100 for mountain100Select combobox
      * @return
      */
-    @GetMapping("/api/1.0/mountain100")
+    @GetMapping("/api/1.0/forest100")
     @ApiOperation(value = "산림청 100대 명산",
             notes = "<h3>한국등산트레킹지원센터_산림청 100대명산</h3><br>" +
                     "산림청 100대명산의 POI(관심지점), 갈림길(방면), 노면정보를 제공하는 GPX 포맷의 공간정보 파일데이터<br>" +
                     "https://www.data.go.kr/data/15098177/fileData.do?recommendDataYn=Y<br>")
     public Response getMountainList100() {
         try {
-            List<Mountain100> list = gpxRecommendService.findTrackNamesByGpxGroup("forest100");
+            List<Forest100> list = gpxRecommendService.findTrackNamesByGpxGroup("forest100");
             return new Response(list);
         } catch (Exception e) {
             return new Response(ErrorCode.STATUS_EXCEPTION.getStatus(), e.getMessage());
@@ -99,7 +102,7 @@ public class ElevationController {
 
     /**
      * editor getMountainGpxLists
-     * gxpgroup: forest100
+     * gxpgroup: mountain100
      * minio 서비스로 변경
      * @param filename + "-*\\.gpx$": abc-*.gpx
      * @return
@@ -120,7 +123,7 @@ public class ElevationController {
 
     /**
      *
-     * @param directory: forest100
+     * @param directory: mountain100
      * @param filename
      * @return
      */
@@ -130,8 +133,12 @@ public class ElevationController {
                                               @PathVariable String filename) {
         try {
             Gpx100Response gpx100Response = new Gpx100Response();
-            String xmlDataLink = minioService.getObjectByString(bucketPublic,
-                    directory + "/" + filename);
+            String physicalFilePath = forest100 + "/" + directory + "/" + filename;
+            String xmlDataLink = FileUtils.fileReaderByText(physicalFilePath);
+
+            if(xmlDataLink == null || xmlDataLink.isEmpty())
+                return new Response(ErrorCode.STATUS_EXCEPTION.getStatus(), "파일을 찾을 수 없습니다.");
+
             gpx100Response.setTrackName(filename);
             gpx100Response.setXmlData(xmlDataLink);
             return new Response(Optional.of(gpx100Response));
@@ -148,17 +155,12 @@ public class ElevationController {
             userInfo = jwtProviderService.getSessionByUserinfo(request);
 
             String uuid = CommonUtils.generateUUID().toString();
-            String filename = CommonUtils.makeGpsdataObjectName(
-                    gpxPath,
-                    uuid,
-                    elevationSaveData.getFileExt());
 
             String compressedXml = elevationSaveData.getXmlData();
-            InputStream inputStream = new ByteArrayInputStream(compressedXml.getBytes(StandardCharsets.UTF_8));
-            String savedFilename = minioService.putObject(bucketPublic,
-                    filename, inputStream, CommonUtils.BINARY_CONTENT_TYPE);
+            String logicalFileName = CommonUtils.makeGpsdataObjectPath(uuid);
+            String savedFilename = FileUtils.saveFile(gpxPath + logicalFileName,
+                    uuid, compressedXml);
 
-            //DB에 저장 필요
             GiljabiGpsdata gpsdata = new GiljabiGpsdata();
             gpsdata.setTrackname(elevationSaveData.getGpxName());
             gpsdata.setFileext(elevationSaveData.getFileExt());
@@ -167,18 +169,18 @@ public class ElevationController {
             gpsdata.setDistance(elevationSaveData.getDistance());
             gpsdata.setFilesize(0);
             gpsdata.setFilesizecompress(compressedXml.length());
-            gpsdata.setFileurl(savedFilename);
+            gpsdata.setFileurl(logicalFileName);
             gpsdata.setSpeed(elevationSaveData.getSpeed());
             gpsdata.setUserid(userInfo.getUserid());
             gpsdata.setUuid(uuid); //filename
             gpsdata.setApiname(elevationSaveData.getApiName());
             gpsdata.setUserip(MyHttpUtils.getClientIp(request));
-            log.info("saveElevation: " + savedFilename);
             gpsService.save(gpsdata);
+            log.info("saveElevation: " + savedFilename);
 
             GiljabiResponse giljabiResponse = new GiljabiResponse();
             giljabiResponse.setFileKey(gpsdata.getUuid());
-            giljabiResponse.setFilePath(savedFilename);
+            giljabiResponse.setFilePath(logicalFileName);
             return new Response(giljabiResponse);
         } catch (Exception e) {
             return new Response(ErrorCode.STATUS_EXCEPTION.getStatus(), e.getMessage());
@@ -197,3 +199,4 @@ public class ElevationController {
         return response;
     }
 }
+

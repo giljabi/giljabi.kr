@@ -2,7 +2,7 @@ package kr.giljabi.api.service;
 
 import kr.giljabi.api.entity.GpxRecommend;
 import kr.giljabi.api.repository.GiljabiGpxRecommendRepository;
-import kr.giljabi.api.response.Mountain100;
+import kr.giljabi.api.response.Forest100;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,7 +30,7 @@ public class GiljabiGpxRecommendService {
         return (List<GpxRecommend>) giljabiGpxRecommendRepository.findByTrackname(trackName);
     }
 
-    public List<Mountain100> findTrackNamesByGpxGroup(String gpxgroup) {
+    public List<Forest100> findTrackNamesByGpxGroup(String gpxgroup) {
         return giljabiGpxRecommendRepository.findTrackNamesByGpxGroup(gpxgroup);
     }
 
@@ -42,3 +42,4 @@ public class GiljabiGpxRecommendService {
                 .collect(Collectors.toList());
     }
 }
+

@@ -7,8 +7,6 @@ import java.io.*;
 public class GPXCompressor {
 
     public static void main(String[] args) {
-        //String directoryPath = "/Users/parknamjun/IdeaProjects/giljabi.tistory.com/forest100/";
-        //String directoryPath = "/git/github/parknamjun/giljabi.tisoty.com/forest100/";
         String directoryPath = "/tmp/";
 
         File directory = new File(directoryPath);

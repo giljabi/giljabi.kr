@@ -43,7 +43,8 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 		String token = jwtProvider.generateJwtToken(userInfo);
 
 		this.session.setAttribute("token", token);
-		this.redirectStratgy.sendRedirect(request, response, "/manager/giljabi2");
+		this.redirectStratgy.sendRedirect(request, response, "/v2/manager/giljabi2-admin");
 	}
 
 }
+

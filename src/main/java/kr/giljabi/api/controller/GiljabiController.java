@@ -28,6 +28,10 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 /**
@@ -70,40 +74,32 @@ public class GiljabiController {
             userInfo = jwtProviderService.getSessionByUserinfo(request);
             String compressedXml = gpsDataDTO.getXmldata();
 
+            String logicalFileName = CommonUtils.makeGpsdataObjectPath(gpsDataDTO.getUuid());
+            String savedFilename = FileUtils.saveFile(gpxPath + logicalFileName,
+                    gpsDataDTO.getUuid(), compressedXml);
+            log.info("saveGpsdata File save: " + savedFilename);
+            GiljabiGpsdata gpsdata = CommonUtils.makeGiljabiGpsdata(
+                    MyHttpUtils.getClientIp(request),
+                    "saveGpsdata",
+                    gpsDataDTO,
+                    0, // compressed
+                    compressedXml.getBytes().length,
+                    logicalFileName,
+                    userInfo.getUserid()
+            );
+
             GiljabiGpsdata gpsdataCheck = gpsService.findByUuid(gpsDataDTO.getUuid());
-            String savedFilename = "";
-            if(gpsdataCheck == null) { //insert
-                String physicalPath = CommonUtils.makeGpsdataObjectPath(gpsDataDTO.getUuid());
-                savedFilename = FileUtils.saveFile(gpxPath + physicalPath,
-                        gpsDataDTO.getUuid(), compressedXml);
-
-                GiljabiGpsdata gpsdata = CommonUtils.makeGiljabiGpsdata(
-                        MyHttpUtils.getClientIp(request),
-                        "saveGpsdata",
-                        gpsDataDTO,
-                        0,//compressed
-                        compressedXml.getBytes().length,
-                        physicalPath,
-                        userInfo.getUserid());
-                log.info("saveGpsdata: " + savedFilename);
-                gpsService.save(gpsdata);
-            } else {    //update
-                GiljabiGpsdata gpsdata = CommonUtils.makeGiljabiGpsdata(
-                        MyHttpUtils.getClientIp(request),
-                        "saveGpsdata",
-                        gpsDataDTO,
-                        0,//compressed
-                        compressedXml.getBytes().length,
-                        savedFilename,
-                        userInfo.getUserid());
-                gpsdata.setId(gpsdataCheck.getId());
-                log.info("saveGpsdata: " + savedFilename);
-                gpsService.save(gpsdata);
-
+            if(gpsdataCheck != null) { //insert
+                gpsdata.setId(gpsdataCheck.getId());    // null이면 insert
+                log.info("saveGpsdata Update: " + gpsDataDTO.getUuid());
+            } else {
+                log.info("saveGpsdata Insert: " + gpsDataDTO.getUuid());
             }
+            gpsService.save(gpsdata);
+
             GiljabiResponse giljabiResponse = new GiljabiResponse();
             giljabiResponse.setFileKey(gpsDataDTO.getUuid());
-            giljabiResponse.setFilePath(savedFilename);
+            giljabiResponse.setFilePath(logicalFileName);
             return new Response(giljabiResponse);
         }  catch (Exception e) {
             e.printStackTrace();
@@ -115,36 +111,40 @@ public class GiljabiController {
      * bucketName: service
      * path: service/gpx/yyyyMM/uuid_filename/uuid_filename.jpg
      * @param file
-     * @param uuidKey
+     * @param parentUuid
      * @return
      */
     @PostMapping("/api/1.0/uploadImage")
     public Response uploadImage(HttpServletRequest request,
                                      @RequestParam("file") MultipartFile file,
-                                     @RequestParam("uuid") String uuidKey) {
+                                     @RequestParam("uuid") String parentUuid) {
         try {
             userInfo = jwtProviderService.getSessionByUserinfo(request);
             if(Integer.parseInt(userInfo.getLevel()) < 10) {
                 return new Response(ErrorCode.STATUS_FAILURE.getStatus(), "준비중인 기능입니다.");
             }
+
             String extension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
-            String filename = String.format("%s/%s/%s",
-                    gpxPath,
-                    CommonUtils.getFileLocation(uuidKey),
-                    CommonUtils.generateUUIDFilename(extension));
+            if (file != null && !(extension.endsWith(".png") || extension.endsWith(".jpg") || extension.endsWith(".jpeg"))) {
+                return new Response(ErrorCode.STATUS_FAILURE.getStatus(), "파일이 없거나, 지원하지 않는 파일 형식입니다.");
+            }
 
-/*            String savedFilename = minioService.putObject(bucketPublic,
-                    filename, file.getInputStream(), CommonUtils.BINARY_CONTENT_TYPE);*/
-            String savedFilename = FileUtils.saveFile(gpxPath, filename, file);
+            String imageFileName = CommonUtils.generateUUIDFilename(extension);
+            String logicalFileName = CommonUtils.makeGpsdataObjectPath(parentUuid);
+            String savedFilename = FileUtils.saveFile(gpxPath + logicalFileName,
+                    imageFileName, file);
 
-            JpegMetaInfo metadata = CommonUtils.getMetaData(ImageMetadataReader.readMetadata(file.getInputStream()));
+            //저장된 파일을 InputStream으로 읽어서 메타데이터를 추출
+            InputStream inputStream = new FileInputStream(savedFilename);
+            JpegMetaInfo metadata = CommonUtils.getMetaData(ImageMetadataReader.readMetadata(inputStream));
+            inputStream.close();
             log.info("metadata: " + metadata.toString());
 
-            GiljabiGpsdata gpsdata = gpsService.findByUuid(uuidKey);
+            GiljabiGpsdata gpsdata = gpsService.findByUuid(parentUuid);
             //db에 저장하는 코드
             GiljabiGpsdataImage gpsImage = new GiljabiGpsdataImage();
             gpsImage.setFileext(extension.substring(extension.indexOf(".") + 1));
-            gpsImage.setFileurl(savedFilename); //서버는 항상 다를 수 있음
+            gpsImage.setFileurl(logicalFileName + "/" + imageFileName);
             gpsImage.setGpsdata(gpsdata);   //gpsdata에 대한 참조 키
             gpsImage.setEle(metadata.getAltitude());
             gpsImage.setLat(metadata.getGeoLocation().getLatitude());
@@ -154,17 +154,21 @@ public class GiljabiController {
             gpsImage.setMake(metadata.getMake());
             gpsImage.setModel(metadata.getModel());
             gpsImage.setOriginaldatetime(metadata.getDateTime());
-            gpsImage.setOriginalfname(file.getOriginalFilename());
+            gpsImage.setOriginalfname(file.getOriginalFilename());  //DB는 원 파일명을 저장
             gpsImage.setFilesize(file.getSize());
             gpsImage.setUserip(MyHttpUtils.getClientIp(request));
-            imageService.saveGpsImage(gpsImage, gpsdata);
+            imageService.save(gpsImage, gpsdata);
 
+
+            String[] gpxPathArray = gpxPath.split("/");     //gpx 위치
             GiljabiResponse giljabiResponse = new GiljabiResponse();
-            giljabiResponse.setFilePath(savedFilename);
-            giljabiResponse.setFileKey(uuidKey);
+            giljabiResponse.setImageId(gpsImage.getId());
+            giljabiResponse.setFilePath("/" + gpxPathArray[gpxPathArray.length - 1] + gpsImage.getFileurl());
+            giljabiResponse.setFileKey(parentUuid);
             giljabiResponse.setGeoLocation(metadata.getGeoLocation());
             giljabiResponse.setAltitude(metadata.getAltitude());
-            giljabiResponse.setOriginalFileName(file.getOriginalFilename());
+            String[] uuidKeyArray = imageFileName.split("-"); //화면에 보이는 파일명은 일관성을 유지
+            giljabiResponse.setOriginalFileName(uuidKeyArray[uuidKeyArray.length - 1]);
 
             return new Response(giljabiResponse);
         } catch (Exception e) {
@@ -172,15 +176,21 @@ public class GiljabiController {
         }
     }
 
-    @DeleteMapping("/api/1.0/deleteImage/{bucketName}/{yearmonth}/{uuidkey}/{filename:.+}")
-    public Response deleteImage(@PathVariable String bucketName,
-                                     @PathVariable String yearmonth,
-                                     @PathVariable String uuidkey,
-                                     @PathVariable String filename) {
+    @DeleteMapping("/api/1.0/deleteImage/{imageId}")
+    public Response deleteImage(HttpServletRequest request, @PathVariable Long imageId) {
         try {
-            String objectPath = String.format("%s/%s/%s", yearmonth, uuidkey, filename);
-            //파일을 삭제하기전 본인것인지....확인해야 함
-            minioService.deleteObject(bucketName, objectPath);
+            //파일을 삭제하기전 본인것인지....확인해야 하는데, 관리자만 사용하자...
+            userInfo = jwtProviderService.getSessionByUserinfo(request);
+            if(Integer.parseInt(userInfo.getLevel()) < 10) {
+                return new Response(ErrorCode.STATUS_FAILURE.getStatus(), "준비중인 기능입니다.");
+            }
+
+            //DB에서 파일정보를 가져온다
+            GiljabiGpsdataImage gpsImage = imageService.findById(imageId);
+            String physicalFilePath = gpxPath + gpsImage.getFileurl();
+            System.out.println("physicalFilePath: " + physicalFilePath);
+            FileUtils.deleteFile(physicalFilePath);
+
             return new Response(ErrorCode.STATUS_SUCCESS.getStatus());
         } catch (Exception e) {
             return new Response(ErrorCode.STATUS_FAILURE.getStatus(), e.getMessage());
@@ -292,4 +302,5 @@ public class GiljabiController {
     }
 
 }
+
 

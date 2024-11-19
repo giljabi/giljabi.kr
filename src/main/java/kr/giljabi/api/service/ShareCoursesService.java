@@ -27,8 +27,8 @@ public class ShareCoursesService {
     private String bucketPublic;
 
     @Autowired
-    public ShareCoursesService(ShareCoursesRepository shareCoursesRepository,
-                               MinioService minioService) {
+    public ShareCoursesService(ShareCoursesRepository shareCoursesRepository
+            , MinioService minioService) {
         this.shareCoursesRepository = shareCoursesRepository;
         this.minioService = minioService;
     }
@@ -42,8 +42,8 @@ public class ShareCoursesService {
                         shareCourses.get().getFileHash());
 
                 XmlShareResponse xmlShareResponse = new XmlShareResponse();
-                String xmlData = minioService.getObjectByString(bucketPublic, filePath);
-                xmlShareResponse.setXmlData(xmlData);
+                //String xmlData = minioService.getObjectByString(bucketPublic, filePath);
+                //xmlShareResponse.setXmlData(xmlData);
                 xmlShareResponse.setUuid(fileHashId);
                 xmlShareResponse.setTrackName(shareCourses.get().getPcFileName());
                 xmlShareResponse.setFileType("tcx");
@@ -67,3 +67,4 @@ public class ShareCoursesService {
         return new String(binaryData, StandardCharsets.UTF_8);
     }
 }
+

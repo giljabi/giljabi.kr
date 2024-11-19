@@ -77,13 +77,12 @@ public class MinioService {
         Metadata metadata = ImageMetadataReader.readMetadata(inputStream);
         return CommonUtils.getMetaData(metadata);
     }
-
-    /**
-     * Object가 폴더인 경우가 있어서 폴더 내의 모든 Object를 삭제
-     * @param bucketName
-     * @param folderName
-     * @throws Exception
-     */
+     //
+     // * Object가 폴더인 경우가 있어서 폴더 내의 모든 Object를 삭제
+     // * @param bucketName
+     // * @param folderName
+     // * @throws Exception
+     //
     public void deleteObject(String bucketName, String folderName) throws Exception {
         try {
             Iterable<Result<Item>> results = minioClient.listObjects(
@@ -119,25 +118,25 @@ public class MinioService {
         }
     }
 
-    /**
-     * 1개 Object 삭제
-     * @param bucketName
-     * @param objectName
-     * @throws Exception
-     */
-/*    public void deleteObject(String bucketName, String objectName) throws Exception {
-        try {
-            if(doesObjectExist(bucketName, objectName)) {
-                minioClient.removeObject(
-                        RemoveObjectArgs.builder()
-                                .bucket(bucketName)
-                                .object(objectName)
-                                .build());
-            }
-        } catch (Exception e) {
-            throw e;
-        }
-    }*/
+    ///
+    // * 1개 Object 삭제
+    // * @param bucketName
+    // * @param objectName
+    // * @throws Exception
+    //
+//    public void deleteObject(String bucketName, String objectName) throws Exception {
+//        try {
+//            if(doesObjectExist(bucketName, objectName)) {
+//                minioClient.removeObject(
+//                        RemoveObjectArgs.builder()
+//                                .bucket(bucketName)
+//                                .object(objectName)
+//                                .build());
+//            }
+//        } catch (Exception e) {
+//            throw e;
+//        }
+//    }
 
     public boolean doesObjectExist(String bucketName, String objectName) {
         try {
@@ -163,13 +162,13 @@ public class MinioService {
         }
     }
 
-    /**
-     * String 반환
-     * @param bucketName
-     * @param fileName
-     * @return
-     * @throws IOException
-     */
+    ///
+    // * String 반환
+    // * @param bucketName
+    // * @param fileName
+    // * @return
+    // * @throws IOException
+    //
     public String getObjectByString(String bucketName, String fileName) throws IOException {
         try (var stream = minioClient.getObject(
                 GetObjectArgs.builder()
@@ -189,13 +188,13 @@ public class MinioService {
         }
     }
 
-    /**
-     * String을 List로 반환
-     * @param bucketName
-     * @param fileName
-     * @return
-     * @throws IOException
-     */
+    ///
+    // * String을 List로 반환
+    // * @param bucketName
+    // * @param fileName
+    // * @return
+    // * @throws IOException
+    //
     public List<String> getObjectStringByList(String bucketName, String fileName) throws IOException {
         List<String> lines = new ArrayList<>();
 
@@ -217,13 +216,13 @@ public class MinioService {
         return lines;
     }
 
-    /**
-     * prefix로 시작하는 파일 목록 반환
-     * @param bucketName
-     * @param directory
-     * @param prefix
-     * @return
-     */
+    ///
+    // * prefix로 시작하는 파일 목록 반환
+    // * @param bucketName
+    // * @param directory
+    // * @param prefix
+    // * @return
+    //
     public List<String> listFiles(String bucketName, String directory, String prefix, String extension) {
         List<String> fileList = new ArrayList<>();
         String regex = prefix.replace("*", ".*");
@@ -262,3 +261,4 @@ public class MinioService {
     }
 
 }
+

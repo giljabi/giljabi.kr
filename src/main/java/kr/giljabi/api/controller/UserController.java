@@ -12,13 +12,13 @@ import javax.servlet.http.HttpSession;
 @Slf4j
 public class UserController {
 
-    @RequestMapping("/login")
+    @RequestMapping("/v2/login")
     public String loginForm(){
         log.info("loginForm");
         return "login";
     }
 
-    @RequestMapping("/logout")
+    @RequestMapping("/v2/logout")
     public String logout(HttpSession session){
         session.removeAttribute("token");
         session.invalidate();
@@ -28,13 +28,14 @@ public class UserController {
 
         // 로그아웃 페이지로 리다이렉트
         //return "/login";
-        return "redirect:/";
+        return "redirect:/v2";
     }
 
-    @RequestMapping("/manager/giljabi2")
+    @RequestMapping("/v2/manager/giljabi2-admin")
     public String goManagerGiljabi2(){
         log.info("giljabi2");
-        return "manager/giljabi2-admin";
+        return "v2/manager/giljabi2-admin";
     }
 
 }
+

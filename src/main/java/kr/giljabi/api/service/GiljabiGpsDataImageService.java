@@ -2,7 +2,7 @@ package kr.giljabi.api.service;
 
 import kr.giljabi.api.entity.GiljabiGpsdataImage;
 import kr.giljabi.api.entity.GiljabiGpsdata;
-import kr.giljabi.api.repository.GiljabiGpsImageRepository;
+import kr.giljabi.api.repository.GiljabiGpxImageRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,25 +13,24 @@ import java.util.ArrayList;
 @Service
 public class GiljabiGpsDataImageService {
 
-    private final GiljabiGpsImageRepository giljabiGpsImageRepository;
+    private final GiljabiGpxImageRepository giljabiGpsImageRepository;
 
     @Autowired
-    public GiljabiGpsDataImageService(GiljabiGpsImageRepository giljabiGpsImageRepository) {
+    public GiljabiGpsDataImageService(GiljabiGpxImageRepository giljabiGpsImageRepository) {
         this.giljabiGpsImageRepository = giljabiGpsImageRepository;
     }
 
-    public GiljabiGpsdataImage saveGpsImage(GiljabiGpsdataImage gpsImage, GiljabiGpsdata gpsdata) {
+    public GiljabiGpsdataImage save(GiljabiGpsdataImage gpsImage, GiljabiGpsdata gpsdata) {
         //gpsdata.addGpsImage(gpsImage);
         return giljabiGpsImageRepository.save(gpsImage);
     }
 
-/*
-    public Optional<GiljabiGpsdataImage> findByGpsdataId(Long gpsdataId) {
-        return giljabiGpsImageRepository.findByGpsdataId(gpsdataId);
+    public GiljabiGpsdataImage findById(Long id) {
+        return giljabiGpsImageRepository.findById(id).orElse(null);
     }
-*/
 
     public ArrayList<GiljabiGpsdataImage> findAllByGpsdata(GiljabiGpsdata gpsdata) {
         return giljabiGpsImageRepository.findAllByGpsdata(gpsdata);
     }
 }
+

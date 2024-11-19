@@ -68,6 +68,9 @@ let labelsData = {};    //MAX HR, MIN HR, MAX ATEMP, MIN ATEMP
 //UUID, file 저장시 메인키로 사용
 let uuid = '';
 
+//이미지 마커를 저장하는 맵
+let imageMarkerMap = new Map();
+
 //POI마커를 모두 제거
 function removeCategryMarker() {
     poiCategoryMarkers.forEach(function (marker) {
@@ -1494,8 +1497,8 @@ TCX
                     });
                     marker.setDraggable(true);
 
-                    let imageLink = `<tr>`;
-                    imageLink += `<td style="width:5px;" onclick="javascript:deleteImage('${savedFileInfo.filePath}');">X</td>`;
+                    let imageLink = `<tr data-image-id="${savedFileInfo.imageId}">`;
+                    imageLink += `<td style="width:5px;cursor: pointer;" onclick="javascript:deleteImage(${savedFileInfo.imageId});">X</td>`;
                     imageLink += `<td class="timeClass" onclick="javascript:goCenter(${savedFileInfo.geoLocation.latitude},`;
                     imageLink += ` ${savedFileInfo.geoLocation.longitude}, 5);">${savedFileInfo.originalFileName}</td>`;
                     imageLink += `<td ></td>`;
@@ -1505,6 +1508,7 @@ TCX
 
                     processedFiles++;
                     updateProgressGraph(ctx, processedFiles, totalFiles);
+                    imageMarkerMap.set(savedFileInfo.imageId, marker);   //이미지 삭제하면 마커도 함께 삭제해야 함
                 }).catch(error => {
                     console.error('Error:', error);
                 });
@@ -1513,25 +1517,32 @@ TCX
     });
 });
 
+function deleteImageMarker(id) {
+    if (imageMarkerMap.has(id)) {
+        let marker = imageMarkerMap.get(id);
+        marker.setMap(null);
+        imageMarkerMap.delete(id);
+        console.log(`Marker with imageId ${id} deleted.`);
+    } else {
+        console.log(`No marker found with imageId ${id}`);
+    }
+}
 
-function deleteImage(fileurl) {
-    const parts = fileurl.split('/');
-    const thirdSlashPart = parts.slice(3).join('/');
-/*
-    //let apiUrl = `/api/1.0/deleteImage/${parts[3]}/${parts[4]}/${parts[5]}/${parts[6]}`;
-    let apiUrl = `/api/1.0/deleteImage/${thirdSlashPart}`;
+function deleteImage(imageId) {
+    let apiUrl = `/api/1.0/deleteImage/${imageId}`;
     $.ajax({
         type: 'DELETE',
         url: apiUrl,
         async: true,
         success: function (response, status) {
+            $(`tr[data-image-id="${imageId}"]`).remove();
+            deleteImageMarker(imageId);
             console.log(response);
         },
         error: function (response, status) {
             console.info('Error deleting file');
         }
     });
- */
 }
 
 function updateProgressGraph(ctx, processedFiles, totalFiles) {
@@ -1614,3 +1625,4 @@ function chartPlotAdView(view) {
             $('.containerPlot').css('background-image', 'none');
     */
 }
+
