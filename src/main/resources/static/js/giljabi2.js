@@ -517,7 +517,10 @@ $(document).ready(function () {
         let fileid = getQueryParam('fileid');
         let version = getQueryParam('version') === null ? 'v1' : getQueryParam('version');
 
-        drawByOldShare(fileid, version)
+        drawByOldShare(fileid, version);
+
+        //만약 첨부된 이미지가 있으면 화면에 표시한다.
+        loadAndDrawImage(fileid);
     }
 
     function drawByOldShare(fileid, version) {
@@ -542,6 +545,80 @@ $(document).ready(function () {
             },
             error: function(xhr, status, error) {
                 console.log('AJAX request failed:' + error);
+            }
+        });
+    }
+
+    function fetchAndReadImageMeta(imageUrl) {
+        // Fetch 이미지 데이터를 Blob으로 가져오기
+        fetch('/gpx' + imageUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                // 이미지 Blob을 FileReader로 읽기
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    const arrayBuffer = event.target.result;
+
+                    // EXIF 데이터 읽기
+                    EXIF.getData({ getData: () => {}, src: arrayBuffer }, function () {
+                        const allMetaData = EXIF.getAllTags(this);
+                        console.log("EXIF MetaData: ", allMetaData);
+
+                        // 예: 특정 메타정보 추출
+                        const latitude = EXIF.getTag(this, "GPSLatitude");
+                        const longitude = EXIF.getTag(this, "GPSLongitude");
+                        console.log("Latitude:", latitude);
+                        console.log("Longitude:", longitude);
+                    });
+                };
+                reader.readAsArrayBuffer(blob);
+            })
+            .catch(error => {
+                console.error('Error fetching or reading the image:', error);
+            });
+    }
+
+    function loadImageAndDisplay(filepath) {
+        //let imageSize = new kakao.maps.Size(44, 44);  // 마커 이미지의 크기
+        //let markerImage = new kakao.maps.MarkerImage(filepath, imageSize);
+        fetchAndReadImageMeta(filepath);
+
+/*        let marker = new kakao.maps.Marker({
+            position: new kakao.maps.LatLng(
+                savedFileInfo.geoLocation.latitude,
+                savedFileInfo.geoLocation.longitude), // 마커의 위치
+            image: markerImage
+        });
+        marker.setMap(_map);
+        kakao.maps.event.addListener(marker, 'click', function () {
+            const url = '/util/image-view.html?path=' + savedFileInfo.filePath;
+            window.open(url, "_imageView", 'width=800,height=600');
+        });
+        marker.setDraggable(true);
+
+ */
+    }
+
+    function loadAndDrawImage(fileid) {
+        $.ajax({
+            url: `/api/1.0/getImageList/${fileid}`,
+            type: 'GET',
+            success: function (response) {
+                if (response.status === 0) {
+                    $.each(response.data.gpsdataimages, function (index, value) {
+                        loadImageAndDisplay(value.fileurl);
+                    });
+                } else {
+                    console.error('Error:', response.message);
+                }
+            },
+            error: function (error) {
+                console.error('AJAX Error:', error);
             }
         });
     }
@@ -1447,102 +1524,8 @@ TCX
 
         $('#blockingAds').hide();
     });
-
-    $('#uploadForm').on('submit', function(event) {
-        event.preventDefault(); // 기본 폼 제출 동작 막기
-
-        const canvas = document.getElementById('progressCanvas');
-        const ctx = canvas.getContext('2d');
-        const progressBarContainer = document.getElementById('progressBarContainer');
-        // Set canvas size to match container size
-        canvas.width = progressBarContainer.clientWidth;
-        canvas.height = progressBarContainer.clientHeight;
-
-
-        if(uuid == null || uuid == '') {
-            alert("gpx/tcx 저장 후 사용할 수 있습니다.");
-            return;
-        }
-
-        let files = $('#files')[0].files;
-        let totalFiles = files.length;
-        let processedFiles = 0;
-
-        // Reset the progress bar
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        // progressBarContainer.textContent = '';
-        // progressBarContainer.appendChild(canvas);
-
-        if (files.length > 0) {
-            for (let i = 0; i < files.length; i++) {
-                processFile(uuid, files[i]).then(savedFileInfo => {
-                    //console.log('File info:', savedFileInfo);
-                    if(savedFileInfo.status == -1) {
-                        alert(savedFileInfo.message);
-                        return;
-                    }
-                    let imageSize = new kakao.maps.Size(44, 44);  // 마커 이미지의 크기
-                    let markerImage = new kakao.maps.MarkerImage(savedFileInfo.filePath, imageSize);
-                    let marker = new kakao.maps.Marker({
-                        position: new kakao.maps.LatLng(
-                            savedFileInfo.geoLocation.latitude,
-                            savedFileInfo.geoLocation.longitude), // 마커의 위치
-                        image: markerImage
-                    });
-                    marker.setMap(_map);
-                    kakao.maps.event.addListener(marker, 'click', function() {
-                        const url = '/util/image-view.html?path=' + savedFileInfo.filePath;
-                        window.open(url, savedFileInfo.originalFileName, 'width=800,height=600');
-                    });
-                    marker.setDraggable(true);
-
-                    let imageLink = `<tr>`;
-                    imageLink += `<td style="width:5px;cursor: pointer;" onclick="javascript:deleteImage('${savedFileInfo.imageId}');">X</td>`;
-                    imageLink += `<td class="timeClass" onclick="javascript:goCenter(${savedFileInfo.geoLocation.latitude},`;
-                    imageLink += ` ${savedFileInfo.geoLocation.longitude}, 5);">${savedFileInfo.originalFileName}</td>`;
-                    imageLink += `<td ></td>`;
-                    imageLink += `</tr>`;
-
-                    $('#imageFileTbody').append(imageLink);
-
-                    processedFiles++;
-                    updateProgressGraph(ctx, processedFiles, totalFiles);
-                }).catch(error => {
-                    console.error('Error:', error);
-                });
-            }
-        }
-    });
 });
 
-
-function deleteImage(imageId) {
-    let apiUrl = `/api/1.0/deleteImage/${imageId}`;
-    $.ajax({
-        type: 'DELETE',
-        url: apiUrl,
-        async: true,
-        success: function (response, status) {
-            console.log(response);
-        },
-        error: function (response, status) {
-            console.info('Error deleting file');
-        }
-    });
-}
-
-function updateProgressGraph(ctx, processedFiles, totalFiles) {
-    const width = ctx.canvas.width;
-    const height = ctx.canvas.height;
-    const progress = (processedFiles / totalFiles) * width;
-
-    // Clear the canvas
-    ctx.clearRect(0, 0, width, height);
-
-    // Draw the progress bar
-    ctx.fillStyle = '#4caf50';
-    ctx.fillRect(0, 0, progress, height);
-}
 
 /**
  * 전후 1개만 비교해도 될것 같은데....
@@ -1611,5 +1594,6 @@ function chartPlotAdView(view) {
             $('.containerPlot').css('background-image', 'none');
     */
 }
+
 
 
