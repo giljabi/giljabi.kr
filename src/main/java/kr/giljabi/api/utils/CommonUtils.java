@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.sql.Timestamp;
@@ -26,6 +27,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.UUID;
 
@@ -34,6 +36,8 @@ public class CommonUtils {
 
     public final static String BINARY_CONTENT_TYPE = "application/octet-stream";
     public final static String TEXT_CONTENT_TYPE = "application/text";
+
+    public static String GILJABI_UUID = "GILJABI_UUID";
 
     private static JwtProvider jwtProvider;
 
@@ -87,7 +91,7 @@ public class CommonUtils {
     public static GiljabiGpsdata makeGiljabiGpsdata(String userAddress, String apiName,
                                               RequestGpsDataDTO gpsDataDTO,
                                               long decompressedSize, long compressedSize,
-                                              String fileurl, String userid) {
+                                              String fileurl, String userid, String useruuid) {
         GiljabiGpsdata gpsdata = new GiljabiGpsdata();
         gpsdata.setDistance(gpsDataDTO.getDistance());
         gpsdata.setFileext(gpsDataDTO.getFileext());
@@ -102,6 +106,7 @@ public class CommonUtils {
         gpsdata.setFilesizecompress(compressedSize);
         gpsdata.setApiname(apiName);
         gpsdata.setUserip(userAddress);
+        gpsdata.setUseruuid(useruuid);
 
         return gpsdata;
     }
@@ -178,6 +183,16 @@ public class CommonUtils {
             return new Response(ErrorCode.STATUS_EXCEPTION.getStatus(), e.getMessage());
         }
     }*/
-
+    public static String getCookieValue(HttpServletRequest request, String name) {
+        if (request.getCookies() != null) {
+            return Arrays.stream(request.getCookies())
+                    .filter(cookie -> name.equals(cookie.getName()))
+                    .map(Cookie::getValue)
+                    .findFirst()
+                    .orElse(null);
+        }
+        return null;
+    }
 }
+
 

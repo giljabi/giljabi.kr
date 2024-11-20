@@ -33,7 +33,7 @@ public class GiljabiGpsdata implements java.io.Serializable {
     private String uuid;
 
     //@Column(nullable = false, length = 36)
-    @Column(nullable = false)
+    @Column(nullable = false, updatable = false)
     private Timestamp createat = Timestamp.from(Instant.now());
 
     //@Column(nullable = false, length = 36)
@@ -82,6 +82,9 @@ public class GiljabiGpsdata implements java.io.Serializable {
     @Column(nullable = true)
     private String userip;
 
+    @Column(nullable = true, length = 36)
+    private String useruuid;
+
     @OneToMany(mappedBy = "gpsdata", cascade = CascadeType.ALL /*, orphanRemoval = true*/)
     private List<GiljabiGpsdataImage> gpsdataimages;
     public void addGpsImage(GiljabiGpsdataImage gpsImage) {
@@ -117,4 +120,5 @@ public class GiljabiGpsdata implements java.io.Serializable {
         }
     }
 }
+
 

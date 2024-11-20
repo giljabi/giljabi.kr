@@ -15,4 +15,14 @@ public class GiljabiResponseGpsdataDTO {
     private String fileext;
     private String xmldata;
     private ArrayList<GiljabiResponseGpsdataImageDTO> gpsdataimages;
+
+    //2024.11.20, list view 추가
+    private String apiname;
+    private String createat;
+    private int wpt;
+    private long trkpt;
+    private double speed;
+    private double distance;
+    private String useruuid;
 }
+

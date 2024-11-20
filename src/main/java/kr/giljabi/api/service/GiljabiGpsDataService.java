@@ -2,15 +2,19 @@ package kr.giljabi.api.service;
 
 import kr.giljabi.api.entity.GiljabiGpsdata;
 import kr.giljabi.api.repository.GiljabiGpsDataRepository;
+import kr.giljabi.api.response.GiljabiResponseGpsdataDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -51,4 +55,29 @@ public class GiljabiGpsDataService {
         return gpsdata;
     }
 
+
+    public Page<GiljabiGpsdata> findGpsDataBetweenDatesAndTrackName(
+            String trackName,
+            String useruuid,
+            boolean selfCheck,
+            Pageable pageable) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime oneMonthAgo = now.minusMonths(1);
+        Timestamp startDate = Timestamp.valueOf(oneMonthAgo);
+        Timestamp endDate = Timestamp.valueOf(now);
+
+        Page<GiljabiGpsdata> pageContents = null;
+
+        //본인것만 보기
+        if(selfCheck)
+            pageContents = giljabiGpsDataRepository.findGpsDataBetweenDatesAndTrackNameByUseruuid(
+                        startDate, endDate, trackName, useruuid, pageable);
+        else
+            pageContents = giljabiGpsDataRepository.findGpsDataBetweenDatesAndTrackName(
+                    startDate, endDate, trackName, pageable);
+
+        return pageContents;
+    }
+
 }
+

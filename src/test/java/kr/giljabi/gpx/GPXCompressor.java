@@ -3,12 +3,29 @@ package kr.giljabi.gpx;
 import com.github.diogoduailibe.lzstring4j.LZString;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GPXCompressor {
 
     public static void main(String[] args) {
-        String directoryPath = "/tmp/";
+        List<String> directoryPath = new ArrayList<>();
+        directoryPath.add("/tmp/201902");
+        directoryPath.add("/tmp/201903");
+        directoryPath.add("/tmp/201904");
+        directoryPath.add("/tmp/201905");
+        directoryPath.add("/tmp/201906");
+        directoryPath.add("/tmp/201907");
+        directoryPath.add("/tmp/201908");
+        directoryPath.add("/tmp/201909");
+        directoryPath.add("/tmp/201910");
 
+        for (String path : directoryPath) {
+            compressor(path);
+        }
+    }
+
+    private static void compressor(String directoryPath) {
         File directory = new File(directoryPath);
         if (!directory.exists() || !directory.isDirectory()) {
             System.out.println("Directory does not exist: " + directoryPath);
@@ -56,3 +73,4 @@ public class GPXCompressor {
         }
     }
 }
+

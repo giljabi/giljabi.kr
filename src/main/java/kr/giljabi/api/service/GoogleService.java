@@ -180,7 +180,11 @@ public class GoogleService {
      * @return
      * @throws Exception
      */
-    private GiljabiGpsdata saveGpxdata(HttpServletRequest request, UserInfo userInfo, List<RequestElevationData.Geometry2DPoint> trackPoint, ArrayList<TrackPoint> returnPoint, GpsElevation gpsElevation) throws Exception {
+    private GiljabiGpsdata saveGpxdata(HttpServletRequest request,
+                                       UserInfo userInfo,
+                                       List<RequestElevationData.Geometry2DPoint> trackPoint,
+                                       ArrayList<TrackPoint> returnPoint,
+                                       GpsElevation gpsElevation) throws Exception {
         Gpx gpx = makeGpxXml(returnPoint);
         String gpxXml = gpx.getXml();
         String compressedXml = LZString.compressToUTF16(gpxXml);
@@ -219,7 +223,9 @@ public class GoogleService {
                 gpxXml.getBytes().length,    //decompressed
                 compressedXml.getBytes().length,
                 bucketPublic + "/" + savedFilename,
-                userInfo.getUserid());
+                userInfo.getUserid(),
+                "" /* 사용자 구분은 나중에...*/
+        );
         log.info("getElevation: " + savedFilename);
         return gpsdata;
     }
@@ -278,4 +284,5 @@ public class GoogleService {
     }
 
 }
+
 

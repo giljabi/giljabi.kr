@@ -515,19 +515,21 @@ $(document).ready(function () {
     getByOldShare();
     function getByOldShare() {
         let fileid = getQueryParam('fileid');
-        if(fileid == null) {
-            return;
-        }
+        let version = getQueryParam('version') === null ? 'v1' : getQueryParam('version');
 
+        drawByOldShare(fileid, version)
+    }
+
+    function drawByOldShare(fileid, version) {
         $('#blockingAds').show();
         $.ajax({
-            url: '/api/1.0/gpxshare/' + fileid,
+            url: `/api/1.0/gpxshare/${fileid}/${version}`,
             async: false,
             type: 'GET',
             success: function(response, status) {
                 if (response.status === 0) {
                     let decompressedData = LZString.decompressFromUTF16(response.data.xmlData);
-                    console.log('decompressedData:' + decompressedData);
+                    //console.log('decompressedData:' + decompressedData);
                     uuid = response.data.uuid;
                     _fileExt = response.data.fileType;
                     changeFileType(_fileExt);
@@ -543,7 +545,6 @@ $(document).ready(function () {
             }
         });
     }
-
 
     //=======================================================================
     //file loading....
@@ -1410,8 +1411,7 @@ TCX
         }), $('#gpx_metadata_name').val() + '.' + _filetype);
 
         //파일의 메인키로 사용
-        if(uuid == null || uuid == '')
-            uuid = crypto.randomUUID();
+        uuid = crypto.randomUUID(); //항상 추가저장
 
         //서버 전송 추가
         let requestBody = {
@@ -1424,6 +1424,7 @@ TCX
             trkpt: _gpxTrkseqArray.length,
             distance: _gpxTrkseqArray[_gpxTrkseqArray.length - 1].dist,
             uuid: uuid,
+            userUUID: saveUUID()
         };
 
         $.ajax({
@@ -1610,4 +1611,5 @@ function chartPlotAdView(view) {
             $('.containerPlot').css('background-image', 'none');
     */
 }
+
 

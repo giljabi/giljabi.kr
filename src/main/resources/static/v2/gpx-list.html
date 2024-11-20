@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GPS Data List</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="/js/useruuid.js"></script>
+    <script src="/js/v2/gpx-list.js"></script>
+</head>
+<body>
+<div class="container mt-1">
+    <h1 class="mb-4">GPX List</h1>
+
+    <div class="d-flex align-items-center mb-3">
+        <div class="form-check me-2">
+            <label for="selfCheck" class="form-check-label" style="min-width: 50px;">본인</label>
+            <input type="checkbox" id="selfCheck" class="form-check-input">
+        </div>
+        <input type="text" id="trackName" class="form-control me-2" placeholder="Enter track name" style="max-width: 300px;">
+        <button id="searchButton" class="btn btn-primary">Search</button>
+    </div>
+
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+        <tr class="text-center">
+            <th class="d-none d-md-table-cell">작성자</th>
+            <th class="d-none d-md-table-cell">작성일</th>
+            <th class="d-none d-md-table-cell">WPT</th>
+            <th class="d-none d-md-table-cell">TRKPT</th>
+            <th>경로명</th>
+            <th>속도</th>
+            <th>거리</th>
+            <th>형식</th>
+        </tr>
+        </thead>
+        <tbody id="gpsdata-table-body">
+        <!-- 데이터는 AJAX로 로드됩니다 -->
+        </tbody>
+    </table>
+    <!-- Pagination Controls -->
+    <div id="pagination-controls">
+        <button id="prev-page" class="btn btn-primary">Previous</button>
+        <span id="pagination-info"></span>
+        <button id="next-page" class="btn btn-primary">Next</button>
+    </div>
+</div>
+</body>
+</html>
+

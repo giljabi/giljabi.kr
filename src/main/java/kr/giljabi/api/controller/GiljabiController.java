@@ -22,6 +22,11 @@ import kr.giljabi.api.utils.MyHttpUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,7 +37,10 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Open Route Service를 이용한 경로탐색
@@ -55,15 +63,51 @@ public class GiljabiController {
 
     private UserInfo userInfo;
 
-//    @Value("${minio.bucketPrivate}")
-//    private String bucketPrivate;
-
     @Value("${minio.bucketPublic}")
     private String bucketPublic;
 
     @Value("${giljabi.gpx.path}")
     private String gpxPath;
 
+    //bucketName: service
+    //file pth: service/yyyyMM/uuid_filename
+    //일반 사용자는 무조건 추가
+    @PostMapping("/api/1.0/saveGpsdata")
+    public Response gpsSave(HttpServletRequest request,
+                            final @Valid @RequestBody RequestGpsDataDTO gpsDataDTO) {
+        try {
+            log.info("gpsDataDTO.getXmldata().length: " + gpsDataDTO.getXmldata().length());
+            userInfo = jwtProviderService.getSessionByUserinfo(request);
+            String compressedXml = gpsDataDTO.getXmldata();
+
+            String logicalFileName = CommonUtils.makeGpsdataObjectPath(gpsDataDTO.getUuid());
+            String savedFilename = FileUtils.saveFile(gpxPath + logicalFileName,
+                    gpsDataDTO.getUuid(), compressedXml);
+            log.info("saveGpsdata File save: " + savedFilename);
+            GiljabiGpsdata gpsdata = CommonUtils.makeGiljabiGpsdata(
+                    MyHttpUtils.getClientIp(request),
+                    "saveGpsdata",
+                    gpsDataDTO,
+                    0, // compressed
+                    compressedXml.getBytes().length,
+                    logicalFileName,
+                    userInfo.getUserid(),
+                    gpsDataDTO.getUserUUID()
+            );
+
+            gpsService.save(gpsdata);
+
+            GiljabiResponse giljabiResponse = new GiljabiResponse();
+            giljabiResponse.setFileKey(gpsDataDTO.getUuid());
+            giljabiResponse.setFilePath(logicalFileName);
+            return new Response(giljabiResponse);
+        }  catch (Exception e) {
+            e.printStackTrace();
+            return new Response(ErrorCode.STATUS_FAILURE.getStatus(), e.getMessage());
+        }
+    }
+/*
+admin은 파일이 있으면 추가하지 않고 update
     //bucketName: service
     //file pth: service/yyyyMM/uuid_filename
     @PostMapping("/api/1.0/saveGpsdata")
@@ -85,7 +129,8 @@ public class GiljabiController {
                     0, // compressed
                     compressedXml.getBytes().length,
                     logicalFileName,
-                    userInfo.getUserid()
+                    userInfo.getUserid(),
+                    gpsDataDTO.getUserUUID()
             );
 
             GiljabiGpsdata gpsdataCheck = gpsService.findByUuid(gpsDataDTO.getUuid());
@@ -106,7 +151,7 @@ public class GiljabiController {
             return new Response(ErrorCode.STATUS_FAILURE.getStatus(), e.getMessage());
         }
     }
-
+ */
     /**
      * bucketName: service
      * path: service/gpx/yyyyMM/uuid_filename/uuid_filename.jpg
@@ -301,6 +346,63 @@ public class GiljabiController {
         }
     }
 
+    @RequestMapping("/v2/gpx-list")
+    public String getGpxList() {
+        return "v2/gpx-list";
+    }
+
+    @GetMapping("/api/1.0/getGpxList")
+    public Response getGpxList(@RequestParam(required = false) String trackName,
+                               @RequestParam(required = false) String useruuid,
+                               @RequestParam(required = false) boolean selfCheck,
+                               Pageable pageable) {
+        try {
+            Sort sort = Sort.by(Sort.Direction.DESC, "id");
+            pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+
+            Page<GiljabiGpsdata> pageContents =
+                    gpsService.findGpsDataBetweenDatesAndTrackName(
+                            trackName, useruuid, selfCheck, pageable);
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+            List<GiljabiResponseGpsdataDTO> content = new ArrayList<>();
+            for(GiljabiGpsdata gpsdata : pageContents.getContent()) {
+                GiljabiResponseGpsdataDTO gpsdataDTO = new GiljabiResponseGpsdataDTO();
+                gpsdataDTO.setApiname(gpsdata.getApiname());
+                gpsdataDTO.setCreateat(gpsdata.getCreateat().toLocalDateTime().format(formatter));
+                gpsdataDTO.setDistance(gpsdata.getDistance());
+                gpsdataDTO.setSpeed(gpsdata.getSpeed());
+                gpsdataDTO.setTrkpt(gpsdata.getTrkpt());
+                gpsdataDTO.setWpt(gpsdata.getWpt());
+                gpsdataDTO.setFileurl(gpsdata.getFileurl());
+                gpsdataDTO.setTrackname(gpsdata.getTrackname());
+                gpsdataDTO.setUuid(gpsdata.getUuid());
+                gpsdataDTO.setId((int)gpsdata.getId());
+                gpsdataDTO.setFileext(gpsdata.getFileext());
+                if(gpsdata.getUseruuid() != null && gpsdata.getUseruuid().length() > 24)
+                    gpsdataDTO.setUseruuid(gpsdata.getUseruuid().substring(24));
+                else
+                    gpsdataDTO.setUseruuid("");
+                content.add(gpsdataDTO);
+            }
+            return new Response(Map.of(
+                    "content", content,
+                    "totalPages", pageContents.getTotalPages(),
+                    "totalElements", pageContents.getTotalElements(),
+                    "size", pageContents.getSize(),
+                    "number", pageContents.getNumber(),
+                    "numberOfElements", pageContents.getNumberOfElements(),
+                    "first", pageContents.isFirst(),
+                    "empty", pageContents.isEmpty(),
+                    "isFirst", pageContents.isFirst(),
+                    "isLast", pageContents.isLast()
+            ));
+        } catch (Exception e) {
+            return new Response(ErrorCode.STATUS_FAILURE.getStatus(), e.getMessage());
+        }
+    }
 }
+
 
 

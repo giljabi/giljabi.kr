@@ -16,10 +16,11 @@ public class RequestElevationSaveData {
     private double distance;
     private String xmlData;
     private double speed;
+    private String userUUID;
 
     public RequestElevationSaveData(String apiName, String gpxName,
                                     String fileExt, int wayPointCount, int trackPointCount,
-                                    double distance, String xmlData, double speed) {
+                                    double distance, String xmlData, double speed, String userUUID) {
         this.apiName = apiName;
         this.gpxName = gpxName;
         this.fileExt = fileExt;
@@ -28,6 +29,7 @@ public class RequestElevationSaveData {
         this.distance = distance;
         this.xmlData = xmlData;
         this.speed = speed;
+        this.userUUID = userUUID;
     }
 
     @Override
@@ -41,6 +43,8 @@ public class RequestElevationSaveData {
                 ", distance=" + distance +
                 ", xmlData='" + xmlData + '\'' +
                 ", speed='" + speed + '\'' +
+                ", userUUID='" + userUUID + '\'' +
                 '}';
     }
 }
+

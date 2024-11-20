@@ -1,49 +1,55 @@
 package kr.giljabi.api.service;
 
+import kr.giljabi.api.entity.GiljabiGpsdata;
 import kr.giljabi.api.entity.TcxShareCourses;
 import kr.giljabi.api.repository.ShareCoursesRepository;
 import kr.giljabi.api.response.XmlShareResponse;
+import kr.giljabi.api.utils.FileUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.FileCopyUtils;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
+/**
+ * @Author : eahn.park@gmail.com
+ * 블로그등에 링크된 내용은 삭제하지 않고 사용함
+ * https://giljabi.kr/gpx2tcx.html?fileid=8a68fb2ecc4ae72ab097dc7fff0b9296
+ */
 @Slf4j
 @Service
 public class ShareCoursesService {
     private final ShareCoursesRepository shareCoursesRepository;
-    private final MinioService minioService;
+    private final GiljabiGpsDataService gpsService;
+
 
     @Value("${giljabi.xmlshare.path}")
     private String xmlSharePath;
 
-    @Value("${minio.bucketPublic}")
-    private String bucketPublic;
+    @Value("${giljabi.gpx.path}")
+    private String xmlGpxPath;
+
 
     @Autowired
-    public ShareCoursesService(ShareCoursesRepository shareCoursesRepository
-            , MinioService minioService) {
+    public ShareCoursesService(ShareCoursesRepository shareCoursesRepository,
+                               GiljabiGpsDataService gpsService) {
         this.shareCoursesRepository = shareCoursesRepository;
-        this.minioService = minioService;
+        this.gpsService = gpsService;
     }
 
+    //과거 공유된 파일은 tcx로 저장되어 있음
     public Optional<XmlShareResponse> findByFileHash(String fileHashId) {
         try {
             Optional<TcxShareCourses> shareCourses = shareCoursesRepository.findByFileHash(fileHashId);
             if (shareCourses.isPresent()) {
-                String filePath = String.format("share/%s/%s.tcx.lz",
+                String filePath = String.format("%s/%s/%s.tcx.lz",
+                        xmlSharePath,
                         shareCourses.get().getPathName(),
                         shareCourses.get().getFileHash());
 
                 XmlShareResponse xmlShareResponse = new XmlShareResponse();
-                //String xmlData = minioService.getObjectByString(bucketPublic, filePath);
-                //xmlShareResponse.setXmlData(xmlData);
+                String xmlData = FileUtils.fileReaderByText(filePath);
+                xmlShareResponse.setXmlData(xmlData);
                 xmlShareResponse.setUuid(fileHashId);
                 xmlShareResponse.setTrackName(shareCourses.get().getPcFileName());
                 xmlShareResponse.setFileType("tcx");
@@ -57,14 +63,33 @@ public class ShareCoursesService {
         }
     }
 
-    //과거 공유파일은 tcx로 저장되어 있음
-    public String readTcxFileAsString(String pathName, String hashName) throws IOException {
-        String fileFullName = String.format("%s/%s/%s.tcx",
-                xmlSharePath, pathName, hashName);
+    public Optional<XmlShareResponse> findByUuidFromGpxdata(String fileid) {
+        try {
+            Optional<XmlShareResponse> response = null;
 
-        File file = new File(fileFullName);
-        byte[] binaryData = FileCopyUtils.copyToByteArray(file);
-        return new String(binaryData, StandardCharsets.UTF_8);
+            //Optional을 사용해야 하나...
+            GiljabiGpsdata gpsdata = gpsService.findByUuid(fileid);
+            XmlShareResponse xml = new XmlShareResponse();
+            String filePath = String.format("%s/%s/%s",
+                    xmlGpxPath,
+                    gpsdata.getFileurl(),
+                    gpsdata.getUuid());
+
+            String xmlData = FileUtils.fileReaderByText(filePath);
+
+            xml.setXmlData(xmlData);
+            xml.setUuid(gpsdata.getUuid());
+            xml.setTrackName(gpsdata.getTrackname());
+            xml.setFileType(gpsdata.getFileext());
+            xml.setFileId(fileid);
+            response = Optional.of(xml);
+
+            return response;
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return Optional.empty();
+        }
     }
 }
+
 
