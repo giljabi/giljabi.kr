@@ -95,6 +95,8 @@
                        value="이정표 정보"/>&nbsp;
                 <input type="button" id="waypointexcelsave" value="이정표 엑셀저장"/>&nbsp;
                 <input type="button" id="viewVworld" value="3D View"/>&nbsp;
+                <!-- 이미지 사용 체크박스-->
+                &nbsp;이미지 유무:<input type="checkbox" id="imageUse" name="imageUse" style="width:20px;">&nbsp;
                 <!--
                 파일병합: <input type="file" id="mergeInput" accept=".gpx,.tcx" size="0" disabled>
                 --->
@@ -109,7 +111,7 @@
     <div id="c2" class="row" style="width: 210px; border: 1px solid #fff;">
         <div id="div3" class="cell" style="border: 1px solid #ddd; ">
             <div class="row"
-                 style="align-items: start;border: 0px solid #ddd; height:350px;overflow-y: auto;">
+                 style="align-items: start;border: 0px solid #ddd; height:500px;overflow-y: auto;">
                 <table style="border: 2px">
                     <tr>
                         <td style="width: 10px; align:center">I</td>
@@ -122,10 +124,7 @@
             </div>
             <div class="row" style="border: 0px solid #ddd; ">
                 <div>
-                    <div id="imageFileList" class="fileContainer" style="height: 100%;">
-                        <table style="border: 2px;">
-                            <tbody id="imageFileTbody" ></tbody>
-                        </table>
+                    <div id="imageFileList" class="fileContainer" style="height: 400px; overflow-y: auto; border: 1px solid #ddd;">
                     </div>
                 </div>
             </div>

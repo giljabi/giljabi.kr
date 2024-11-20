@@ -68,6 +68,9 @@ let labelsData = {};    //MAX HR, MIN HR, MAX ATEMP, MIN ATEMP
 //UUID, file 저장시 메인키로 사용
 let uuid = '';
 
+let imageMarkers = [];
+let imageMarkersData = [];
+
 //POI마커를 모두 제거
 function removeCategryMarker() {
     poiCategoryMarkers.forEach(function (marker) {
@@ -374,6 +377,25 @@ function makeSlopeByPoint(index) {
     return calculateSlope(getDistance(nextPos, currPos), nextPos.ele - currPos.ele);
 }
 
+function drawImageMarker(gpsimage) {
+    let imageSize = new kakao.maps.Size(44, 44);  // 마커 이미지의 크기
+    let markerImage = new kakao.maps.MarkerImage('/gpx' + gpsimage.fileurl, imageSize);
+
+    let marker = new kakao.maps.Marker({
+        position: new kakao.maps.LatLng(
+            gpsimage.geoLocation.latitude,
+            gpsimage.geoLocation.longitude), // 마커의 위치
+        image: markerImage
+    });
+    marker.setMap(_map);
+    kakao.maps.event.addListener(marker, 'click', function () {
+        const url = '/util/image-view.html?path=' + '/gpx' + gpsimage.fileurl;
+        window.open(url, "_imageView", 'width=800,height=600');
+    });
+    marker.setDraggable(true);
+    return marker;
+}
+
 $(document).ready(function () {
     BASETIME = setBaseTimeToToday(BASETIME);
 
@@ -517,6 +539,13 @@ $(document).ready(function () {
         let fileid = getQueryParam('fileid');
         let version = getQueryParam('version') === null ? 'v1' : getQueryParam('version');
 
+        // fileid가 없으면 실행하지 않고 종료
+        if (!fileid || !version) {
+            //console.warn('Missing fileid or version. Skipping getByOldShare execution.');
+            return;
+        }
+
+        //공유된 경로
         drawByOldShare(fileid, version);
 
         //만약 첨부된 이미지가 있으면 화면에 표시한다.
@@ -549,60 +578,39 @@ $(document).ready(function () {
         });
     }
 
-    function fetchAndReadImageMeta(imageUrl) {
-        // Fetch 이미지 데이터를 Blob으로 가져오기
-        fetch('/gpx' + imageUrl)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.blob();
-            })
-            .then(blob => {
-                // 이미지 Blob을 FileReader로 읽기
-                const reader = new FileReader();
-                reader.onload = function (event) {
-                    const arrayBuffer = event.target.result;
-
-                    // EXIF 데이터 읽기
-                    EXIF.getData({ getData: () => {}, src: arrayBuffer }, function () {
-                        const allMetaData = EXIF.getAllTags(this);
-                        console.log("EXIF MetaData: ", allMetaData);
-
-                        // 예: 특정 메타정보 추출
-                        const latitude = EXIF.getTag(this, "GPSLatitude");
-                        const longitude = EXIF.getTag(this, "GPSLongitude");
-                        console.log("Latitude:", latitude);
-                        console.log("Longitude:", longitude);
-                    });
-                };
-                reader.readAsArrayBuffer(blob);
-            })
-            .catch(error => {
-                console.error('Error fetching or reading the image:', error);
-            });
+    function loadImageAndDisplay(gpsimage) {
+        let marker = drawImageMarker(gpsimage);
+        imageMarkers.push(marker);
+        imageMarkersData.push(gpsimage);
     }
 
-    function loadImageAndDisplay(filepath) {
-        //let imageSize = new kakao.maps.Size(44, 44);  // 마커 이미지의 크기
-        //let markerImage = new kakao.maps.MarkerImage(filepath, imageSize);
-        fetchAndReadImageMeta(filepath);
-
-/*        let marker = new kakao.maps.Marker({
-            position: new kakao.maps.LatLng(
-                savedFileInfo.geoLocation.latitude,
-                savedFileInfo.geoLocation.longitude), // 마커의 위치
-            image: markerImage
+    function addImageToFileList(imagePath) {
+        // 새로운 이미지 요소 생성
+        const imgElement = $('<img>', {
+            src: imagePath,
+            css: {
+                width: '80px',     // 이미지 폭 고정
+                margin: '5px',      // 이미지 간격 설정
+                objectFit: 'cover'  // 이미지 크기 조정
+            }
         });
-        marker.setMap(_map);
-        kakao.maps.event.addListener(marker, 'click', function () {
-            const url = '/util/image-view.html?path=' + savedFileInfo.filePath;
-            window.open(url, "_imageView", 'width=800,height=600');
-        });
-        marker.setDraggable(true);
 
- */
+        // 컨테이너에 이미지 추가
+        $('#imageFileList').append(imgElement);
     }
+
+    // 체크박스 상태 변경 이벤트 처리
+    $('#imageUse').on('change', function () {
+        if ($(this).is(':checked')) {
+            // 체크박스가 체크되면 이미지를 보임
+            imageMarkers.forEach(marker =>
+                marker.setMap(null));
+        } else {
+            imageMarkersData.forEach(gpsimage =>
+                drawImageMarker(gpsimage));
+        }
+    });
+
 
     function loadAndDrawImage(fileid) {
         $.ajax({
@@ -610,8 +618,9 @@ $(document).ready(function () {
             type: 'GET',
             success: function (response) {
                 if (response.status === 0) {
-                    $.each(response.data.gpsdataimages, function (index, value) {
-                        loadImageAndDisplay(value.fileurl);
+                    $.each(response.data.gpsdataimages, function (index, gpsimage) {
+                        loadImageAndDisplay(gpsimage);
+                        addImageToFileList('/gpx' + gpsimage.fileurl);
                     });
                 } else {
                     console.error('Error:', response.message);

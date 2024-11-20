@@ -154,7 +154,7 @@ public class ElevationController {
         try {
             userInfo = jwtProviderService.getSessionByUserinfo(request);
 
-            String uuid = CommonUtils.generateUUID().toString();
+            String uuid = CommonUtils.generateUUID().toString(); //파일명
 
             String compressedXml = elevationSaveData.getXmlData();
             String logicalFileName = CommonUtils.makeGpsdataObjectPath(uuid);
@@ -175,6 +175,7 @@ public class ElevationController {
             gpsdata.setUuid(uuid); //filename
             gpsdata.setApiname(elevationSaveData.getApiName());
             gpsdata.setUserip(MyHttpUtils.getClientIp(request));
+            gpsdata.setUseruuid(elevationSaveData.getUserUUID());
             gpsService.save(gpsdata);
             log.info("saveElevation: " + savedFilename);
 
