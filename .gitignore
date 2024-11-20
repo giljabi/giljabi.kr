@@ -33,5 +33,4 @@ build/
 ### VS Code ###
 .vscode/
 
-### 공유하면 안되는 giljabi 정보, openrouteservice, google elevation apikey
-src/main/resources/application.yml
+buildNumber.properties
