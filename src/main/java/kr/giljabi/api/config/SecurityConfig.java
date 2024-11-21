@@ -50,7 +50,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers().permitAll()
 
                 // 로그인한 사용자만 접근 가능
-                .antMatchers("/manager/giljabi2")
+                .antMatchers("/manage-js/**", "/manage/**")
                 .authenticated();
                 /*
                 //.antMatchers("/hello/**").permitAll() //모든 이미지, 파일들...
@@ -68,7 +68,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         http
                 .formLogin()
-                .loginPage("/login")
+                .loginPage("/")   // /v2/login 로그인 화면으로 보내지 않음
                 .loginProcessingUrl("/authenticate")
                 .successHandler(this.loginSuccessHandler)
                 .failureHandler(this.loginFailureHandler)
@@ -78,7 +78,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         http
                 .logout()
-                .logoutUrl("/logout")
+                .logoutUrl("/v2/logout")
                 .logoutSuccessUrl("/v2/giljabi2.html")
                 .invalidateHttpSession(true)
                 .permitAll();
@@ -86,7 +86,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .sessionManagement()
                 .maximumSessions(1)
-                .expiredUrl("/login?expired")
+                .expiredUrl("/v2/login?expired")
                 .maxSessionsPreventsLogin(true)
                 .and()
                 .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)

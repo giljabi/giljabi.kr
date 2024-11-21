@@ -1,8 +1,6 @@
 <!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/html">
-
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
-
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -24,17 +22,31 @@
     <script >
 
     $(document).ready(function() {
-        // if (!sessionStorage.getItem('token')) {
-        //     // If no session information, redirect to /giljabi2-admin.html
-        //     //window.location.href = '/giljabi2-admin.html';
-        // }
+
     });
 
-    function login(){
-        var form1= document.forms[0];
-        form1.action = "/authenticate";
-        form1.method = "POST";
-        form1.submit();
+    function login() {
+        const form1 = $('form')[0]; // 첫 번째 폼 선택
+        const formData = $(form1).serialize(); // 폼 데이터를 URL 인코딩된 문자열로 직렬화
+
+        $.ajax({
+            url: '/authenticate',
+            type: 'POST',
+            data: formData,
+            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+            success: function (response) {
+                if (response.success) {
+                    sessionStorage.setItem('token', response.token);
+                    window.location.href = '/manage/giljabi2-gpx-list.html';
+                } else {
+                    alert('Login failed: ' + (response.message || 'Unknown error'));
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Login error:', error);
+                alert('An error occurred during login: ' + xhr.responseText);
+            }
+        });
     }
 
     </script>
@@ -100,14 +112,14 @@
     </div>
 
     <!-- Bootstrap core JavaScript-->
-    <script src="vendor/jquery/jquery.min.js"></script>
-    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 
     <!-- Core plugin JavaScript-->
-    <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+    <script src="/vendor/jquery-easing/jquery.easing.min.js"></script>
 
     <!-- Custom scripts for all pages-->
-    <script src="js/sb-admin-2.min.js"></script>
+    <script src="/js/sb-admin-2.min.js"></script>
 
 </body>
 

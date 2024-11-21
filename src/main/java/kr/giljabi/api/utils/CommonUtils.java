@@ -23,6 +23,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.sql.Timestamp;
+import java.text.Normalizer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -97,7 +98,7 @@ public class CommonUtils {
         gpsdata.setFileext(gpsDataDTO.getFileext());
         gpsdata.setFileurl(fileurl);
         gpsdata.setSpeed(gpsDataDTO.getSpeed());
-        gpsdata.setTrackname(gpsDataDTO.getTrackName());
+        gpsdata.setTrackname(normalizeToNFC(gpsDataDTO.getTrackName()));
         gpsdata.setTrkpt(gpsDataDTO.getTrkpt());
         gpsdata.setUserid(userid);
         gpsdata.setUuid(gpsDataDTO.getUuid()); //filename
@@ -109,6 +110,16 @@ public class CommonUtils {
         gpsdata.setUseruuid(useruuid);
 
         return gpsdata;
+    }
+
+    /**
+     * 맥에서 저장하는 경우는 NFC(완성형)로 정규화, NFD(조합형)으로 저장하면 풀어쓰기가 됨
+     * @param input
+     * @return
+     */
+    public static String normalizeToNFC(String input) {
+        if (input == null) return null;
+        return Normalizer.normalize(input, Normalizer.Form.NFC);
     }
 
     public static String makeGpsdataObjectName(String bucketName,
@@ -194,5 +205,6 @@ public class CommonUtils {
         return null;
     }
 }
+
 
 

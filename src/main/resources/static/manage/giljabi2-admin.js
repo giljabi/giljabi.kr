@@ -68,8 +68,8 @@ let labelsData = {};    //MAX HR, MIN HR, MAX ATEMP, MIN ATEMP
 //UUID, file 저장시 메인키로 사용
 let uuid = '';
 
-let imageMarkers = [];
-let imageMarkersData = [];
+//이미지 마커를 저장하는 맵
+let imageMarkerMap = new Map();
 
 //POI마커를 모두 제거
 function removeCategryMarker() {
@@ -278,6 +278,33 @@ function getMinMax() {
     minAlti = Math.min(...numbers);
 }
 
+// let fileid = getParam('fileid', window.location.href);
+// if(fileid != null) {
+//     $('#blockingAds').show();
+//     $.ajax({
+//         type: 'post',
+//         url : '/tcxshare.do',
+//         data: { fileId : getParam('fileid', window.location.href)
+//             , command : getParam('command', window.location.href)},
+//         dataType:'json',
+//         async : false,
+//         complete: function() {
+//
+//         },
+//         success:function(data, status) {
+//             if(data.resultcode == 'success') {
+//                 _uf = data.gpxname;
+//                 _ft = data.filetype;
+//                 _fl = true;
+//                 //$('#gpx_metadata_name').val(_uf);
+//                 makeObject(data.tcxdata);
+//             } else {
+//                 alert(data.resultMessage);
+//             }
+//             $('#blockingAds').hide();
+//         }
+//     });
+// }
 
 function getQueryParam(name) {
     let urlParams = new URLSearchParams(window.location.search);
@@ -465,47 +492,47 @@ $(document).ready(function () {
         //console.log('direction flag:' + _chkRoute);
     });
 
-//=======================================================================
-// @Date 2024/08/29  elevation --> giljabi 연결(elevation key)은 로직이 복잡해서 더이상 구현하지 않음
-//     getByParameter();
-//     function getByParameter() {
-//         uuid = getQueryParam('fileid');
-//         if(uuid == null) {
-//             //alert('잘못된 요청입니다.');
-//             return;
-//         }
-//         let action = getQueryParam('action');
-// /*        if(action == null) {
-//             alert('잘못된 요청입니다.');
-//             return;
-//         }*/
-//
-//         $('#blockingAds').show();
-//         $.ajax({
-//             url: '/api/1.0/getByParameter/' + uuid + '/' + action,
-//             async: false,
-//             type: 'GET',
-//             success: function(response, status) {
-//                 if (response.status === 0) {
-//                     let decompressedData = LZString.decompressFromUTF16(response.data.xmldata);
-//                     console.log('decompressedData:' + decompressedData);
-//                     uuid = response.data.uuid;
-//                     _fileExt = response.data.fileext;
-//                     changeFileType(_fileExt);
-//                     $('#gpx_metadata_name').val(response.data.trackName);
-//                     fileLoadAndDraw(decompressedData);
-//                 } else {
-//                     alert(response.message);
-//                 }
-//                 $('#blockingAds').hide();
-//             },
-//             error: function(xhr, status, error) {
-//                 console.error('AJAX request failed:', error);
-//             }
-//         });
-//     }
-
+/*
     //=======================================================================
+// @Date 2024/08/29  elevation --> giljabi 연결(elevation key)은 로직이 복잡해서 더이상 구현하지 않음
+    getByParameter();   //elevation --> giljabi 연결(elevation key)
+    function getByParameter() {
+        uuid = getQueryParam('fileid');
+        if(uuid == null) {
+            //alert('잘못된 요청입니다.');
+            return;
+        }
+        let action = getQueryParam('action');
+       if(action == null) {
+            alert('잘못된 요청입니다.');
+            return;
+        }
+
+        $('#blockingAds').show();
+        $.ajax({
+            url: '/api/1.0/getByParameter/' + uuid + '/' + action,
+            async: false,
+            type: 'GET',
+            success: function(response, status) {
+                if (response.status === 0) {
+                    let decompressedData = LZString.decompressFromUTF16(response.data.xmldata);
+                    console.log('decompressedData:' + decompressedData);
+                    uuid = response.data.uuid;
+                    _fileExt = response.data.fileext;
+                    changeFileType(_fileExt);
+                    $('#gpx_metadata_name').val(response.data.trackName);
+                    fileLoadAndDraw(decompressedData);
+                } else {
+                    alert(response.message);
+                }
+                $('#blockingAds').hide();
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX request failed:', error);
+            }
+        });
+    }
+*/
     //과거 버전의 tcx share
     getByOldShare();
     function getByOldShare() {
@@ -551,25 +578,6 @@ $(document).ready(function () {
         });
     }
 
-    function loadImageAndDisplay(gpsimage) {
-        let marker = drawImageMarker(gpsimage);
-        imageMarkers.push(marker);
-        imageMarkersData.push(gpsimage);
-    }
-
-    // 체크박스 상태 변경 이벤트 처리
-    $('#imageUse').on('change', function () {
-        if ($(this).is(':checked')) {
-            // 체크박스가 체크되면 이미지를 보임
-            imageMarkers.forEach(marker =>
-                marker.setMap(null));
-            imageMarkers = [];
-        } else {
-            imageMarkersData.forEach(gpsimage =>
-                imageMarkers.push(drawImageMarker(gpsimage)));
-        }
-    });
-
     function loadAndDrawImage(fileid) {
         $.ajax({
             url: `/api/1.0/getImageList/${fileid}`,
@@ -577,8 +585,8 @@ $(document).ready(function () {
             success: function (response) {
                 if (response.status === 0) {
                     $.each(response.data.gpsdataimages, function (index, gpsimage) {
-                        loadImageAndDisplay(gpsimage);
-                        addImageToFileList('/gpx' + gpsimage.fileurl);
+                        imageMarkerMap.set(gpsimage.id, drawImageMarker(gpsimage)); //마커를 해시맵에 저장해서 삭제시 사용
+                        addImageToFileList('/gpx' + gpsimage.fileurl, gpsimage.id);
                     });
                 } else {
                     console.error('Error:', response.message);
@@ -589,6 +597,8 @@ $(document).ready(function () {
             }
         });
     }
+
+    /*
     function addImageToFileList(imagePath) {
         // 새로운 이미지 요소 생성
         const imgElement = $('<img>', {
@@ -607,6 +617,7 @@ $(document).ready(function () {
         // 우측하단 컨테이너에 이미지 추가
         $('#imageFileList').append(imgElement);
     }
+*/
 
     //=======================================================================
     //file loading....
@@ -1434,6 +1445,7 @@ TCX
         _eleArray = []; //차트정보 초기화
     }
 
+    //신규 파일로 저장
     $('#saveas').click(function (e) {
         if ($('#gpx_metadata_name').val() === '') {
             alert('경로명이 없습니다.');
@@ -1473,7 +1485,10 @@ TCX
         }), $('#gpx_metadata_name').val() + '.' + _filetype);
 
         //파일의 메인키로 사용
-        uuid = crypto.randomUUID(); //항상 추가저장
+        //if(uuid == null || uuid == '')
+        //    uuid = crypto.randomUUID();
+        //saveas이므로 파일의 uuid을 만들어야 함
+        uuid = crypto.randomUUID();
 
         //서버 전송 추가
         let requestBody = {
@@ -1486,12 +1501,11 @@ TCX
             trkpt: _gpxTrkseqArray.length,
             distance: _gpxTrkseqArray[_gpxTrkseqArray.length - 1].dist,
             uuid: uuid,
-            userUUID: saveUUID()
         };
 
         $.ajax({
             type: 'post',
-            url: '/api/1.0/saveGpsdata',
+            url: '/api/1.0/saveGpsdata/saveas',
             dataType: 'json',
             contentType: 'application/json; charset=UTF-8;',
             data: JSON.stringify(requestBody),
@@ -1499,7 +1513,6 @@ TCX
             complete: function (response, status) {
             },
             success: function (response, status) {
-
                 console.log(response);
                 if (response.status !== 0) {
                     alert(response.status + ',' + response.message);
@@ -1509,8 +1522,147 @@ TCX
 
         $('#blockingAds').hide();
     });
+
+
+    function addImageToFileList(imagePath, imageId) {
+        const imageContainer = $('<div>', {
+            class: 'image-container',
+            css: {
+                position: 'relative',
+                display: 'inline-block',
+                margin: '5px',
+            }
+        });
+
+        // 새로운 이미지 요소 생성
+        const imgElement = $('<img>', {
+            src: imagePath,
+            css: {
+                width: '180px',     // 이미지 폭 고정
+                margin: '5px',      // 이미지 간격 설정
+                objectFit: 'cover'  // 이미지 크기 조정
+            },
+            click: function () {
+                const url = '/util/image-view.html?path=' + imagePath;
+                window.open(url, "_imageView", 'width=800,height=600');
+            }
+        });
+
+        const deleteButton = $('<button>', {
+            class: 'delete-btn',
+            text: 'X',
+            click: function () {
+                deleteImage(imageId);
+                imageContainer.remove();
+            }
+        });
+        imageContainer.append(imgElement, deleteButton);
+
+        // 우측하단 컨테이너에 이미지 추가
+        $('#imageFileList').append(imageContainer);
+
+    }
+
+    const canvas = document.getElementById('progressCanvas');
+    const ctx = canvas.getContext('2d');
+    const progressBarContainer = document.getElementById('progressBarContainer');
+    // Set canvas size to match container size
+    canvas.width = progressBarContainer.clientWidth;
+    canvas.height = progressBarContainer.clientHeight;
+
+    $('#uploadForm').on('submit', function(event) {
+        event.preventDefault(); // 기본 폼 제출 동작 막기
+
+        if(uuid == null || uuid == '') {
+            alert("gpx/tcx 저장 후 사용할 수 있습니다.");
+            return;
+        }
+
+        let files = $('#files')[0].files;
+        let totalFiles = files.length;
+        let processedFiles = 0;
+
+        // Reset the progress bar
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // progressBarContainer.textContent = '';
+        // progressBarContainer.appendChild(canvas);
+
+        if (files.length > 0) {
+            for (let i = 0; i < files.length; i++) {
+                processFile(uuid, files[i]).then(savedFileInfo => {
+                    //console.log('File info:', savedFileInfo);
+                    if(savedFileInfo.status == -1) {
+                        alert(savedFileInfo.message);
+                        return;
+                    }
+                    let imageSize = new kakao.maps.Size(44, 44);  // 마커 이미지의 크기
+                    let markerImage = new kakao.maps.MarkerImage(savedFileInfo.filePath, imageSize);
+                    let marker = new kakao.maps.Marker({
+                        position: new kakao.maps.LatLng(
+                            savedFileInfo.geoLocation.latitude,
+                            savedFileInfo.geoLocation.longitude), // 마커의 위치
+                        image: markerImage
+                    });
+                    marker.setMap(_map);
+                    kakao.maps.event.addListener(marker, 'click', function() {
+                        const url = '/util/image-view.html?path=' + savedFileInfo.filePath;
+                        window.open(url, savedFileInfo.originalFileName, 'width=800,height=600');
+                    });
+                    marker.setDraggable(true);
+
+                    addImageToFileList(savedFileInfo.filePath, savedFileInfo.imageId);
+
+                    processedFiles++;
+                    updateProgressGraph(ctx, processedFiles, totalFiles);
+                    imageMarkerMap.set(savedFileInfo.imageId, marker);   //이미지 삭제하면 마커도 함께 삭제해야 함
+                }).catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+        }
+    });
 });
 
+function deleteImageMarker(id) {
+    if (imageMarkerMap.has(id)) {
+        let marker = imageMarkerMap.get(id);
+        marker.setMap(null);
+        imageMarkerMap.delete(id);
+        console.log(`Marker with imageId ${id} deleted.`);
+    } else {
+        console.log(`No marker found with imageId ${id}`);
+    }
+}
+
+function deleteImage(imageId) {
+    let apiUrl = `/api/1.0/deleteImage/${imageId}`;
+    $.ajax({
+        type: 'DELETE',
+        url: apiUrl,
+        async: true,
+        success: function (response, status) {
+            $(`tr[data-image-id="${imageId}"]`).remove();
+            deleteImageMarker(imageId);
+            console.log(response);
+        },
+        error: function (response, status) {
+            console.info('Error deleting file');
+        }
+    });
+}
+
+function updateProgressGraph(ctx, processedFiles, totalFiles) {
+    const width = ctx.canvas.width;
+    const height = ctx.canvas.height;
+    const progress = (processedFiles / totalFiles) * width;
+
+    // Clear the canvas
+    ctx.clearRect(0, 0, width, height);
+
+    // Draw the progress bar
+    ctx.fillStyle = '#4caf50';
+    ctx.fillRect(0, 0, progress, height);
+}
 
 /**
  * 전후 1개만 비교해도 될것 같은데....
@@ -1579,7 +1731,5 @@ function chartPlotAdView(view) {
             $('.containerPlot').css('background-image', 'none');
     */
 }
-
-
 
 

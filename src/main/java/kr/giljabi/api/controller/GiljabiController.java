@@ -72,8 +72,10 @@ public class GiljabiController {
     //bucketName: service
     //file pth: service/yyyyMM/uuid_filename
     //일반 사용자는 무조건 추가
-    @PostMapping("/api/1.0/saveGpsdata")
+    //관리자는 saveas/update 선택임
+    @PostMapping("/api/1.0/saveGpsdata/{param}")
     public Response gpsSave(HttpServletRequest request,
+                            @PathVariable(required = false ) String param,
                             final @Valid @RequestBody RequestGpsDataDTO gpsDataDTO) {
         try {
             log.info("gpsDataDTO.getXmldata().length: " + gpsDataDTO.getXmldata().length());
@@ -94,6 +96,11 @@ public class GiljabiController {
                     userInfo.getUserid(),
                     gpsDataDTO.getUserUUID()
             );
+
+            if(param.compareToIgnoreCase("update") == 0) {
+                GiljabiGpsdata gpsdataCheck = gpsService.findByUuid(gpsDataDTO.getUuid());
+                gpsdata.setId(gpsdataCheck.getId());    // null이면 insert
+            }
 
             gpsService.save(gpsdata);
 
@@ -346,13 +353,9 @@ admin은 파일이 있으면 추가하지 않고 update
         }
     }
 
-    @RequestMapping("/v2/gpx-list")
-    public String getGpxList() {
-        return "v2/gpx-list";
-    }
-
     @GetMapping("/api/1.0/getGpxList")
-    public Response getGpxList(@RequestParam(required = false) String trackName,
+    public Response getGpxList(HttpServletRequest request,
+                               @RequestParam(required = false) String trackName,
                                @RequestParam(required = false) String useruuid,
                                @RequestParam(required = false) boolean selfCheck,
                                Pageable pageable) {
@@ -370,6 +373,7 @@ admin은 파일이 있으면 추가하지 않고 update
             for(GiljabiGpsdata gpsdata : pageContents.getContent()) {
                 GiljabiResponseGpsdataDTO gpsdataDTO = new GiljabiResponseGpsdataDTO();
                 gpsdataDTO.setApiname(gpsdata.getApiname());
+                gpsdataDTO.setUserid(gpsdata.getUserid());
                 gpsdataDTO.setCreateat(gpsdata.getCreateat().toLocalDateTime().format(formatter));
                 gpsdataDTO.setDistance(gpsdata.getDistance());
                 gpsdataDTO.setSpeed(gpsdata.getSpeed());
@@ -380,29 +384,52 @@ admin은 파일이 있으면 추가하지 않고 update
                 gpsdataDTO.setUuid(gpsdata.getUuid());
                 gpsdataDTO.setId((int)gpsdata.getId());
                 gpsdataDTO.setFileext(gpsdata.getFileext());
+                gpsdataDTO.setShareflag(gpsdata.isShareflag());
                 if(gpsdata.getUseruuid() != null && gpsdata.getUseruuid().length() > 24)
                     gpsdataDTO.setUseruuid(gpsdata.getUseruuid().substring(24));
                 else
                     gpsdataDTO.setUseruuid("");
                 content.add(gpsdataDTO);
             }
-            return new Response(Map.of(
-                    "content", content,
-                    "totalPages", pageContents.getTotalPages(),
-                    "totalElements", pageContents.getTotalElements(),
-                    "size", pageContents.getSize(),
-                    "number", pageContents.getNumber(),
-                    "numberOfElements", pageContents.getNumberOfElements(),
-                    "first", pageContents.isFirst(),
-                    "empty", pageContents.isEmpty(),
-                    "isFirst", pageContents.isFirst(),
-                    "isLast", pageContents.isLast()
+            return new Response(Map.ofEntries(
+                    Map.entry("content", content),
+                    Map.entry("totalPages", pageContents.getTotalPages()),
+                    Map.entry("totalElements", pageContents.getTotalElements()),
+                    Map.entry("size", pageContents.getSize()),
+                    Map.entry("number", pageContents.getNumber()),
+                    Map.entry("numberOfElements", pageContents.getNumberOfElements()),
+                    Map.entry("first", pageContents.isFirst()),
+                    Map.entry("empty", pageContents.isEmpty()),
+                    Map.entry("isFirst", pageContents.isFirst()),
+                    Map.entry("isLast", pageContents.isLast())
             ));
         } catch (Exception e) {
             return new Response(ErrorCode.STATUS_FAILURE.getStatus(), e.getMessage());
         }
     }
+
+    @PatchMapping("/api/1.0/deleteGpx/{uuidkey}/{shareflag}")
+    public Response changeShareFlag(HttpServletRequest request,
+                                    @PathVariable String uuidkey,
+                                    @PathVariable boolean shareflag) {
+        try {
+            userInfo = jwtProviderService.getSessionByUserinfo(request);
+            if(Integer.parseInt(userInfo.getLevel()) < 10) {
+                return new Response(ErrorCode.STATUS_FAILURE.getStatus(), "준비중인 기능입니다.");
+            }
+
+            if(gpsService.updateShareFlagByUuid(uuidkey, shareflag) > 0) {
+                return new Response(ErrorCode.STATUS_SUCCESS.getStatus());
+            } else {
+                return new Response(ErrorCode.STATUS_FAILURE.getStatus(), "Not found data");
+            }
+        } catch (Exception e) {
+            return new Response(ErrorCode.STATUS_FAILURE.getStatus(), e.getMessage());
+        }
+    }
+
 }
+
 
 
 

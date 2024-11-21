@@ -4,9 +4,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import kr.giljabi.api.entity.GiljabiGpsdata;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -31,17 +33,25 @@ public interface GiljabiGpsDataRepository extends CrudRepository<GiljabiGpsdata,
                                                    @Param("tenMinutesAgo") Timestamp tenMinutesAgo);
 
     @Query("SELECT g FROM GiljabiGpsdata g WHERE g.createat BETWEEN :startDate AND :endDate " +
-            "AND (:trackName IS NULL OR :trackName = '' OR g.trackname = :trackName) " +
+            "AND (:trackName IS NULL OR :trackName = '' OR g.trackname LIKE %:trackName%) " +
             "AND (:useruuid IS NULL OR :useruuid = '' OR g.useruuid = :useruuid) ")
     Page<GiljabiGpsdata> findGpsDataBetweenDatesAndTrackNameByUseruuid(
             Timestamp startDate, Timestamp endDate,
             String trackName, String useruuid, Pageable pageable);
 
     @Query("SELECT g FROM GiljabiGpsdata g WHERE g.createat BETWEEN :startDate AND :endDate " +
-            "AND (:trackName IS NULL OR :trackName = '' OR g.trackname = :trackName) ")
+            "AND (:trackName IS NULL OR :trackName = '' OR g.trackname LIKE %:trackName%) ")
     Page<GiljabiGpsdata> findGpsDataBetweenDatesAndTrackName(
             Timestamp startDate, Timestamp endDate,
             String trackName, Pageable pageable);
+
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE GiljabiGpsdata g SET g.shareflag = :shareFlag WHERE g.uuid = :uuid")
+    int updateShareFlagByUuid(String uuid, Boolean shareFlag);
+
 }
+
 
 

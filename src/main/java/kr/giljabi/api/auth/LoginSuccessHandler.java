@@ -38,13 +38,15 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 		session = request.getSession(true);
 		UserPrincipal user =  (UserPrincipal) authentication.getPrincipal();
 
-		//사용자 ID를 이용하여 필요한 정보를 조회하여 세션에 토큰으로 저장
+		//사용자 ID를 이용하여 필요한 정보를 조회하여 세션에 토큰으로 저장, 확장대비
 		UserInfo userInfo = userService.selectOneByUserId(user.getUsername());
 		String token = jwtProvider.generateJwtToken(userInfo);
+		session.setAttribute("token", token);	//실제 사용은 세션정보를 사용함
 
-		this.session.setAttribute("token", token);
-		this.redirectStratgy.sendRedirect(request, response, "/v2/manager/giljabi2-admin");
+		response.setContentType("application/json");
+		response.getWriter().write("{\"token\": \"" + token + "\", \"success\": true}");
 	}
 
 }
+
 

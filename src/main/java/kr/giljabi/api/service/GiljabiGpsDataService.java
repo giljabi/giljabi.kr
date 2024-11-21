@@ -1,83 +1,86 @@
 package kr.giljabi.api.service;
 
 import kr.giljabi.api.entity.GiljabiGpsdata;
-import kr.giljabi.api.repository.GiljabiGpsDataRepository;
-import kr.giljabi.api.response.GiljabiResponseGpsdataDTO;
+import kr.giljabi.api.entity.TcxShareCourses;
+import kr.giljabi.api.repository.ShareCoursesRepository;
+import kr.giljabi.api.response.XmlShareResponse;
+import kr.giljabi.api.utils.FileUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
+/**
+ * @Author : eahn.park@gmail.com
+ * 블로그등에 링크된 내용은 삭제하지 않고 사용함
+ * https://giljabi.kr/gpx2tcx.html?fileid=8a68fb2ecc4ae72ab097dc7fff0b9296
+ */
 @Slf4j
 @Service
-public class GiljabiGpsDataService {
+public class ShareCoursesService {
+    private final ShareCoursesRepository shareCoursesRepository;
+    private final GiljabiGpsDataService gpsService;
 
-    private final GiljabiGpsDataRepository giljabiGpsDataRepository;
+
+    @Value("${giljabi.xmlshare.path}")
+    private String xmlSharePath;
+
+    @Value("${giljabi.gpx.path}")
+    private String xmlGpxPath;
+
 
     @Autowired
-    public GiljabiGpsDataService(GiljabiGpsDataRepository giljabiGpsDataRepository) {
-        this.giljabiGpsDataRepository = giljabiGpsDataRepository;
+    public ShareCoursesService(ShareCoursesRepository shareCoursesRepository,
+                               GiljabiGpsDataService gpsService) {
+        this.shareCoursesRepository = shareCoursesRepository;
+        this.gpsService = gpsService;
     }
 
-    public GiljabiGpsdata save(GiljabiGpsdata giljabiGpsdata) {
-        return giljabiGpsDataRepository.save(giljabiGpsdata);
+    //과거 공유된 파일은 tcx로 저장되어 있음
+    public Optional<XmlShareResponse> findByFileHash(String fileHashId) throws Exception {
+        Optional<TcxShareCourses> shareCourses = shareCoursesRepository.findByFileHash(fileHashId);
+        if (shareCourses.isPresent()) {
+            String filePath = String.format("%s/%s/%s.tcx.lz",
+                    xmlSharePath,
+                    shareCourses.get().getPathName(),
+                    shareCourses.get().getFileHash());
+
+            XmlShareResponse xmlShareResponse = new XmlShareResponse();
+            String xmlData = FileUtils.fileReaderByText(filePath);
+            xmlShareResponse.setXmlData(xmlData);
+            xmlShareResponse.setUuid(fileHashId);
+            xmlShareResponse.setTrackName(shareCourses.get().getPcFileName());
+            xmlShareResponse.setFileType("tcx");
+            return Optional.of(xmlShareResponse);
+        } else {
+            return Optional.empty();
+        }
     }
 
-    public Optional<GiljabiGpsdata> findById(Long id) {
-        return giljabiGpsDataRepository.findById(id);
+    public Optional<XmlShareResponse> findByUuidFromGpxdata(String fileid) throws Exception {
+        Optional<XmlShareResponse> response = null;
+
+        //Optional을 사용해야 하나...
+        GiljabiGpsdata gpsdata = gpsService.findByUuid(fileid);
+        XmlShareResponse xml = new XmlShareResponse();
+        String filePath = String.format("%s%s/%s",
+                xmlGpxPath,
+                gpsdata.getFileurl(),
+                gpsdata.getUuid());
+
+        String xmlData = FileUtils.fileReaderByText(filePath);
+
+        xml.setXmlData(xmlData);
+        xml.setUuid(gpsdata.getUuid());
+        xml.setTrackName(gpsdata.getTrackname());
+        xml.setFileType(gpsdata.getFileext());
+        xml.setFileId(fileid);
+        response = Optional.of(xml);
+
+        return response;
     }
-
-    public GiljabiGpsdata findByUuid(String uuid) {
-        return giljabiGpsDataRepository.findByUuid(uuid);
-    }
-
-    public GiljabiGpsdata findByUuidAndShareflagTrue(String uuid) {
-        return giljabiGpsDataRepository.findByUuidAndShareflagTrue(uuid);
-    }
-    public GiljabiGpsdata findByApinameAndUuidAndCreateat(String uuid) {
-        Timestamp tenMinutesAgo = Timestamp.from(Instant.now().minusSeconds(600)); // 10 minutes ago
-
-        GiljabiGpsdata gpsdata = giljabiGpsDataRepository.findByApinameAndUuidAndCreateat(uuid, tenMinutesAgo);
-/*
-        //DB에서 삭제하지는 않고 object만 삭제
-        if (gpsdata != null) {
-            giljabiGpsDataRepository.delete(gpsdata);
-        }*/
-        return gpsdata;
-    }
-
-
-    public Page<GiljabiGpsdata> findGpsDataBetweenDatesAndTrackName(
-            String trackName,
-            String useruuid,
-            boolean selfCheck,
-            Pageable pageable) {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime oneMonthAgo = now.minusMonths(1);
-        Timestamp startDate = Timestamp.valueOf(oneMonthAgo);
-        Timestamp endDate = Timestamp.valueOf(now);
-
-        Page<GiljabiGpsdata> pageContents = null;
-
-        //본인것만 보기
-        if(selfCheck)
-            pageContents = giljabiGpsDataRepository.findGpsDataBetweenDatesAndTrackNameByUseruuid(
-                        startDate, endDate, trackName, useruuid, pageable);
-        else
-            pageContents = giljabiGpsDataRepository.findGpsDataBetweenDatesAndTrackName(
-                    startDate, endDate, trackName, pageable);
-
-        return pageContents;
-    }
-
 }
+
+
 

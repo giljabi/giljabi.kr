@@ -29,6 +29,9 @@ $(document).ready(function () {
                         rows += `
                             <tr style="cursor: pointer;" onclick="javascript:viewGpx('${item.uuid}');">
                                 <td class="text-center d-none d-md-table-cell">${item.useruuid}</td>
+                                <td class="text-center d-none d-md-table-cell">
+                                    ${item.userid ? item.userid.substring(0, item.userid.indexOf('@')) : ''}
+                                </td>
                                 <td class="text-center d-none d-md-table-cell">${item.createat}</td>
                                 <td class="text-end d-none d-md-table-cell">${item.wpt.toLocaleString()}</td>
                                 <td class="text-end d-none d-md-table-cell">${item.trkpt.toLocaleString()}</td>
@@ -76,3 +79,4 @@ $(document).ready(function () {
     // 초기 데이터 로드
     loadGpsData();
 });
+

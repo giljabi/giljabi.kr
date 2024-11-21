@@ -7,6 +7,7 @@ import kr.giljabi.api.response.XmlShareResponse;
 import kr.giljabi.api.service.GiljabiGpsDataService;
 import kr.giljabi.api.service.MinioService;
 import kr.giljabi.api.service.ShareCoursesService;
+import kr.giljabi.api.utils.ErrorCode;
 import kr.giljabi.api.utils.FileUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,15 +35,21 @@ public class RouterShareController {
     @ApiOperation(value="경로 공유", notes = "공유경로 정보 api")
     public Response getGpxshare(@PathVariable(required = false) String fileid,
                                 @PathVariable(required = false) String version) {
-        Optional<XmlShareResponse> response = null;
+        try {
+            Optional<XmlShareResponse> response = null;
 
-        if(version.equals("v1"))
-            response = shareService.findByFileHash(fileid);
-        else if(version.equals("v2"))
-            response = shareService.findByUuidFromGpxdata(fileid);
+            if (version.equals("v1"))
+                response = shareService.findByFileHash(fileid);
+            else if (version.equals("v2"))
+                response = shareService.findByUuidFromGpxdata(fileid);
 
-        return new Response(response);
+            return new Response(response);
+        } catch (IllegalArgumentException e) {
+            return new Response(ErrorCode.STATUS_EXCEPTION.getStatus(), "파일을 찾을 수 없습니다.");
+        } catch (Exception e) {
+            return new Response(ErrorCode.STATUS_EXCEPTION.getStatus(), e.getMessage());
+        }
     }
-
 }
+
 

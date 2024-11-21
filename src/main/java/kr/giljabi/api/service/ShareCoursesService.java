@@ -38,58 +38,49 @@ public class ShareCoursesService {
     }
 
     //과거 공유된 파일은 tcx로 저장되어 있음
-    public Optional<XmlShareResponse> findByFileHash(String fileHashId) {
-        try {
-            Optional<TcxShareCourses> shareCourses = shareCoursesRepository.findByFileHash(fileHashId);
-            if (shareCourses.isPresent()) {
-                String filePath = String.format("%s/%s/%s.tcx.lz",
-                        xmlSharePath,
-                        shareCourses.get().getPathName(),
-                        shareCourses.get().getFileHash());
+    public Optional<XmlShareResponse> findByFileHash(String fileHashId) throws Exception {
+        Optional<TcxShareCourses> shareCourses = shareCoursesRepository.findByFileHash(fileHashId);
+        if (shareCourses.isPresent()) {
+            String filePath = String.format("%s/%s/%s.tcx.lz",
+                    xmlSharePath,
+                    shareCourses.get().getPathName(),
+                    shareCourses.get().getFileHash());
 
-                XmlShareResponse xmlShareResponse = new XmlShareResponse();
-                String xmlData = FileUtils.fileReaderByText(filePath);
-                xmlShareResponse.setXmlData(xmlData);
-                xmlShareResponse.setUuid(fileHashId);
-                xmlShareResponse.setTrackName(shareCourses.get().getPcFileName());
-                xmlShareResponse.setFileType("tcx");
-                return Optional.of(xmlShareResponse);
-            } else {
-                return Optional.empty();
-            }
-        } catch (Exception e) {
-            log.error(e.getMessage());
+            XmlShareResponse xmlShareResponse = new XmlShareResponse();
+            String xmlData = FileUtils.fileReaderByText(filePath);
+            xmlShareResponse.setXmlData(xmlData);
+            xmlShareResponse.setUuid(fileHashId);
+            xmlShareResponse.setTrackName(shareCourses.get().getPcFileName());
+            xmlShareResponse.setFileType("tcx");
+            return Optional.of(xmlShareResponse);
+        } else {
             return Optional.empty();
         }
     }
 
-    public Optional<XmlShareResponse> findByUuidFromGpxdata(String fileid) {
-        try {
-            Optional<XmlShareResponse> response = null;
+    public Optional<XmlShareResponse> findByUuidFromGpxdata(String fileid) throws Exception {
+        Optional<XmlShareResponse> response = null;
 
-            //Optional을 사용해야 하나...
-            GiljabiGpsdata gpsdata = gpsService.findByUuid(fileid);
-            XmlShareResponse xml = new XmlShareResponse();
-            String filePath = String.format("%s/%s/%s",
-                    xmlGpxPath,
-                    gpsdata.getFileurl(),
-                    gpsdata.getUuid());
+        //Optional을 사용해야 하나...
+        GiljabiGpsdata gpsdata = gpsService.findByUuid(fileid);
+        XmlShareResponse xml = new XmlShareResponse();
+        String filePath = String.format("%s%s/%s",
+                xmlGpxPath,
+                gpsdata.getFileurl(),
+                gpsdata.getUuid());
 
-            String xmlData = FileUtils.fileReaderByText(filePath);
+        String xmlData = FileUtils.fileReaderByText(filePath);
 
-            xml.setXmlData(xmlData);
-            xml.setUuid(gpsdata.getUuid());
-            xml.setTrackName(gpsdata.getTrackname());
-            xml.setFileType(gpsdata.getFileext());
-            xml.setFileId(fileid);
-            response = Optional.of(xml);
+        xml.setXmlData(xmlData);
+        xml.setUuid(gpsdata.getUuid());
+        xml.setTrackName(gpsdata.getTrackname());
+        xml.setFileType(gpsdata.getFileext());
+        xml.setFileId(fileid);
+        response = Optional.of(xml);
 
-            return response;
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            return Optional.empty();
-        }
+        return response;
     }
 }
+
 
 
