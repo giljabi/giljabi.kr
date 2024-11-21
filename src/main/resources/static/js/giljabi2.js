@@ -1491,7 +1491,7 @@ TCX
 
         $.ajax({
             type: 'post',
-            url: '/api/1.0/saveGpsdata',
+            url: '/api/1.0/saveGpsdata/saveas',
             dataType: 'json',
             contentType: 'application/json; charset=UTF-8;',
             data: JSON.stringify(requestBody),
@@ -1579,6 +1579,7 @@ function chartPlotAdView(view) {
             $('.containerPlot').css('background-image', 'none');
     */
 }
+
 
 
 

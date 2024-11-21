@@ -1501,6 +1501,7 @@ TCX
             trkpt: _gpxTrkseqArray.length,
             distance: _gpxTrkseqArray[_gpxTrkseqArray.length - 1].dist,
             uuid: uuid,
+            userUUID: saveUUID()
         };
 
         $.ajax({
@@ -1731,5 +1732,6 @@ function chartPlotAdView(view) {
             $('.containerPlot').css('background-image', 'none');
     */
 }
+
 
 
