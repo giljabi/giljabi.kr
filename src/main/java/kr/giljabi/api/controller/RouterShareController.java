@@ -1,17 +1,12 @@
 package kr.giljabi.api.controller;
 
 import io.swagger.annotations.ApiOperation;
-import kr.giljabi.api.entity.GiljabiGpsdata;
 import kr.giljabi.api.response.Response;
 import kr.giljabi.api.response.XmlShareResponse;
-import kr.giljabi.api.service.GiljabiGpsDataService;
-import kr.giljabi.api.service.MinioService;
 import kr.giljabi.api.service.ShareCoursesService;
 import kr.giljabi.api.utils.ErrorCode;
-import kr.giljabi.api.utils.FileUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;

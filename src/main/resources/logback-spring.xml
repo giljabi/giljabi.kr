@@ -44,7 +44,7 @@
         </root>
     </springProfile>
 
-    <springProfile name="real">
+    <springProfile name="prod">
         <logger name="kr.giljabi.api" level="INFO"/>
         <logger name="org.springframework.web" level="OFF"/>
         <logger name="org.springframework.security" level="INFO"/>

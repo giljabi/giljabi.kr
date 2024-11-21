@@ -14,7 +14,6 @@ import kr.giljabi.api.response.Response;
 import kr.giljabi.api.service.GiljabiGpsDataImageService;
 import kr.giljabi.api.service.GiljabiGpsDataService;
 import kr.giljabi.api.service.JwtProviderService;
-import kr.giljabi.api.service.MinioService;
 import kr.giljabi.api.utils.CommonUtils;
 import kr.giljabi.api.utils.ErrorCode;
 import kr.giljabi.api.utils.FileUtils;
@@ -26,7 +25,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,9 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,12 +55,12 @@ public class GiljabiController {
     private final GiljabiGpsDataImageService imageService;
     private final JwtProviderService jwtProviderService;
 
-    private final MinioService minioService;
+    //private final MinioService minioService;
 
     private UserInfo userInfo;
 
-    @Value("${minio.bucketPublic}")
-    private String bucketPublic;
+/*    @Value("${minio.bucketPublic}")
+    private String bucketPublic;*/
 
     @Value("${giljabi.gpx.path}")
     private String gpxPath;
@@ -285,9 +281,8 @@ admin은 파일이 있으면 추가하지 않고 update
     /**
      * apiname editor에서 연결해서 가져오는 경우에 사용됨: linkElevation
      * action: linkElevation,
-     * @param uuidkey
-     * @return
      */
+    /*
     @GetMapping("/api/1.0/getByParameter/{uuidkey}/{action}")
     public Response getByParameter(@PathVariable String uuidkey,
                                    @PathVariable String action) {
@@ -325,7 +320,8 @@ admin은 파일이 있으면 추가하지 않고 update
             return new Response(ErrorCode.STATUS_FAILURE.getStatus(), e.getMessage());
         }
     }
-
+*/
+    /*
     @GetMapping("/api/1.0/getOldShare/{uuidkey}")
     public Response getOldShare(@PathVariable String uuidkey) {
         try {
@@ -352,7 +348,7 @@ admin은 파일이 있으면 추가하지 않고 update
             return new Response(ErrorCode.STATUS_FAILURE.getStatus(), e.getMessage());
         }
     }
-
+*/
     @GetMapping("/api/1.0/getGpxList")
     public Response getGpxList(HttpServletRequest request,
                                @RequestParam(required = false) String trackName,

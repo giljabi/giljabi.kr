@@ -20,7 +20,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
-
+/*
 @Service
 @Slf4j
 public class MinioService {
@@ -262,3 +262,4 @@ public class MinioService {
 
 }
 
+*/

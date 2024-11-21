@@ -12,23 +12,19 @@ spring:
 
 
 giljabi:
-  mountain100:  #산림청 100대 명산 gpx, 오래된것 같음, 화악산에서 gpx 없었으면 ....
-    path: ~/apps/giljabi/data/mountain100/ # --> ${minio.bucketData}/mountain100
+  forest100:  #산림청 100대 명산 gpx, 오래된것 같음, 화악산에서 gpx 없었으면 ....
+    path: /home/ubuntu/apps/giljabi/data # --> ${minio.bucketData}/mountain100
   xmlshare: #gpx, tcx 공유파일 경로, 삭제하지 않는 파일, 블로그에 공유된 파일
-    path: ~/apps/giljabi/data/share/     # --> ${minio.bucketData}/share
+    path: /home/ubuntu/apps/giljabi/data/share     # --> ${minio.bucketData}/share
   gpx:  # 사용자가 작성한 파일은 모두 공유하게 변경
-    path: ~/apps/giljabi/data/gpx # --> ${minio.bucketService}/gpx
+    path: /home/ubuntu/apps/giljabi/data/gpx # --> ${minio.bucketService}/gpx
 
-#
 ##### 파일은 public만 사용함...private은 사용안함--> 관리가 귀찮네...
-#minio:
-#  url: ${bucket.url}
-#  #  bucketPrivate: gil-media-pri #public gpx, elevation, gpximages 서비스에서 사용하는 데이터, 사용자가 생성한 파일들
-#  #  bucketPublicUrl: http://localhost:9000
-#  bucketPublicUrl: ${bucket.media-public.url}
-#  bucketPublic: ${bucket.media-public.name} #public /forest100, /share
-#  accessKey: ${bucket.accessKey}
-#  secretKey: ${bucket.secretKey}
-
-
+##### 모두 삭제해야 함
+minio:
+  url: http://localhost:9000
+  accessKey: ENC(FmY3fp0RsLtBJ9xO+v98Aml1P6VMj5gGx1lckqIQ/iE=) #${bucket.accessKey}
+  secretKey: ENC(hX5jaFHeI123YBd24lYPQvksTIon7F6NZICVncekjRVYR4K1KAoVyZCVcyzXypEW) #${bucket.secretKey}
+  bucketPublicUrl: http://localhost:9000/gil-media-pub
+  bucketPublic: gil-media-pub #public /forest100, /share
 

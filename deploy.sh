@@ -1,6 +1,8 @@
 #!/bin/bash
 
 #java 11
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-11.jdk/Contents/Home
+
 mvn clean package -Dmaven.test.skip=true -f pom.xml
 if [ $? -ne 0 ]; then
     echo "Maven build failed. Stopping script."
@@ -42,5 +44,3 @@ ssh -i $GILJABI_PEM $SERVER_USER@$SERVER_IP << EOF
 EOF
 
 # mvn clean
-
-

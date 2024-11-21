@@ -18,13 +18,13 @@
         <java.version>11</java.version>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
-<!--        <maven.compiler.release>11</maven.compiler.release>-->
-<!--        <resourcePath>target/resources/main/resource</resourcePath>-->
-<!--        <minifiedPath>target/minified</minifiedPath>-->
+        <!--        <maven.compiler.release>11</maven.compiler.release>-->
+        <!--        <resourcePath>target/resources/main/resource</resourcePath>-->
+        <!--        <minifiedPath>target/minified</minifiedPath>-->
 
-<!--        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>-->
-<!--        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>-->
-<!--        <encoding>UTF-8</encoding>-->
+        <!--        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>-->
+        <!--        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>-->
+        <!--        <encoding>UTF-8</encoding>-->
     </properties>
 
     <scm>
@@ -59,11 +59,11 @@
             <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>mysql</groupId>-->
-<!--            <artifactId>mysql-connector-java</artifactId>-->
-<!--            <version>8.0.26</version>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>mysql</groupId>-->
+        <!--            <artifactId>mysql-connector-java</artifactId>-->
+        <!--            <version>8.0.26</version>-->
+        <!--        </dependency>-->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
@@ -79,7 +79,7 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.22</version>
-            <scope>provided</scope>            <optional>true</optional>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -142,7 +142,7 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
-<!--    XmlRootElement는 java8까지만 존재 java9부터는 javax.xml.bind가 제외되었음 -->
+        <!--    XmlRootElement는 java8까지만 존재 java9부터는 javax.xml.bind가 제외되었음 -->
         <dependency>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
@@ -201,7 +201,7 @@
             <version>0.11.2</version>
             <scope>runtime</scope>
         </dependency>
-	<!--application.yml 암호화ENC() -->
+        <!--application.yml 암호화ENC() -->
         <dependency>
             <groupId>com.github.ulisesbocchio</groupId>
             <artifactId>jasypt-spring-boot-starter</artifactId>
@@ -211,14 +211,14 @@
     </dependencies>
 
     <build>
-<!--        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <excludes>
-                    <exclude>application-local.yml</exclude>
-                </excludes>
-            </resource>
-        </resources>-->
+        <!--        <resources>
+                    <resource>
+                        <directory>src/main/resources</directory>
+                        <excludes>
+                            <exclude>application-local.yml</exclude>
+                        </excludes>
+                    </resource>
+                </resources>-->
         <plugins>
             <!-- Properties Maven Plugin -->
             <plugin>
@@ -246,23 +246,30 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
+                    <source>11</source>
+                    <target>11</target>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.22</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
             <!-- Maven Toolchains Plugin -->
-<!--            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-toolchains-plugin</artifactId>
-                <version>3.1.0</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>toolchain</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>-->
+            <!--            <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-toolchains-plugin</artifactId>
+                            <version>3.1.0</version>
+                            <executions>
+                                <execution>
+                                    <goals>
+                                        <goal>toolchain</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                        </plugin>-->
 
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -368,28 +375,6 @@
                 </executions>
             </plugin>
 
-            <!-- Execute UglifyJS -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>1.6.0</version>
-                <executions>
-                    <execution>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>npm</executable>
-                            <arguments>
-                                <argument>run</argument>
-                                <argument>minify</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
@@ -399,46 +384,14 @@
                         <phase>prepare-package</phase>
                         <configuration>
                             <tasks>
-                                <delete file="target/classes/static/js/common.js" />
-                                <delete file="target/classes/static/js/routeutil.js" />
-                                <delete file="target/classes/static/js/waypoint.js" />
-                                <delete file="target/classes/static/js/xmlwriter.js" />
-                                <delete file="target/classes/static/js/fileutils.js" />
-                                <delete file="target/classes/static/js/giljabi2.js" />
-                                <delete file="target/classes/static/js/editor2.js" />
 
-                                <replaceregexp file="target/classes/static/html/giljabi2.html"
-                                               match="common.js" replace="common.min.js" byline="true" encoding="UTF-8"/>
-                                <replaceregexp file="target/classes/static/html/giljabi2.html"
-                                               match="routeutil.js" replace="routeutil.min.js" byline="true" encoding="UTF-8"/>
-                                <replaceregexp file="target/classes/static/html/giljabi2.html"
-                                               match="waypoint.js" replace="waypoint.min.js" byline="true" encoding="UTF-8"/>
-                                <replaceregexp file="target/classes/static/html/giljabi2.html"
-                                               match="xmlwriter.js" replace="xmlwriter.min.js" byline="true" encoding="UTF-8"/>
-                                <replaceregexp file="target/classes/static/html/giljabi2.html"
-                                               match="fileutils.js" replace="fileutils.min.js" byline="true" encoding="UTF-8"/>
-                                <replaceregexp file="target/classes/static/html/giljabi2.html"
-                                               match="giljabi2.js" replace="giljabi2.min.js" byline="true" encoding="UTF-8"/>
-
-                                <replaceregexp file="target/classes/static/html/editor2.html"
-                                               match="common.js" replace="common.min.js" byline="true" encoding="UTF-8"/>
-                                <replaceregexp file="target/classes/static/html/editor2.html"
-                                               match="routeutil.js" replace="routeutil.min.js" byline="true" encoding="UTF-8"/>
-                                <replaceregexp file="target/classes/static/html/editor2.html"
-                                               match="xmlwriter.js" replace="xmlwriter.min.js" byline="true" encoding="UTF-8"/>
-                                <replaceregexp file="target/classes/static/html/editor2.html"
-                                               match="editor2.js" replace="editor2.min.js" byline="true" encoding="UTF-8"/>
-
-                                <replaceregexp file="target/classes/templates/vworld.html"
-                                               match="routeutil.js" replace="routeutil.min.js" byline="true" encoding="UTF-8"/>
                                 <replaceregexp file="target/classes/templates/vworld.html"
                                                match="apiKey=EF0CBEDB-A6FA-3FD9-B1B3-D7C725EF09D3"
                                                replace="apiKey=9061B3F7-8879-385D-8E87-ED75ABCD0EF5" byline="true" encoding="UTF-8"/>
 
-                                <replaceregexp file="target/classes/static/html/menu.html"
+                                <replaceregexp file="target/classes/static/v2/menu.html"
                                                match="__BUILD_VERSION__"
                                                replace="${project.version}" byline="true" encoding="UTF-8"/>
-
                             </tasks>
                         </configuration>
                         <goals>
