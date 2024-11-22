@@ -135,7 +135,7 @@ public class GoogleService {
         return returnPoint;
     }
 
-        private GpsElevation insertElevation(HttpServletRequest request, UserInfo userInfo,
+    private GpsElevation insertElevation(HttpServletRequest request, UserInfo userInfo,
                                          List<RequestElevationData.Geometry2DPoint> trackPoint,
                                          int maxPage, long startTime, long endTime) {
         GpsElevation gpsElevation = new GpsElevation();
@@ -143,9 +143,8 @@ public class GoogleService {
         gpsElevation.setUuid(UUID.randomUUID().toString());
 
         String logicalFileName = CommonUtils.makeGpsdataObjectPath(gpsElevation.getUuid());
-
         //String fileurl = String.format("%s/%s", gpxPath, logicalFileName);
-        gpsElevation.setFileurl(logicalFileName);
+        gpsElevation.setFileurl("저장안함, 압축은 절대 서버에서 하지 않음");
         gpsElevation.setTranstime(endTime - startTime);
         gpsElevation.setTrkpt(trackPoint.size());
         gpsElevation.setUserid(userInfo.getUserid());
@@ -264,6 +263,7 @@ public class GoogleService {
     }
 
 }
+
 
 
 
