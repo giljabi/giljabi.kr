@@ -55,7 +55,21 @@ function initMap() {
         center: getLocation(), //Seoul city hall
         level: 8
     };
-    _globalMap = new kakao.maps.Map(document.getElementById('map'), options);
+    let mapContainer = document.getElementById('map');//이벤트 passive true를 위한 변수
+    _globalMap = new kakao.maps.Map(mapContainer, options);
+
+// 기존 mousewheel 이벤트 제거 후 다시 추가, 카카오맵에서는 오류가 아니라 개선할 계획이 없음
+// 포인트 수 3800개를 기준으로 23초에서 15초 정도로 줄어듬
+//Violation] Added non-passive event listener to a scroll-blocking 'mousewheel' event. Consider marking event handler as 'passive' to make the page more responsive.
+    mapContainer.addEventListener('mousewheel', (event) => {
+        console.log('Mousewheel event triggered');
+    }, { passive: true });
+    mapContainer.addEventListener('wheel', (event) => {
+        console.log('wheel event triggered');
+    }, { passive: true });
+    mapContainer.addEventListener('touchstart', (event) => {
+        console.log('touchstart event triggered');
+    }, { passive: true });
 
     let mapTypeControl = new kakao.maps.MapTypeControl(); // 지도타입 컨트롤
     _globalMap.addControl(mapTypeControl, kakao.maps.ControlPosition.TOPRIGHT);
@@ -403,6 +417,7 @@ function makeGpxTcxObject(xml) {
     makeMarkerPoint(_globalMap, 'start', _gpxTrkseqArray[0]);
     makeMarkerPoint(_globalMap, 'end', _gpxTrkseqArray[_gpxTrkseqArray.length - 1]);
 
+    //여기서 mapContainer.addEventListener('mousewheel'...등 경고가 주루룩 나오는 것을 방지
     _drawingManager.put(kakao.maps.drawing.OverlayType.POLYLINE, _trkPoly);
 
     moveCenterPoint(_globalMap, _gpxTrkseqArray);
@@ -766,6 +781,7 @@ $(document).ready(function() {
 
     onClickOpenGiljabi();
 });
+
 
 
 

@@ -639,6 +639,17 @@ $(document).ready(function () {
         //console.log('fileLoadAndDraw:' + readXmlfile);
 
         if (_fileExt == 'gpx') {
+            let trkCount = readXmlfile.find('trk').length;
+            if(trkCount > 1) {
+                alert(`다중 경로(${trkCount}개)가 있습니다. 구분하지 않고 모든 경로를 그립니다.`);
+/*                readXmlfile.find('trk').each(function (index, trk) {
+                    let name = $(trk).find('name').text(); // trk 태그 내부의 name 텍스트 가져오기
+                    $('#trkSelect').append(`<option value="${index+1}">${index+1 + ' ' + name}</option>`);
+                    console.log(`trk ${index + 1}의 name: ${name}`);
+                });*/
+            } else {
+                //$('#trkSelect').append('<option value="" disabled selected>다중경로 아님</option>');
+            }
             loadGpx(readXmlfile);
         } else if (_fileExt == 'tcx') {
             loadTcx(readXmlfile); //gpx 포맷을 끝내고 진행...
@@ -1579,6 +1590,7 @@ function chartPlotAdView(view) {
             $('.containerPlot').css('background-image', 'none');
     */
 }
+
 
 
 

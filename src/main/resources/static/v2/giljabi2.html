@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>대한민국의 모든 경로</title>
+    <title>하이킹 경로 만들기</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -79,6 +79,7 @@
                        value="초기화"/>&nbsp;
                 <input type="file" id="fileInput" style="width:150px;"
                        accept=".gpx,.tcx">&nbsp;
+                <select id="trkSelect" style="width: 80px;"></select>
                 <input type="text" id="gpx_metadata_name"
                        title="gpx/tcx 파일내부에 저장되는 이름과 파일명이 동일하게 저장됩니다."
                        style="width:80px;"
@@ -94,7 +95,7 @@
                        title="들머리/날머리를 양끝에 넣어주면 보기가 편합니다."
                        value="이정표 정보"/>&nbsp;
                 <input type="button" id="waypointexcelsave" value="이정표 엑셀저장"/>&nbsp;
-                <input type="button" id="viewVworld" value="3D View"/>&nbsp;
+                <!--input type="button" id="viewVworld" value="3D View"/ -->&nbsp;
                 <!-- 이미지 사용 체크박스-->
                 &nbsp;사진:<input type="checkbox" id="imageUse" name="imageUse" style="width:20px;">&nbsp;
                 <!--
@@ -180,5 +181,6 @@
 </body>
 
 </html>
+
 
 
