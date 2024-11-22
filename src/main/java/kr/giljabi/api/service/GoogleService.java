@@ -1,12 +1,10 @@
 package kr.giljabi.api.service;
 
-import com.github.diogoduailibe.lzstring4j.LZString;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import kr.giljabi.api.entity.GiljabiGpsdata;
 import kr.giljabi.api.entity.GpsElevation;
 import kr.giljabi.api.entity.UserInfo;
-import kr.giljabi.api.geo.Geometry3DPoint;
 import kr.giljabi.api.geo.GoogleElevationData;
 import kr.giljabi.api.geo.gpx.*;
 import kr.giljabi.api.request.RequestElevationData;
@@ -18,17 +16,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import java.io.*;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -63,11 +56,6 @@ public class GoogleService {
     @Value("${giljabi.gpx.path}")
     private String gpxPath;
 
-    @Value("${minio.bucketPublic}")
-    private String bucketPublic;
-
-    @Value("${minio.bucketPublicUrl}")
-    private String bucketPublicUrl;
 
 
     //장시간 호출이 없는 경우 socket error가 발생하므로 미리 호출한다
@@ -138,26 +126,26 @@ public class GoogleService {
         }
         long endTime = System.currentTimeMillis();
 
+        //구글에 요청한 횟수, 경과시간을 관리한다.
         GpsElevation gpsElevation = insertElevation(request, userInfo, trackPoint, maxPage, startTime, endTime);
 
-//gpsdata insert
-        GiljabiGpsdata gpsdata = saveGpxdata(request, userInfo, trackPoint, returnPoint, gpsElevation);
-        gpsService.save(gpsdata);
+        //gpsdata insert, 압축안된 경로파일은 DB, 파일 저장안함, 구분자 고민중
+/*        GiljabiGpsdata gpsdata = saveGpxdata(request, userInfo, trackPoint, returnPoint, gpsElevation);
+        gpsService.save(gpsdata);*/
         return returnPoint;
     }
 
-    private GpsElevation insertElevation(HttpServletRequest request, UserInfo userInfo, List<RequestElevationData.Geometry2DPoint> trackPoint, int maxPage, long startTime, long endTime) {
+        private GpsElevation insertElevation(HttpServletRequest request, UserInfo userInfo,
+                                         List<RequestElevationData.Geometry2DPoint> trackPoint,
+                                         int maxPage, long startTime, long endTime) {
         GpsElevation gpsElevation = new GpsElevation();
         gpsElevation.setApiname("getElevation");
         gpsElevation.setUuid(UUID.randomUUID().toString());
 
-        String objectName = CommonUtils.makeGpsdataObjectName(gpxPath,
-                gpsElevation.getUuid(),
-                "gpx");
+        String logicalFileName = CommonUtils.makeGpsdataObjectPath(gpsElevation.getUuid());
 
-        String fileurl = String.format("%s/%s/%s",
-                bucketPublicUrl, bucketPublic, objectName);
-        gpsElevation.setFileurl(fileurl);
+        //String fileurl = String.format("%s/%s", gpxPath, logicalFileName);
+        gpsElevation.setFileurl(logicalFileName);
         gpsElevation.setTranstime(endTime - startTime);
         gpsElevation.setTrkpt(trackPoint.size());
         gpsElevation.setUserid(userInfo.getUserid());
@@ -172,6 +160,9 @@ public class GoogleService {
      * 구글에서 받은 elevation정보를 이용해 xml을 만들고 압축해서 저장한다.
      * 서버에서 압축하지 않고, 클라이언트로 전송 후 클라이언트에서 압축해서 전송하는 것으로 변경 해야 함
      * 절대로 서버에서 compress/decompress 해서는 안됨....
+     *
+     * 2024.11.22
+     * 압축안된 파일은 파일저장 중지, DB 저장도 중지, gpsdata에 압축 유무 추가 고민중
      * @param request
      * @param userInfo
      * @param trackPoint
@@ -186,8 +177,8 @@ public class GoogleService {
                                        ArrayList<TrackPoint> returnPoint,
                                        GpsElevation gpsElevation) throws Exception {
         Gpx gpx = makeGpxXml(returnPoint);
-        String gpxXml = gpx.getXml();
-        String compressedXml = LZString.compressToUTF16(gpxXml);
+        //String compressedXml = LZString.compressToUTF16(gpxXml);
+        String compressedXml = gpx.getXml();    //서버에서 압축 절대금지..1건으로 서버 다운될 수 있음
         List<TrackPoint> trkpt = gpx.getTrk().getTrkseg().getTrkpt();
         TrackPoint lastTrackPoint = trkpt.get(trkpt.size() - 1);
 
@@ -201,28 +192,17 @@ public class GoogleService {
         gpsDataDTO.setXmldata("");
         gpsDataDTO.setFileext("gpx");
         gpsDataDTO.setFilename("");
-/*
-        String objectName = CommonUtils.makeGpsdataObjectName(gpxPath,
-                gpsDataDTO.getUuid(),
-                gpsDataDTO.getFileext());*/
 
         String physicalPath = CommonUtils.makeGpsdataObjectPath(gpsDataDTO.getUuid());
         String savedFilename = FileUtils.saveFile(gpxPath + physicalPath,
                 gpsDataDTO.getUuid(), compressedXml);
 
-/*
-        InputStream inputStream = new ByteArrayInputStream(compressedXml.getBytes(StandardCharsets.UTF_8));
-
-        String savedFilename = minioService.putObject(bucketPublic,
-                objectName, inputStream, CommonUtils.BINARY_CONTENT_TYPE);
-*/
-
         GiljabiGpsdata gpsdata = CommonUtils.makeGiljabiGpsdata(request.getRemoteAddr(),
                 "makeElevation",
                 gpsDataDTO,
-                gpxXml.getBytes().length,    //decompressed
+                compressedXml.getBytes().length,    //decompressed
                 compressedXml.getBytes().length,
-                bucketPublic + "/" + savedFilename,
+                savedFilename,
                 userInfo.getUserid(),
                 "" /* 사용자 구분은 나중에...*/
         );
@@ -284,5 +264,6 @@ public class GoogleService {
     }
 
 }
+
 
 

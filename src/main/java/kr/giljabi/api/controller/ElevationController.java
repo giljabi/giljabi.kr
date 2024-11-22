@@ -6,6 +6,7 @@ import kr.giljabi.api.entity.UserInfo;
 import kr.giljabi.api.geo.*;
 import kr.giljabi.api.geo.gpx.TrackPoint;
 import kr.giljabi.api.request.RequestElevationSaveData;
+import kr.giljabi.api.request.RequestGpsDataDTO;
 import kr.giljabi.api.response.GiljabiResponse;
 import kr.giljabi.api.response.Gpx100Response;
 import kr.giljabi.api.response.Forest100;
@@ -45,8 +46,6 @@ public class ElevationController {
 
     private final GoogleService googleService;
 
-    //private final MinioService minioService;
-
     private UserInfo userInfo;
 
     @Value("${giljabi.gpx.path}")
@@ -54,12 +53,6 @@ public class ElevationController {
 
     @Value("${giljabi.forest100.path}")
     private String forest100;
-
-//    @Value("${minio.bucketPublic}")
-//    private String bucketPublic;
-
-//    @Value("${minio.bucketPrivate}")
-//    private String bucketPrivate;
 
     @PostMapping("/api/1.0/elevation")
     @ApiOperation(value = "고도정보", notes = "google elevation api 이용하여 고도정보를 받아오는 api")
@@ -161,6 +154,28 @@ public class ElevationController {
             String savedFilename = FileUtils.saveFile(gpxPath + logicalFileName,
                     uuid, compressedXml);
 
+            RequestGpsDataDTO gpsDataDTO = new RequestGpsDataDTO();
+            gpsDataDTO.setTrackName(elevationSaveData.getGpxName());
+            gpsDataDTO.setFileext(elevationSaveData.getFileExt());
+            gpsDataDTO.setWpt(elevationSaveData.getWayPointCount());
+            gpsDataDTO.setTrkpt(elevationSaveData.getTrackPointCount());
+            gpsDataDTO.setDistance(elevationSaveData.getDistance());
+            gpsDataDTO.setSpeed(elevationSaveData.getSpeed());
+            gpsDataDTO.setUuid(uuid);
+            gpsDataDTO.setUserUUID(elevationSaveData.getUserUUID());
+
+            GiljabiGpsdata gpsdata = CommonUtils.makeGiljabiGpsdata(
+                    MyHttpUtils.getClientIp(request),
+                    elevationSaveData.getApiName(),
+                    gpsDataDTO,
+                    0, // compressed
+                    compressedXml.getBytes().length,
+                    logicalFileName,
+                    userInfo.getUserid(),
+                    gpsDataDTO.getUserUUID()
+            );
+
+            /*
             GiljabiGpsdata gpsdata = new GiljabiGpsdata();
             gpsdata.setTrackname(elevationSaveData.getGpxName());
             gpsdata.setFileext(elevationSaveData.getFileExt());
@@ -176,6 +191,7 @@ public class ElevationController {
             gpsdata.setApiname(elevationSaveData.getApiName());
             gpsdata.setUserip(MyHttpUtils.getClientIp(request));
             gpsdata.setUseruuid(elevationSaveData.getUserUUID());
+             */
             gpsService.save(gpsdata);
             log.info("saveElevation: " + savedFilename);
 
@@ -200,4 +216,5 @@ public class ElevationController {
         return response;
     }
 }
+
 
