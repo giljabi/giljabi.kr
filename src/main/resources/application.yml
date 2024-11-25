@@ -4,7 +4,7 @@ server:
   forward-headers-strategy: native  #nginx 사용시 remote address(ip) 가져오기 위해 설정
   servlet:
     session:
-      timeout: 60m  #로그인 세션 유지시간 30분
+      timeout: 60m  #로그인 세션 유지시간
 
 database:
   dev:
