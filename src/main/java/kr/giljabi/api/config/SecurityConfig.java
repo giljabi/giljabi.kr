@@ -43,43 +43,30 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
 
                 // 모든 요청은 인증 없이 접근 가능
-                .antMatchers("/v2/**", "/css/**", "/images/**", "/js/**",
+                .antMatchers("/", "/v2/**", "/css/**", "/images/**", "/js/**",
                         "/map/**", "/poieditor/**", "/util/**", "/vendor/**",
-                        "/", "/user/login")
+                        "/authenticate")
                 .permitAll()
                 .antMatchers().permitAll()
 
                 // 로그인한 사용자만 접근 가능
                 .antMatchers("/manage-js/**", "/manage/**")
                 .authenticated();
-                /*
-                //.antMatchers("/hello/**").permitAll() //모든 이미지, 파일들...
-                //.requestMatchers(request -> "127.0.0.1".equals(request.getRemoteAddr()) || "::1".equals(request.getRemoteAddr()))
-                //.permitAll()
-                //.anyRequest().authenticated()
-                .and()
-                .csrf().disable()
-                .authorizeRequests()
-                .antMatchers("/**").permitAll()
-                //.antMatchers("/api/**").permitAll()
-                //.anyRequest().authenticated(); //인증 필요시
-                 .anyRequest().permitAll(); //모든 url 접속허용
-*/
 
         http
                 .formLogin()
-                .loginPage("/")   // /v2/login 로그인 화면으로 보내지 않음
+                .loginPage("/v2/login")   // /v2/login 로그인 화면으로 보내지 않음
                 .loginProcessingUrl("/authenticate")
                 .successHandler(this.loginSuccessHandler)
                 .failureHandler(this.loginFailureHandler)
-                .usernameParameter("userid")
+                .usernameParameter("userId")
                 .passwordParameter("password")
                 .permitAll();
 
         http
                 .logout()
                 .logoutUrl("/v2/logout")
-                .logoutSuccessUrl("/v2/giljabi2.html")
+                //.logoutSuccessUrl("/v2/giljabi2.html") login.html에서 redirect로 처리
                 .invalidateHttpSession(true)
                 .permitAll();
 
@@ -93,3 +80,4 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .invalidSessionUrl("/v2/giljabi2.html");
     }
 }
+

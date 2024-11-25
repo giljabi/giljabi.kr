@@ -43,10 +43,15 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 		String token = jwtProvider.generateJwtToken(userInfo);
 		session.setAttribute("token", token);	//실제 사용은 세션정보를 사용함
 
+/*
 		response.setContentType("application/json");
 		response.getWriter().write("{\"token\": \"" + token + "\", \"success\": true}");
+*/
+		this.redirectStratgy.sendRedirect(request, response, "/manage/giljabi2-gpx-list.html");
+
 	}
 
 }
+
 
 

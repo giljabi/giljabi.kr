@@ -30,8 +30,8 @@ public class UserController {
         //return "/login";
         return "redirect:/v2";
     }
-
 }
+
 
 
 

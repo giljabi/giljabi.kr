@@ -1,5 +1,6 @@
 package kr.giljabi.api.auth;
 
+import kr.giljabi.api.utils.MyHttpUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
@@ -16,12 +17,17 @@ import java.io.IOException;
 public class LoginFailureHandler implements AuthenticationFailureHandler {
     
     @Override
-	public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
-		log.info("LoginFailureHandler.onAuthenticationFailure");
+	public void onAuthenticationFailure(HttpServletRequest request,
+					HttpServletResponse response,
+					AuthenticationException exception) throws IOException, ServletException {
+		log.info("{} {} LoginFailureHandler",
+				MyHttpUtils.getClientIp(request),
+				request.getRequestURI());
 		request.setAttribute("errorMsg", exception.getMessage());
-		RequestDispatcher dispatcher = request.getRequestDispatcher("/login");
+		RequestDispatcher dispatcher = request.getRequestDispatcher("/v2/login");
 		dispatcher.forward(request, response);
 	}
 }
+
 
 
