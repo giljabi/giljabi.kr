@@ -143,16 +143,19 @@ public class FileUtils {
     }
 
     // 파일을 삭제하는 메소드
-    public static void deleteFile(String filePath) {
+    public static boolean deleteFile(String filePath) {
         try {
-            Files.deleteIfExists(Paths.get(filePath));
             log.info("File deleted: " + filePath);
+            return Files.deleteIfExists(Paths.get(filePath));
         } catch (IOException e) {
             log.info("file delete error: IOException {}", e.getMessage());
+            return false;
         } catch (Exception e) {
             log.info("file delete error: Exception {}", e.getMessage());
+            return false;
         }
     }
 }
+
 
 

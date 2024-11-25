@@ -1528,20 +1528,13 @@ TCX
     function addImageToFileList(imagePath, imageId) {
         const imageContainer = $('<div>', {
             class: 'image-container',
-            css: {
-                position: 'relative',
-                display: 'inline-block',
-                margin: '5px',
-            }
+            css: {position: 'relative', display: 'inline-block', margin: '5px',}
         });
 
         // 새로운 이미지 요소 생성
         const imgElement = $('<img>', {
             src: imagePath,
-            css: {
-                width: '180px',     // 이미지 폭 고정
-                margin: '5px',      // 이미지 간격 설정
-                objectFit: 'cover'  // 이미지 크기 조정
+            css: {width: '180px', margin: '5px', objectFit: 'cover'  // 이미지 크기 조정
             },
             click: function () {
                 const url = '/util/image-view.html?path=' + imagePath;
@@ -1550,8 +1543,7 @@ TCX
         });
 
         const deleteButton = $('<button>', {
-            class: 'delete-btn',
-            text: 'X',
+            class: 'delete-btn', text: 'X',
             click: function () {
                 deleteImage(imageId);
                 imageContainer.remove();
@@ -1640,11 +1632,16 @@ function deleteImage(imageId) {
     $.ajax({
         type: 'DELETE',
         url: apiUrl,
-        async: true,
+        async: false,
         success: function (response, status) {
-            $(`tr[data-image-id="${imageId}"]`).remove();
-            deleteImageMarker(imageId);
-            console.log(response);
+            if(response.status === 0) {
+                deleteImageMarker(imageId);
+                console.log(response);
+                return true;
+            } else {
+                alert(response.message);
+                return false;
+            }
         },
         error: function (response, status) {
             console.info('Error deleting file');
@@ -1732,6 +1729,7 @@ function chartPlotAdView(view) {
             $('.containerPlot').css('background-image', 'none');
     */
 }
+
 
 
 

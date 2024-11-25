@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import java.io.FileInputStream;
@@ -225,11 +226,12 @@ admin은 파일이 있으면 추가하지 않고 update
     }
 
     @DeleteMapping("/api/1.0/deleteImage/{imageId}")
-    public Response deleteImage(HttpServletRequest request, @PathVariable Long imageId) {
+    public Response deleteImage(HttpServletRequest request,
+                                @PathVariable Long imageId) {
         try {
             //파일을 삭제하기전 본인것인지....확인해야 하는데, 관리자만 사용하자...
             userInfo = jwtProviderService.getSessionByUserinfo(request);
-            if(Integer.parseInt(userInfo.getLevel()) < 10) {
+            if (Integer.parseInt(userInfo.getLevel()) < 10) {
                 return new Response(ErrorCode.STATUS_FAILURE.getStatus(), "준비중인 기능입니다.");
             }
 
@@ -237,9 +239,14 @@ admin은 파일이 있으면 추가하지 않고 update
             GiljabiGpsdataImage gpsImage = imageService.findById(imageId);
             String physicalFilePath = gpxPath + gpsImage.getFileurl();
             System.out.println("physicalFilePath: " + physicalFilePath);
-            FileUtils.deleteFile(physicalFilePath);
 
-            return new Response(ErrorCode.STATUS_SUCCESS.getStatus());
+            //fileDeleteFlag 사용하지 않음
+            boolean fileDeleteFlag = FileUtils.deleteFile(physicalFilePath);
+            if (fileDeleteFlag) {
+                imageService.deleteById(gpsImage.getId());
+                return new Response(ErrorCode.STATUS_SUCCESS.getStatus());
+            } else
+                return new Response(ErrorCode.STATUS_FAILURE.getStatus(), "파일 삭제 실패");
         } catch (Exception e) {
             return new Response(ErrorCode.STATUS_FAILURE.getStatus(), e.getMessage());
         }
@@ -404,7 +411,7 @@ admin은 파일이 있으면 추가하지 않고 update
         }
     }
 
-    @PatchMapping("/api/1.0/deleteGpx/{uuidkey}/{shareflag}")
+    @PatchMapping("/api/1.0/changeGpx/{uuidkey}/{shareflag}")
     public Response changeShareFlag(HttpServletRequest request,
                                     @PathVariable String uuidkey,
                                     @PathVariable boolean shareflag) {
@@ -425,6 +432,7 @@ admin은 파일이 있으면 추가하지 않고 update
     }
 
 }
+
 
 
 

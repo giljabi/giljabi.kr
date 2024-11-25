@@ -58,7 +58,7 @@ function changeShareFlag(trackname, uuid) {
 
 function changeShareFlagRequest(uuid, shareflag) {
     $.ajax({
-        url: `/api/1.0/deleteGpx/${uuid}/${shareflag}`,
+        url: `/api/1.0/changeGpx/${uuid}/${shareflag}`,
         type: 'PATCH',
         contentType: 'application/json',
         success: function(response) {
@@ -153,4 +153,5 @@ $(document).ready(function () {
     // 초기 데이터 로드
     loadGpsData();
 });
+
 

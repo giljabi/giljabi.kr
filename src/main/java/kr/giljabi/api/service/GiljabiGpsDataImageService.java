@@ -32,5 +32,11 @@ public class GiljabiGpsDataImageService {
     public ArrayList<GiljabiGpsdataImage> findAllByGpsdata(GiljabiGpsdata gpsdata) {
         return giljabiGpsImageRepository.findAllByGpsdata(gpsdata);
     }
+
+    public void deleteById(Long id) {
+        giljabiGpsImageRepository.deleteById(id);
+    }
+
 }
+
 
