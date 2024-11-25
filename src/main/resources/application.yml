@@ -17,7 +17,8 @@ database:
     password: ENC(4Ei9WNUxrbl15e5QyRHdjN2UkCkV1ceO)
 
 jwt:
-  accessTokenSecret: ENC(2roBT/pytenhSUW+Dq799fd6Kw1SDG3fHFsUuHZBK9U=)
+  #openssl rand -base64 32
+  accessTokenSecret: ENC(HMJjvSL5FA8BHNhRCKNZfVE9Hj3zMMWqEoVVKjtaJuu+rxWYQ6dFy4Ox8ZiG/SDHwA1uJFVhmTE=)
   accessTokenExpiration: 604800000
 
 spring:
@@ -67,6 +68,7 @@ giljabi:
 #    path: share  # --> ${minio.bucketData}/share
 #  gpx:
 #    path: gpx # --> ${minio.bucketService}/gpx
+
 
 
 
