@@ -17,7 +17,7 @@ database:
     password: ENC(4Ei9WNUxrbl15e5QyRHdjN2UkCkV1ceO)
 
 jwt:
-  accessTokenSecret: 4RT/2hAAJmC6i2FzmezBbaCVMD9FtsuExyjaVWJ5xRA=
+  accessTokenSecret: ENC(2roBT/pytenhSUW+Dq799fd6Kw1SDG3fHFsUuHZBK9U=)
   accessTokenExpiration: 604800000
 
 spring:
