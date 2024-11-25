@@ -2,6 +2,7 @@ package kr.giljabi.api.controller;
 
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.lang.GeoLocation;
+import io.swagger.v3.oas.annotations.Operation;
 import kr.giljabi.api.entity.GiljabiGpsdataImage;
 import kr.giljabi.api.entity.GiljabiGpsdata;
 import kr.giljabi.api.entity.UserInfo;
@@ -71,6 +72,7 @@ public class GiljabiController {
     //일반 사용자는 무조건 추가
     //관리자는 saveas/update 선택임
     @PostMapping("/api/1.0/saveGpsdata/{param}")
+    @Operation(summary = "gpx파일 저장, 압축된 형태를 파일로 저장하고 db에 저장한다.")
     public Response gpsSave(HttpServletRequest request,
                             @PathVariable(required = false ) String param,
                             final @Valid @RequestBody RequestGpsDataDTO gpsDataDTO) {
@@ -164,6 +166,7 @@ admin은 파일이 있으면 추가하지 않고 update
      * @return
      */
     @PostMapping("/api/1.0/uploadImage")
+    @Operation(summary = "관리자만 사용, gpx경로에 이미지를 추가")
     public Response uploadImage(HttpServletRequest request,
                                      @RequestParam("file") MultipartFile file,
                                      @RequestParam("uuid") String parentUuid) {
@@ -226,6 +229,7 @@ admin은 파일이 있으면 추가하지 않고 update
     }
 
     @DeleteMapping("/api/1.0/deleteImage/{imageId}")
+    @Operation(summary = "관리자만 사용, 이미지 삭제")
     public Response deleteImage(HttpServletRequest request,
                                 @PathVariable Long imageId) {
         try {
@@ -253,6 +257,7 @@ admin은 파일이 있으면 추가하지 않고 update
     }
 
     @GetMapping("/api/1.0/getImageList/{uuidkey}")
+    @Operation(summary = "gpx정보에서 이미지가 있으면 화면에 보여줌")
     public Response getImageList(@PathVariable String uuidkey) {
         try {
             GiljabiGpsdata gpsdata = gpsService.findByUuid(uuidkey);
@@ -357,6 +362,7 @@ admin은 파일이 있으면 추가하지 않고 update
     }
 */
     @GetMapping("/api/1.0/getGpxList")
+    @Operation(summary = "최근 저장된 gpx 목록")
     public Response getGpxList(HttpServletRequest request,
                                @RequestParam(required = false) String trackName,
                                @RequestParam(required = false) String useruuid,
@@ -412,6 +418,7 @@ admin은 파일이 있으면 추가하지 않고 update
     }
 
     @PatchMapping("/api/1.0/changeGpx/{uuidkey}/{shareflag}")
+    @Operation(summary = "관리자 사용, 현재 gpx를 장기 보관상태 변경")
     public Response changeShareFlag(HttpServletRequest request,
                                     @PathVariable String uuidkey,
                                     @PathVariable boolean shareflag) {
@@ -432,6 +439,7 @@ admin은 파일이 있으면 추가하지 않고 update
     }
 
 }
+
 
 
 

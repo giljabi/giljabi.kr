@@ -88,14 +88,14 @@
         </dependency>
 
         <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger-ui</artifactId>
-            <version>2.9.2</version>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-ui</artifactId>
+            <version>1.6.10</version>
         </dependency>
         <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger2</artifactId>
-            <version>2.9.2</version>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-security</artifactId>
+            <version>1.6.10</version>
         </dependency>
 
         <dependency>
@@ -383,6 +383,8 @@
                         <phase>prepare-package</phase>
                         <configuration>
                             <tasks>
+                                <!-- swagger는 빌드시 삭제 -->
+                                <delete file="target/classes/kr/giljabi/api/config/SwaggerConfig.class" />
 
                                 <delete file="target/classes/static/js/common.js" />
                                 <delete file="target/classes/static/js/routeutil.js" />

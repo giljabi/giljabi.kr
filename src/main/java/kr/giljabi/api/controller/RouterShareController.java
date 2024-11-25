@@ -1,6 +1,6 @@
 package kr.giljabi.api.controller;
 
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
 import kr.giljabi.api.response.Response;
 import kr.giljabi.api.response.XmlShareResponse;
 import kr.giljabi.api.service.ShareCoursesService;
@@ -27,7 +27,7 @@ public class RouterShareController {
     private final ShareCoursesService shareService;
 
     @GetMapping("/api/1.0/gpxshare/{fileid}/{version}")
-    @ApiOperation(value="경로 공유", notes = "공유경로 정보 api")
+    @Operation(summary = "공유경로 정보 api")
     public Response getGpxshare(@PathVariable(required = false) String fileid,
                                 @PathVariable(required = false) String version) {
         try {
@@ -46,5 +46,6 @@ public class RouterShareController {
         }
     }
 }
+
 
 

@@ -1,30 +1,19 @@
 package kr.giljabi.api.controller;
 
-import com.drew.imaging.ImageMetadataReader;
-import com.drew.metadata.Metadata;
-import com.drew.metadata.exif.ExifIFD0Directory;
-import com.drew.metadata.exif.ExifSubIFDDirectory;
-import com.drew.metadata.exif.GpsDirectory;
-import com.drew.metadata.jpeg.JpegDirectory;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
 import kr.giljabi.api.geo.Geometry3DPoint;
 import kr.giljabi.api.geo.JpegMetaInfo;
 import kr.giljabi.api.request.RequestRouteData;
 import kr.giljabi.api.response.Response;
 import kr.giljabi.api.service.RouteService;
-import kr.giljabi.api.utils.CommonUtils;
 import kr.giljabi.api.utils.ErrorCode;
 import kr.giljabi.api.utils.MyHttpUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
 import java.util.*;
-import java.nio.file.*;
 
 /**
  * Open Route Service를 이용한 경로탐색
@@ -48,7 +37,7 @@ public class RouterController {
      * @return
      */
     @PostMapping("/api/1.0/route")
-    @ApiOperation(value="경로정보", notes = "openrouterservice에서 경로정보를 받아오는 api")
+    @Operation(summary = "openrouterservice에서 경로정보를 받아오는 api")
     public Response getRoute(@RequestBody RequestRouteData routeRequest,
                              HttpServletRequest request) {
         ArrayList<Geometry3DPoint> list;
@@ -177,3 +166,4 @@ public class RouterController {
     }
 
 }
+
