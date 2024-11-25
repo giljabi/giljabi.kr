@@ -211,14 +211,6 @@
     </dependencies>
 
     <build>
-        <!--        <resources>
-                    <resource>
-                        <directory>src/main/resources</directory>
-                        <excludes>
-                            <exclude>application-local.yml</exclude>
-                        </excludes>
-                    </resource>
-                </resources>-->
         <plugins>
             <!-- Properties Maven Plugin -->
             <plugin>
@@ -246,16 +238,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
-<<<<<<< HEAD
-                    <source>11</source>
-                    <target>11</target>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                            <version>1.18.22</version>
-                        </path>
-                    </annotationProcessorPaths>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
                 </configuration>
             </plugin>
             <!-- Maven Toolchains Plugin -->
@@ -271,11 +255,6 @@
                                 </execution>
                             </executions>
                         </plugin>-->
-=======
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
-                </configuration>
-            </plugin>
             <!-- Maven Toolchains Plugin -->
 <!--            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -288,8 +267,8 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>-->
->>>>>>> 94ce548fd6874c2ea0354c6eab5bea786153e749
+            </plugin>
+-->
 
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -437,11 +416,11 @@
                                 <replaceregexp file="target/classes/static/v2/editor2.html"
                                                match="editor2.js" replace="editor2.min.js" byline="true" encoding="UTF-8"/>
 
-				<replaceregexp file="target/classes/templates/v2/vworld.html"
-                                               match="routeutil.js" replace="routeutil.min.js" byline="true" encoding="UTF-8"/>
-				<replaceregexp file="target/classes/templates/v2/vworld.html"
-                                               match="apiKey=EF0CBEDB-A6FA-3FD9-B1B3-D7C725EF09D3"
-                                               replace="apiKey=9061B3F7-8879-385D-8E87-ED75ABCD0EF5" byline="true" encoding="UTF-8"/>
+                                <replaceregexp file="target/classes/templates/v2/vworld.html"
+                                                               match="routeutil.js" replace="routeutil.min.js" byline="true" encoding="UTF-8"/>
+                                <replaceregexp file="target/classes/templates/v2/vworld.html"
+                                                               match="apiKey=EF0CBEDB-A6FA-3FD9-B1B3-D7C725EF09D3"
+                                                               replace="apiKey=9061B3F7-8879-385D-8E87-ED75ABCD0EF5" byline="true" encoding="UTF-8"/>
 
                                 <replaceregexp file="target/classes/static/manage/giljabi2-admin.html"
                                                match="common.js" replace="common.min.js" byline="true" encoding="UTF-8"/>
@@ -478,3 +457,4 @@
         <finalName>giljabi-2</finalName>
     </build>
 </project>
+
