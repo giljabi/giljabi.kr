@@ -246,6 +246,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
+<<<<<<< HEAD
                     <source>11</source>
                     <target>11</target>
                     <annotationProcessorPaths>
@@ -270,6 +271,25 @@
                                 </execution>
                             </executions>
                         </plugin>-->
+=======
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                </configuration>
+            </plugin>
+            <!-- Maven Toolchains Plugin -->
+<!--            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-toolchains-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>toolchain</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>-->
+>>>>>>> 94ce548fd6874c2ea0354c6eab5bea786153e749
 
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -385,13 +405,66 @@
                         <configuration>
                             <tasks>
 
-                                <replaceregexp file="target/classes/templates/vworld.html"
+                                <delete file="target/classes/static/js/common.js" />
+                                <delete file="target/classes/static/js/routeutil.js" />
+                                <delete file="target/classes/static/js/waypoint.js" />
+                                <delete file="target/classes/static/js/xmlwriter.js" />
+                                <delete file="target/classes/static/js/fileutils.js" />
+                                <delete file="target/classes/static/js/giljabi2.js" />
+                                <delete file="target/classes/static/js/editor2.js" />
+                                <delete file="target/classes/static/manage/giljabi2-admin.js" />
+                                <delete file="target/classes/static/manage/giljabi2-gpx-list.js" />
+
+                                <replaceregexp file="target/classes/static/v2/giljabi2.html"
+                                               match="common.js" replace="common.min.js" byline="true" encoding="UTF-8"/>
+                                <replaceregexp file="target/classes/static/v2/giljabi2.html"
+                                               match="routeutil.js" replace="routeutil.min.js" byline="true" encoding="UTF-8"/>
+                                <replaceregexp file="target/classes/static/v2/giljabi2.html"
+                                               match="waypoint.js" replace="waypoint.min.js" byline="true" encoding="UTF-8"/>
+                                <replaceregexp file="target/classes/static/v2/giljabi2.html"
+                                               match="xmlwriter.js" replace="xmlwriter.min.js" byline="true" encoding="UTF-8"/>
+                                <replaceregexp file="target/classes/static/v2/giljabi2.html"
+                                               match="fileutils.js" replace="fileutils.min.js" byline="true" encoding="UTF-8"/>
+                                <replaceregexp file="target/classes/static/v2/giljabi2.html"
+                                               match="giljabi2.js" replace="giljabi2.min.js" byline="true" encoding="UTF-8"/>
+
+                                <replaceregexp file="target/classes/static/v2/editor2.html"
+                                               match="common.js" replace="common.min.js" byline="true" encoding="UTF-8"/>
+                                <replaceregexp file="target/classes/static/v2/editor2.html"
+                                               match="routeutil.js" replace="routeutil.min.js" byline="true" encoding="UTF-8"/>
+                                <replaceregexp file="target/classes/static/v2/editor2.html"
+                                               match="xmlwriter.js" replace="xmlwriter.min.js" byline="true" encoding="UTF-8"/>
+                                <replaceregexp file="target/classes/static/v2/editor2.html"
+                                               match="editor2.js" replace="editor2.min.js" byline="true" encoding="UTF-8"/>
+
+				<replaceregexp file="target/classes/templates/v2/vworld.html"
+                                               match="routeutil.js" replace="routeutil.min.js" byline="true" encoding="UTF-8"/>
+				<replaceregexp file="target/classes/templates/v2/vworld.html"
                                                match="apiKey=EF0CBEDB-A6FA-3FD9-B1B3-D7C725EF09D3"
                                                replace="apiKey=9061B3F7-8879-385D-8E87-ED75ABCD0EF5" byline="true" encoding="UTF-8"/>
+
+                                <replaceregexp file="target/classes/static/manage/giljabi2-admin.html"
+                                               match="common.js" replace="common.min.js" byline="true" encoding="UTF-8"/>
+                                <replaceregexp file="target/classes/static/manage/giljabi2-admin.html"
+                                               match="routeutil.js" replace="routeutil.min.js" byline="true" encoding="UTF-8"/>
+                                <replaceregexp file="target/classes/static/manage/giljabi2-admin.html"
+                                               match="waypoint.js" replace="waypoint.min.js" byline="true" encoding="UTF-8"/>
+                                <replaceregexp file="target/classes/static/manage/giljabi2-admin.html"
+                                               match="xmlwriter.js" replace="xmlwriter.min.js" byline="true" encoding="UTF-8"/>
+                                <replaceregexp file="target/classes/static/manage/giljabi2-admin.html"
+                                               match="fileutils.js" replace="fileutils.min.js" byline="true" encoding="UTF-8"/>
+                                <replaceregexp file="target/classes/static/manage/giljabi2-admin.html"
+                                               match="giljabi2.js" replace="giljabi2.min.js" byline="true" encoding="UTF-8"/>
+                                <replaceregexp file="target/classes/static/manage/giljabi2-admin.html"
+                                               match="giljabi2-admin.js" replace="giljabi2-admin.min.js" byline="true" encoding="UTF-8"/>
+
+                                <replaceregexp file="target/classes/static/manage/giljabi2-gpx-list.html"
+                                               match="giljabi2-gpx-list.js" replace="giljabi2-gpx-list.min.js" byline="true" encoding="UTF-8"/>
 
                                 <replaceregexp file="target/classes/static/v2/menu.html"
                                                match="__BUILD_VERSION__"
                                                replace="${project.version}" byline="true" encoding="UTF-8"/>
+
                             </tasks>
                         </configuration>
                         <goals>
