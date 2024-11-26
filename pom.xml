@@ -373,7 +373,27 @@
                     </execution>
                 </executions>
             </plugin>
-
+            <!-- Execute UglifyJS -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <executions>
+                    <execution>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>npm</executable>
+                            <arguments>
+                                <argument>run</argument>
+                                <argument>minify</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
@@ -418,9 +438,9 @@
                                 <replaceregexp file="target/classes/static/v2/editor2.html"
                                                match="editor2.js" replace="editor2.min.js" byline="true" encoding="UTF-8"/>
 
-                                <replaceregexp file="target/classes/templates/v2/vworld.html"
+                                <replaceregexp file="target/classes/templates/vworld.html"
                                                                match="routeutil.js" replace="routeutil.min.js" byline="true" encoding="UTF-8"/>
-                                <replaceregexp file="target/classes/templates/v2/vworld.html"
+                                <replaceregexp file="target/classes/templates/vworld.html"
                                                                match="apiKey=EF0CBEDB-A6FA-3FD9-B1B3-D7C725EF09D3"
                                                                replace="apiKey=9061B3F7-8879-385D-8E87-ED75ABCD0EF5" byline="true" encoding="UTF-8"/>
 
