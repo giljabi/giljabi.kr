@@ -485,7 +485,7 @@ function saveGpxToServer(saveData, apiName) {
             distance: _gpxTrkseqArray[_gpxTrkseqArray.length - 1].dist, //Meter
             xmlData: compressedData,
             speed: Number($('#averageV').val()),
-            userUUID: saveUUID()
+            userUUID: getUUID()
         };
 
         $.ajax({

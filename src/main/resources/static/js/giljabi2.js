@@ -370,6 +370,7 @@ function drawImageMarker(gpsimage) {
 }
 
 $(document).ready(function () {
+    getUUID(); //사용자 식별을 위한 UUID생성
     BASETIME = setBaseTimeToToday(BASETIME);
 
     $(document).tooltip();
@@ -1497,7 +1498,7 @@ TCX
             trkpt: _gpxTrkseqArray.length,
             distance: _gpxTrkseqArray[_gpxTrkseqArray.length - 1].dist,
             uuid: uuid,
-            userUUID: saveUUID()
+            userUUID: getUUID()
         };
 
         $.ajax({

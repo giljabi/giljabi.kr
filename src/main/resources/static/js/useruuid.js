@@ -8,14 +8,13 @@ function generateUUID() {
 }
 
 // UUID 저장
-function saveUUID() {
+function getUUID() {
     let uuid = localStorage.getItem('GILJABI_UUID'); // 기존 UUID 조회
     if (!uuid) {
-        uuid = generateUUID(); // UUID 생성
-        localStorage.setItem('GILJABI_UUID', uuid); // UUID 저장
+        localStorage.setItem('GILJABI_UUID', generateUUID()); // UUID 저장
     }
-    console.log('UUID:', uuid);
     return uuid;
 }
+
 
 

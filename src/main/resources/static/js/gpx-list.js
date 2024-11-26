@@ -17,7 +17,7 @@ $(document).ready(function () {
             method: 'GET',
             data: {
                 trackName: $('#trackName').val(),
-                useruuid: saveUUID(),
+                useruuid: getUUID(),
                 selfCheck: $('#selfCheck').is(':checked'),
                 page: page,
                 size: size

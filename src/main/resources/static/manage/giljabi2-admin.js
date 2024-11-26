@@ -1501,7 +1501,7 @@ TCX
             trkpt: _gpxTrkseqArray.length,
             distance: _gpxTrkseqArray[_gpxTrkseqArray.length - 1].dist,
             uuid: uuid,
-            userUUID: saveUUID()
+            userUUID: getUUID()
         };
 
         $.ajax({
