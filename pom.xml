@@ -27,12 +27,6 @@
         <!--        <encoding>UTF-8</encoding>-->
     </properties>
 
-    <scm>
-        <connection>scm:git:https://github.com/parknamjun/giljabi.git</connection>
-        <developerConnection>scm:git:git@github.com:parknamjun/giljabi.git</developerConnection>
-        <url>https://github.com/parknamjun/giljabi</url>
-    </scm>
-
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
