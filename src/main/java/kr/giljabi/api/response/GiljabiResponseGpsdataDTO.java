@@ -26,6 +26,7 @@ public class GiljabiResponseGpsdataDTO {
     private String useruuid;
     private String userid;
     private boolean shareflag;
+    private long readcount;
 }
 
 

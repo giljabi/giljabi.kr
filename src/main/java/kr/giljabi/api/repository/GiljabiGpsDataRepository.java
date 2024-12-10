@@ -51,6 +51,11 @@ public interface GiljabiGpsDataRepository extends CrudRepository<GiljabiGpsdata,
     @Query("UPDATE GiljabiGpsdata g SET g.shareflag = :shareFlag WHERE g.uuid = :uuid")
     int updateShareFlagByUuid(String uuid, Boolean shareFlag);
 
+    @Transactional
+    @Modifying
+    @Query("UPDATE GiljabiGpsdata g SET g.readcount = g.readcount + 1 WHERE g.uuid = :uuid")
+    void incrementReadcountByFileHash(String uuid);
+
 }
 
 

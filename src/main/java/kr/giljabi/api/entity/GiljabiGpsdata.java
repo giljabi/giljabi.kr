@@ -85,6 +85,9 @@ public class GiljabiGpsdata implements java.io.Serializable {
     @Column(nullable = true, length = 36)
     private String useruuid;
 
+    @Column(nullable = false)
+    private long readcount = 0;
+
     @OneToMany(mappedBy = "gpsdata", cascade = CascadeType.ALL /*, orphanRemoval = true*/)
     private List<GiljabiGpsdataImage> gpsdataimages;
     public void addGpsImage(GiljabiGpsdataImage gpsImage) {

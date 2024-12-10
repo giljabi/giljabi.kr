@@ -394,6 +394,7 @@ admin은 파일이 있으면 추가하지 않고 update
                 gpsdataDTO.setId((int)gpsdata.getId());
                 gpsdataDTO.setFileext(gpsdata.getFileext());
                 gpsdataDTO.setShareflag(gpsdata.isShareflag());
+                gpsdataDTO.setReadcount(gpsdata.getReadcount());
                 if(gpsdata.getUseruuid() != null && gpsdata.getUseruuid().length() > 24)
                     gpsdataDTO.setUseruuid(gpsdata.getUseruuid().substring(24));
                 else

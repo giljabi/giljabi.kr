@@ -40,6 +40,11 @@ public class GiljabiGpsDataService {
         return giljabiGpsDataRepository.findByUuid(uuid);
     }
 
+    //findByUuid에서 사용하면 안됨, 조회시 1회만 증가해야 함
+    public void incrementReadcountByFileHash(String uuid) {
+        giljabiGpsDataRepository.incrementReadcountByFileHash(uuid);
+    }
+
     public GiljabiGpsdata findByUuidAndShareflagTrue(String uuid) {
         return giljabiGpsDataRepository.findByUuidAndShareflagTrue(uuid);
     }

@@ -61,6 +61,9 @@ public class ShareCoursesService {
     public Optional<XmlShareResponse> findByUuidFromGpxdata(String fileid) throws Exception {
         Optional<XmlShareResponse> response = null;
 
+        //조회수 증가
+        gpsService.incrementReadcountByFileHash(fileid);
+
         //Optional을 사용해야 하나...
         GiljabiGpsdata gpsdata = gpsService.findByUuid(fileid);
         XmlShareResponse xml = new XmlShareResponse();

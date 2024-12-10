@@ -39,6 +39,7 @@ $(document).ready(function () {
                                 <td class="text-end">${item.speed}</td>
                                 <td class="text-end">${item.distance.toLocaleString()}</td>
                                 <td class="text-center">${item.fileext}</td>
+                                <td class="text-center">${item.readcount}</td>
                             </tr>
                         `;
                     });
