@@ -1,6 +1,8 @@
 
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fparknamjun%2Fgiljabi&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 
+## https://giljabi.kr:8443
+
 ## 2024.08.01
 * database 변경, mysql -> postgresql
 * 기존에 운영하던 v1에서 mysql을 postgresql로 변경하고 v2에서는 postgresql을 사용
