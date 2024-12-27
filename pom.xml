@@ -26,7 +26,9 @@
         <!--        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>-->
         <!--        <encoding>UTF-8</encoding>-->
     </properties>
-
+    <scm>
+        <connection>scm:git:https://github.com/giljabi/giljabi.git</connection>
+    </scm>
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -206,7 +208,7 @@
 
     <build>
         <plugins>
-            <!-- Properties Maven Plugin -->
+            <!-- Properties Maven Plugin, build verion에서 사용, scm tag 정보 필요-->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>properties-maven-plugin</artifactId>
