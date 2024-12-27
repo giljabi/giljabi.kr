@@ -31,25 +31,14 @@ nohup /usr/lib/jvm/java-11-openjdk-amd64/bin/java -Dgiljabi2 -jar -Dspring.profi
 * database 변경, mysql -> postgresql
 * 기존에 운영하던 v1에서 mysql을 postgresql로 변경하고 v2에서는 postgresql을 사용
 
-## 2024.06.05
-* mysql mb4 설정, 맥에서 한글 풀어쓰기 문제 확인 필요 --> mysql 사용하지 않음
-```sql
-SHOW VARIABLES LIKE 'character_set%';
-SHOW VARIABLES LIKE 'collation%';
-alter database newdb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-ALTER TABLE mytable CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
-String url = "jdbc:mysql://localhost:3306/your_database_name?useUnicode=true&characterEncoding=utf8mb4";
-
-```
 
 ## minio
-* cpu 리소스가 부족하여 minio client을 사용하여 aws s3로 변경(2024.06.05)
-* minio를 더이상 사용하지 않음
+* cpu 리소스가 부족하여 minio client을 사용하여 aws s3로 변경(2024.06.05), s3 사용중단하고 local disk사용(2024.12)
+* minio를 더이상 사용하지 않으나, 정보관리 차원에서 남겨둠
 ```shell
 wget https://dl.min.io/server/minio/release/linux-amd64/minio
 chmod +x minio
-화
+
 sudo mv minio /usr/local/bin/
 
 sudo useradd -r minio-user -s /sbin/nologin
