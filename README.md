@@ -6,7 +6,7 @@
 
 ## run.sh, kill.sh
 * PASSWORD_KEY는 JasyptEncryptionExample.java에서 사용한 키를 사용
-* intellij에서 실행시 VM Option에 -Djasypt.encryptor.password=your_ENC_password_key
+* intellij에서 실행시 VM Option에 -Djasypt.encryptor.password=your_ENC_password_key를 사용하고,  
   profile은사용할 프로파일명 추가 후 실행
 ```
 #!/bin/sh
