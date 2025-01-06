@@ -27,6 +27,86 @@ echo "Start giljabi application"
 nohup /usr/lib/jvm/java-11-openjdk-amd64/bin/java -Dgiljabi2 -jar -Dspring.profiles.active=prod -Xms256m -Xmx256m -Djava.net.preferIPv4Stack=true -Duser.timezone=Asia/Seoul -Djasypt.encryptor.password=$PASSWORD_KEY $APP_NAME > /dev/null 2>&1 &
 ```
 
+
+## 2024.12.20
+* https://giljabi.tistory.com/
+* run.sh
+```shell
+#!/bin/sh
+
+APP_NAME=giljabi-2.jar
+
+PID=$(ps -ef | grep $APP_NAME | grep -v grep | awk '{print $2}')
+if [ -z "$PID" ]; then
+    echo "Application is not running."
+else
+    echo "Killing application with PID: $PID"
+    kill -9 $PID
+    echo "Application terminated."
+fi
+
+echo "Start giljabi application"
+nohup /usr/lib/jvm/java-11-openjdk-amd64/bin/java -Dgiljabi2 -jar -Dspring.profiles.active=prod -Xms256m -Xmx256m -Djava.net.preferIPv4Stack=true -Duser.timezone=Asia/Seoul -Djasypt.encryptor.password=암호화키 $APP_NAME > /dev/null 2>&1 &
+```
+
+* deploy.sh
+  * localpc에서 빌드하고 서버로 복사, 재시작 하는 스크립트, github action을 사용할까 했지만...
+```shell
+#!/bin/bash
+
+export SERVER_USER=ubuntu
+export SERVER_IP=1.1.1.1
+export SERVER_PATH=/home/ubuntu/apps/giljabi
+export LOCAL_PATH=./target/giljabi-2.jar
+export GILJABI_PEM=/Users/aws/aws-apnortheast-2.pem
+
+#java 11
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-11.jdk/Contents/Home
+
+mvn clean package -Dmaven.test.skip=true -f pom.xml
+if [ $? -ne 0 ]; then
+    echo "Maven build failed. Stopping script."
+    exit 1
+fi
+
+ssh -i $GILJABI_PEM $SERVER_USER@$SERVER_IP << EOF
+  echo "Attempting to gracefully stop Spring Boot..."
+  # Assuming usage of Spring Boot Actuator to shutdown
+  curl -X POST localhost:9090/actuator/shutdown
+
+  echo "Executing kill script..."
+  cd $SERVER_PATH
+  ./kill.sh
+  if [ \$? -ne 0 ]; then
+    echo "Failed to execute kill script. Exiting..."
+    exit 1
+  fi
+
+  mv giljabi-2.jar backup
+
+  echo "Kill script executed successfully."
+EOF
+
+if [ $? -eq 0 ]; then
+  echo "Deployment script completed successfully."
+else
+  echo "Deployment failed. Please check the logs."
+fi
+
+echo "Deploying to $SERVER_IP"
+#scp -i $GILJABI_PEM $LOCAL_PATH $SERVER_USER@$SERVER_IP:$SERVER_PATH
+rsync -avh --progress -e "ssh -i $GILJABI_PEM" $LOCAL_PATH $SERVER_USER@$SERVER_IP:$SERVER_PATH/
+
+ssh -i $GILJABI_PEM $SERVER_USER@$SERVER_IP << EOF
+  echo "Changing directory to $SERVER_PATH..."
+  cd $SERVER_PATH
+  ./run.sh
+EOF
+
+# mvn clean
+
+```
+
 ## 2024.08.01
 * database 변경, mysql -> postgresql
 * 기존에 운영하던 v1에서 mysql을 postgresql로 변경하고 v2에서는 postgresql을 사용
