@@ -662,12 +662,32 @@ $(document).ready(function () {
         makeMarkerPoint(_map, 'start', _gpxTrkseqArray[0]);
         makeMarkerPoint(_map, 'end', _gpxTrkseqArray[_gpxTrkseqArray.length - 1]);
 
-        let midPoint = _gpxTrkseqArray[parseInt(_gpxTrkseqArray.length / 2)];
-        _map.setCenter(new kakao.maps.LatLng(midPoint.lat, midPoint.lng)); //중심점을 경로상의 중간을 설정한다.
-        _map.setLevel(10);
+        //업로드된 GPX 경로의 bounding box(좌하단 SW, 우상단 NE) 계산
+        let gpxBounds = getGpxBounds(_trkPoly);
+        console.log('좌하단(SW):', gpxBounds.southWest, '우상단(NE):', gpxBounds.northEast);
+        _map.setBounds(gpxBounds.bounds); //경로 전체가 보이도록 지도 자동 줌/센터
 
         getWaypointInfo();
 
+    }
+
+    /**
+     * 방법1: kakao LatLngBounds로 GPX 경로의 좌하단(SW)/우상단(NE) 좌표 계산
+     * @param latLngArray kakao.maps.LatLng 배열 (예: _trkPoly)
+     * @returns {southWest, northEast, bounds}
+     */
+    function getGpxBounds(latLngArray) {
+        const bounds = new kakao.maps.LatLngBounds();
+        latLngArray.forEach(latlng => bounds.extend(latlng));
+
+        const sw = bounds.getSouthWest();  //좌하단
+        const ne = bounds.getNorthEast();  //우상단
+
+        return {
+            southWest: { lat: sw.getLat(), lng: sw.getLng() }, //좌하단
+            northEast: { lat: ne.getLat(), lng: ne.getLng() }, //우상단
+            bounds: bounds //_map.setBounds()용
+        };
     }
 
     /**
