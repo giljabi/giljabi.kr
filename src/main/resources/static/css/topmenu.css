@@ -8,12 +8,16 @@
     list-style-type: none; /* 메인 메뉴 안의 ul 내부의 목록 표시를 없애줌 */
     margin: 0px; /* 메인 메뉴 안의 ul의 margin을 없앰 */
     padding: 0px; /* 메인 메뉴 안의 ul의 padding을 없앰 */
+    white-space: nowrap; /* 가로폭 줄어도 메뉴 1줄 유지 */
+}
+#topMenu > ul > li .submenu { /* 하위 드롭다운 내부는 다시 줄바꿈 허용 */
+    white-space: normal;
 }
 
 #topMenu ul li { /* 메인 메뉴 안에 ul 태그 안에 있는 li 태그의 스타일 적용(상위/하위메뉴 모두) */
     color: white; /* 글씨 색을 흰색으로 설정 */
     background-color: #2d2d2d; /* 배경 색을 RGB(2D2D2D)로 설정 */
-    float: left; /* 왼쪽으로 나열되도록 설정 */
+    display: inline-block; /* float 대신 inline-block: nowrap로 1줄 유지 */
     line-height: 30px; /* 텍스트 한 줄의 높이를 30px로 설정 */
     vertical-align: middle; /* 세로 정렬을 가운데로 설정 */
     text-align: center; /* 텍스트를 가운데로 정렬 */
@@ -23,7 +27,9 @@
 .menuLink, .submenuLink { /* 상위 메뉴와 하위 메뉴의 a 태그에 공통으로 설정할 스타일 */
     text-decoration: none; /* a 태그의 꾸밈 효과 제거 */
     display: block; /* a 태그의 클릭 범위를 넓힘 */
-    width: 100px; /* 기본 넓이를 150px로 설정 */
+    width: auto; /* 텍스트 길이에 맞춰 자동 폭 */
+    padding: 0 12px; /* 기존 고정폭 대신 좌우 여백 */
+    white-space: nowrap; /* 줄바꿈 방지: 1줄 표시 */
     font-size: 12px; /* 폰트 사이즈를 12px로 설정 */
     font-weight: bold; /* 폰트를 굵게 설정 */
     font-family: "Trebuchet MS", Dotum; /* 기본 폰트를 영어/한글 순서대로 설정 */

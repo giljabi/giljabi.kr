@@ -53,27 +53,11 @@
 <body>
 <div w3-include-html="/v2/menu.html"></div>
 
-<div class="container">
+<div class="container" style="min-height:300px;height:calc(100vh - 30px);">
     <div id="c1" class="row" style="border: 0px solid #ddd;">
-        <div id="div1" class="cell wide" style="width:100%;height:100%;">
-            <div id="map" style="z-index: auto"></div>
-            <div class="row" style="border: 0px solid #ddd;">
-                <p class="modes">기능선택:
-                    <select id="direction" style="width: 150px;">
-                        <option value="waypoint">waypoint 만들기</option>
-                        <option value="cycling-road">cycling-road 경로탐색</option>
-                        <option value="cycling-mountain">cycling-mountain 경로탐색</option>
-                        <option value="foot-hiking">foot-hiking 경로탐색</option>
-                    </select>
-                    <input class='mapType' type="checkbox" id="chkTerrain"/><label for="chkTerrain">지형정보</label>
-                    <input type="radio" name="daumpoi" value="CS2">편의점
-                    <input type="radio" name="daumpoi" value="AD5">숙박
-                    <input type="radio" name="daumpoi" value="CE7">카페
-                    <input type="radio" name="daumpoi" value="FD6">음식점
-                    <input type="radio" name="daumpoi" value="" checked>없음
-                </p>
-            </div>
-            <div class="row" style="border: 0px solid #ddd;">&nbsp;
+        <div id="div1" class="cell wide" style="width:100%;height:100%;position:relative;">
+            <div id="gpxInfo">
+            <div id="command" class="row" style="border: 0px solid #ddd;">&nbsp;
                 <input type="button" id="reset"
                        title="초기화 버튼을 누르면 모든 정보가 삭제됩니다."
                        value="초기화"/>&nbsp;
@@ -102,17 +86,35 @@
                 파일병합: <input type="file" id="mergeInput" accept=".gpx,.tcx" size="0" disabled>
                 --->
             </div>
-            <div class="row" style="border: 0px solid #ddd;">
+            <div id="elevPlot" class="row" style="border: 0px solid #ddd;">
                 <div class="containerPlot" style="border: 0px solid #ddd;">
                     <div id="elevationImage" class="containerPlot elevation"></div>
                 </div>
+            </div>
+            </div>
+            <div id="map" style="z-index: auto"></div>
+            <div id="selectFunction" class="row" style="border: 0px solid #ddd;">
+                <p class="modes">기능선택:
+                    <select id="direction" style="width: 150px;">
+                        <option value="waypoint">waypoint 만들기</option>
+                        <option value="cycling-road">cycling-road 경로탐색</option>
+                        <option value="cycling-mountain">cycling-mountain 경로탐색</option>
+                        <option value="foot-hiking">foot-hiking 경로탐색</option>
+                    </select>
+                    <input class='mapType' type="checkbox" id="chkTerrain"/><label for="chkTerrain">지형정보</label>
+                    <input type="radio" name="daumpoi" value="CS2">편의점
+                    <input type="radio" name="daumpoi" value="AD5">숙박
+                    <input type="radio" name="daumpoi" value="CE7">카페
+                    <input type="radio" name="daumpoi" value="FD6">음식점
+                    <input type="radio" name="daumpoi" value="" checked>없음
+                </p>
             </div>
         </div>
     </div>
     <div id="c2" class="row" style="width: 210px; border: 1px solid #fff;">
         <div id="div3" class="cell" style="border: 1px solid #ddd; ">
-            <div class="row"
-                 style="align-items: start;border: 0px solid #ddd; height:500px;overflow-y: auto;">
+            <div id="waypointList" class="row"
+                 style="align-items: start;border: 0px solid #ddd; flex:7 1 0;min-height:0;overflow-y: auto;">
                 <table style="border: 2px">
                     <tr>
                         <td style="width: 10px; align:center">I</td>
@@ -123,9 +125,9 @@
                     <tbody id="waypointinfoViewTable"></tbody>
                 </table>
             </div>
-            <div class="row" style="border: 0px solid #ddd; ">
-                <div>
-                    <div id="imageFileList" class="fileContainer" style="height: 400px; overflow-y: auto;">
+            <div class="row" style="border: 0px solid #ddd;flex:3 1 0;min-height:0;">
+                <div style="flex:1;min-height:0;width:100%;">
+                    <div id="imageFileList" class="fileContainer" style="height:100%;max-height:none;overflow-y: auto;">
                     </div>
                 </div>
             </div>

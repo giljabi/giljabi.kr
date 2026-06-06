@@ -10,6 +10,28 @@ body, p, tr, th, td, ul, li, select, input {
     width: 100%;
     height: 100%;
 }
+/* gpxInfo: 지도 위에 중첩 오버레이, 하단 고정 */
+#gpxInfo {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000; /* #map(999) 위 */
+    background-color: rgba(255, 255, 255, 0.9);
+}
+/* command 버튼바: 가로폭 줄어도 버튼 크기 고정, 넘치면 가로 스크롤 */
+#command {
+    flex-wrap: nowrap;
+    align-items: center;  /* 세로 stretch 방지: 버튼이 늘어나지 않음 */
+    white-space: nowrap;  /* 맨텍스트("평속(Km/H) :") 줄바꿈 방지 */
+    overflow-x: auto;
+}
+#command input,
+#command select,
+#command label {
+    flex: 0 0 auto;   /* 줄어들지 않음(버튼 크기 유지) */
+    white-space: nowrap; /* 버튼 텍스트 줄바꿈 방지 */
+}
 .modes { /* 지도 POU선택*/
     position: absolute;
     align-content: center;
@@ -22,7 +44,7 @@ body, p, tr, th, td, ul, li, select, input {
 .container {
     display: grid;
     width: 100%;
-    min-width: 1170px;
+    min-width: 990px;
     height: 90vh;
     position: relative;
     grid-template-columns: 1fr 210px;
