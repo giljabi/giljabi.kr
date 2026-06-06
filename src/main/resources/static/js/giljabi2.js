@@ -25,8 +25,8 @@
  Simple Type: dgpsStationType
 
  */
-
 let _newPosition;
+let _loadedGpxXml = null;
 
 let _map;
 let _gpxMetadata = {};		//gpx/metadata
@@ -70,6 +70,9 @@ let uuid = '';
 
 let imageMarkers = [];
 let imageMarkersData = [];
+
+let markerEnd;
+let markerStart;
 
 //POI마커를 모두 제거
 function removeCategryMarker() {
@@ -397,6 +400,12 @@ $(document).ready(function () {
         }
     });
 
+/*    $("#trkComboList").change(function () {
+        //markerStart.setMap(null);
+        //markerEnd.setMap(null);
+        //loadTrkPoints(_loadedGpxXml, getSelectedTrkIndex());
+    });*/
+
     //고도정보
     $("<div id='slopeinfo'></div>")
         .addClass("slopeinfobox") // .tooltip 클래스 추가
@@ -571,6 +580,27 @@ $(document).ready(function () {
         }
     });
 
+    // trk 콤보박스 변경 시 선택된 trk만 다시 로드/표시
+/*    $('#trkComboList').on('change', function () {
+        if (_loadedGpxXml == null) return;
+
+        //기존 경로/배열 초기화
+        _polyline.forEach(line => line.setMap(null));
+        _polyline = [];
+        _trkPoly = [];
+        _gpxTrkseqArray = [];
+
+        //선택된 trk 로드 후 다시 그리기
+        loadTrkPoints(_loadedGpxXml, getSelectedTrkIndex());
+        drawPolyline(_trkPoly);
+
+        //markerStart = makeMarkerPoint(_map, 'start', _gpxTrkseqArray[0]);
+        //markerEnd = makeMarkerPoint(_map, 'end', _gpxTrkseqArray[_gpxTrkseqArray.length - 1]);
+
+        _map.setBounds(getGpxBounds(_trkPoly).bounds);
+        getWaypointInfo();
+    });*/
+
     function loadAndDrawImage(fileid) {
         $.ajax({
             url: `/api/1.0/getImageList/${fileid}`,
@@ -635,32 +665,50 @@ $(document).ready(function () {
         chartPlotAdView(false);
     });
 
+    /**
+     * GPX의 trk 목록을 "없음" 우측 콤보박스(#trkComboList)에 채운다.
+     * @param loadFile  파싱된 GPX($ 객체)
+     */
+    function fillTrkComboList(loadFile) {
+        const $combo = $('#trkComboList');
+        $combo.empty();
+
+        const trks = loadFile.find('gpx > trk');
+        if (trks.length === 0) {
+            $combo.hide();
+            return;
+        }
+        // 전체 보기 옵션
+        //$combo.append(`<option value="all">전체(${trks.length})</option>`);
+        trks.each(function (index) {
+            // trk 직속 name (없으면 '트랙 N')
+            let name = $(this).children('name').text().trim();
+            if (name === '') name = `트랙 ${index + 1}`;
+            $combo.append(`<option value="${index}">${index + 1}. ${name}</option>`);
+        });
+        $combo.show();   // 1개여도 표시 (원하면 trks.length > 1 조건)
+    }
+
     function fileLoadAndDraw(xml) {
-        let readXmlfile = $($.parseXML(xml.replace(/&/g, "&amp;")));
+        _loadedGpxXml = $($.parseXML(xml.replace(/&/g, "&amp;")));
         //console.log('fileLoadAndDraw:' + readXmlfile);
 
         if (_fileExt == 'gpx') {
-            let trkCount = readXmlfile.find('trk').length;
+            let trkCount = _loadedGpxXml.find('trk').length;
             if(trkCount > 1) {
-                alert(`다중 경로(${trkCount}개)가 있습니다. 구분하지 않고 모든 경로를 그립니다.`);
-/*                readXmlfile.find('trk').each(function (index, trk) {
-                    let name = $(trk).find('name').text(); // trk 태그 내부의 name 텍스트 가져오기
-                    $('#trkSelect').append(`<option value="${index+1}">${index+1 + ' ' + name}</option>`);
-                    console.log(`trk ${index + 1}의 name: ${name}`);
-                });*/
-            } else {
-                //$('#trkSelect').append('<option value="" disabled selected>다중경로 아님</option>');
+                alert(`다중 경로(${trkCount}개)가 있습니다. 첫째 경로만 그립니다.`);
             }
-            loadGpx(readXmlfile);
+            //fillTrkComboList(_loadedGpxXml);   // ← trk 목록 채우기
+            loadGpx(_loadedGpxXml);
         } else if (_fileExt == 'tcx') {
-            loadTcx(readXmlfile); //gpx 포맷을 끝내고 진행...
+            loadTcx(_loadedGpxXml); //gpx 포맷을 끝내고 진행...
         }
 
         drawPolyline(_trkPoly); //경로를 그린다.
 
         //시작과 끝 표시
-        makeMarkerPoint(_map, 'start', _gpxTrkseqArray[0]);
-        makeMarkerPoint(_map, 'end', _gpxTrkseqArray[_gpxTrkseqArray.length - 1]);
+        markerStart = makeMarkerPoint(_map, 'start', _gpxTrkseqArray[0]);
+        markerEnd = makeMarkerPoint(_map, 'end', _gpxTrkseqArray[_gpxTrkseqArray.length - 1]);
 
         //업로드된 GPX 경로의 bounding box(좌하단 SW, 우상단 NE) 계산
         let gpxBounds = getGpxBounds(_trkPoly);
@@ -725,31 +773,43 @@ $(document).ready(function () {
             addWaypoint(item);
         });
 
-        //경로정보
-        $.each(loadFile.find('gpx > trk > trkseg > trkpt'), function (index, value) {
-            //garmin gpx extensions data
-            let atemp = $(this).find('extensions').find('ns3\\:TrackPointExtension').find('ns3\\:atemp').text();
-            let hr = $(this).find('extensions').find('ns3\\:TrackPointExtension').find('ns3\\:hr').text();
-            //let cad = $(this).find('extensions').find('ns3\\:TrackPointExtension').find('ns3\\:cad').text();
+        //경로정보 — 선택된 trk의 trkpt 로드
+        //loadTrkPoints(loadFile, getSelectedTrkIndex());
+        loadTrkPoints(loadFile, 0); //trk가 여러개 있어도 Germin은 첫째만 사용
 
-            //console.log('atemp:' + atemp +',hr:' + hr);
-
-            let trackPoint = new Point3D(
-                Number($(this).attr('lat')),
-                Number($(this).attr('lon')),
-                Number($(this).find('ele').text()),
-                Number($(this).find('dist').text()),
-                $(this).find('time').text(),
-                Number(hr),
-                atemp,
-                0//gpx 파일에 slope 정보는 없는상태
-            );
-            _gpxTrkseqArray.push(trackPoint);
-            _trkPoly.push(new kakao.maps.LatLng(trackPoint.lat, trackPoint.lng));
-        });
         //$("input[type='radio'][name='filetype'][value='gpx']").prop("checked", true);
         changeFileType('gpx');
         //steepPoints = findSteepSlopes(_gpxTrkseqArray);
+    }
+
+    /** trkpt 엘리먼트 1개 → Point3D 변환 */
+    function toTrackPoint($pt) {
+        const ext = $pt.find('extensions').find('ns3\\:TrackPointExtension');
+        return new Point3D(
+            Number($pt.attr('lat')),
+            Number($pt.attr('lon')),
+            Number($pt.find('ele').text()),
+            Number($pt.find('dist').text()),
+            $pt.find('time').text() || (new Date(BASETIME)).toISOString(), //time 없으면 BASETIME 기본값
+            Number(ext.find('ns3\\:hr').text()),
+            ext.find('ns3\\:atemp').text(),
+            0 //gpx에 slope 정보 없음
+        );
+    }
+
+    /** 콤보박스(#trkComboList) 선택 trk 인덱스 (미선택/빈값/all → 0) */
+/*    function getSelectedTrkIndex() {
+        const v = $('#trkComboList').val();
+        return (v == null || v === '' || v === 'all') ? 0 : Number(v);
+    }*/
+
+    /** 특정 trk의 trkpt를 읽어 전역 배열(_gpxTrkseqArray, _trkPoly)에 채움 */
+    function loadTrkPoints(loadFile, trkIndex) {
+        loadFile.find(`gpx > trk:eq(${trkIndex}) > trkseg > trkpt`).each(function () {
+            const trackPoint = toTrackPoint($(this));
+            _gpxTrkseqArray.push(trackPoint);
+            _trkPoly.push(new kakao.maps.LatLng(trackPoint.lat, trackPoint.lng));
+        });
     }
 
     /**

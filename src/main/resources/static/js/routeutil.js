@@ -43,13 +43,13 @@ let _microTime = Math.round(microtime(true) * 100);
 
 //시작, 도착 마커
 function makeMarkerPoint(mymap, iconName, latlon) {
-    let marker = new kakao.maps.Marker({
+    const marker = new kakao.maps.Marker({
         position: new kakao.maps.LatLng(latlon.lat, latlon.lng),
         image: new kakao.maps.MarkerImage(
             '/images/' + iconName + '.png',
             new kakao.maps.Size(17, 22))
     });
-    marker.setMap(mymap);
+    return marker.setMap(mymap);
 }
 
 function xmlToString(xmlData) {
