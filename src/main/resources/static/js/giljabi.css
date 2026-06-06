@@ -3,6 +3,9 @@ body, p, tr, th, td, ul, li, select, input {
     font-family: AppleGotihc, "Malgun Gothic", dotum;
     font-size: 12px;
 }
+body { /* 상단/좌우 기본 여백 제거 */
+    margin: 0;
+}
 
 #map {
     position: relative; /* 또는 absolute */
