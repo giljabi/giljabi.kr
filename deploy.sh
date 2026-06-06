@@ -43,4 +43,4 @@ ssh -i $GILJABI_PEM $SERVER_USER@$SERVER_IP << EOF
   ./run.sh
 EOF
 
-# mvn clean
+mvn clean
