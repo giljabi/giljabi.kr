@@ -28,6 +28,19 @@ nohup /usr/lib/jvm/java-11-openjdk-amd64/bin/java -Dgiljabi2 -jar -Dspring.profi
 ```
 
 
+## 2026.06.06
+### UI 반응형 레이아웃 개선 (v2/giljabi2.html)
+* gpxInfo(버튼바+고도그래프)를 지도 위 하단에 중첩 오버레이로 배치
+  * #map(z-index 999) 위에 #gpxInfo(z-index 1000), 반투명 흰배경
+* 지도 세로: `calc(100vh - 30px)`로 브라우저 높이에 맞춤 (최소 300px)
+* 우측 패널 waypointList : imageFileList = 7 : 3 비율, 세로높이 따라 반응형
+* command 버튼바: 가로폭 줄어도 버튼 크기 고정
+  * flex-wrap:nowrap, align-items:center, white-space:nowrap, overflow-x:auto
+  * 좁아지면 버튼이 세로로 늘어나던 문제 해결 (가로 스크롤로 처리)
+* 상단 메뉴(menu.html): 가로폭 100%로 확장, 좁아져도 1줄 유지
+  * topmenu.css: 메뉴 링크 width auto + nowrap, li를 float→inline-block
+* .container min-width 1170 → 990px
+
 ## 2024.12.20
 * https://giljabi.tistory.com/
 * run.sh
